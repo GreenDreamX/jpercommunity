@@ -1,0 +1,222 @@
+[
+  {
+    "id": "n5-kanji-001",
+    "kanji": "一",
+    "meaning": "Satu",
+    "onyomi": ["イチ", "ichi", "イツ", "itsu"],
+    "kunyomi": ["ひと", "hito"],
+    "strokeCount": 1,
+    "examples": [
+      {
+        "word": "一日",
+        "furigana": "ついたち",
+        "romaji": "tsuitachi",
+        "meaning": "Tanggal satu"
+      },
+      {
+        "word": "一つ",
+        "furigana": "ひとつ",
+        "romaji": "hitotsu",
+        "meaning": "Satu buah"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-002",
+    "kanji": "二",
+    "meaning": "Dua",
+    "onyomi": ["ニ", "ni"],
+    "kunyomi": ["ふた", "futa"],
+    "strokeCount": 2,
+    "examples": [
+      {
+        "word": "二月",
+        "furigana": "にがつ",
+        "romaji": "nigatsu",
+        "meaning": "Bulan Februari"
+      },
+      {
+        "word": "二つ",
+        "furigana": "ふたつ",
+        "romaji": "futatsu",
+        "meaning": "Dua buah"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-003",
+    "kanji": "三",
+    "meaning": "Tiga",
+    "onyomi": ["サン", "san"],
+    "kunyomi": ["み", "mi"],
+    "strokeCount": 3,
+    "examples": [
+      {
+        "word": "三月",
+        "furigana": "さんがつ",
+        "romaji": "sangatsu",
+        "meaning": "Bulan Maret"
+      },
+      {
+        "word": "三つ",
+        "furigana": "みっつ",
+        "romaji": "mittsu",
+        "meaning": "Tiga buah"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-004",
+    "kanji": "日",
+    "meaning": "Matahari / Hari",
+    "onyomi": ["ニチ", "nichi", "ジツ", "jitsu"],
+    "kunyomi": ["ひ", "hi", "か", "ka"],
+    "strokeCount": 4,
+    "examples": [
+      {
+        "word": "日本",
+        "furigana": "にほん",
+        "romaji": "nihon",
+        "meaning": "Jepang"
+      },
+      {
+        "word": "日曜日",
+        "furigana": "にちようび",
+        "romaji": "nichiyoubi",
+        "meaning": "Hari Minggu"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-005",
+    "kanji": "本",
+    "meaning": "Buku / Asal",
+    "onyomi": ["ホン", "hon"],
+    "kunyomi": ["もと", "moto"],
+    "strokeCount": 5,
+    "examples": [
+      {
+        "word": "本",
+        "furigana": "ほん",
+        "romaji": "hon",
+        "meaning": "Buku"
+      },
+      {
+        "word": "山本",
+        "furigana": "やまもと",
+        "romaji": "yamamoto",
+        "meaning": "Yamamoto (nama keluarga)"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-006",
+    "kanji": "人",
+    "meaning": "Orang",
+    "onyomi": ["ジン", "jin", "ニン", "nin"],
+    "kunyomi": ["ひと", "hito"],
+    "strokeCount": 2,
+    "examples": [
+      {
+        "word": "日本人",
+        "furigana": "にほんじん",
+        "romaji": "nihonjin",
+        "meaning": "Orang Jepang"
+      },
+      {
+        "word": "あの人",
+        "furigana": "あのひと",
+        "romaji": "anohito",
+        "meaning": "Orang itu"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-007",
+    "kanji": "水",
+    "meaning": "Air",
+    "onyomi": ["スイ", "sui"],
+    "kunyomi": ["みず", "mizu"],
+    "strokeCount": 4,
+    "examples": [
+      {
+        "word": "水",
+        "furigana": "みず",
+        "romaji": "mizu",
+        "meaning": "Air"
+      },
+      {
+        "word": "水曜日",
+        "furigana": "すいようび",
+        "romaji": "suiyoubi",
+        "meaning": "Hari Rabu"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-008",
+    "kanji": "火",
+    "meaning": "Api",
+    "onyomi": ["カ", "ka"],
+    "kunyomi": ["ひ", "hi"],
+    "strokeCount": 4,
+    "examples": [
+      {
+        "word": "火",
+        "furigana": "ひ",
+        "romaji": "hi",
+        "meaning": "Api"
+      },
+      {
+        "word": "火曜日",
+        "furigana": "かようび",
+        "romaji": "kayoubi",
+        "meaning": "Hari Selasa"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-009",
+    "kanji": "木",
+    "meaning": "Pohon",
+    "onyomi": ["ボク", "boku", "モク", "moku"],
+    "kunyomi": ["き", "ki"],
+    "strokeCount": 4,
+    "examples": [
+      {
+        "word": "木",
+        "furigana": "き",
+        "romaji": "ki",
+        "meaning": "Pohon"
+      },
+      {
+        "word": "木曜日",
+        "furigana": "もくようび",
+        "romaji": "mokuyoubi",
+        "meaning": "Hari Kamis"
+      }
+    ]
+  },
+  {
+    "id": "n5-kanji-010",
+    "kanji": "金",
+    "meaning": "Emas / Uang",
+    "onyomi": ["キン", "kin"],
+    "kunyomi": ["かね", "kane"],
+    "strokeCount": 8,
+    "examples": [
+      {
+        "word": "お金",
+        "furigana": "おかね",
+        "romaji": "okane",
+        "meaning": "Uang"
+      },
+      {
+        "word": "金曜日",
+        "furigana": "きんようび",
+        "romaji": "kinyoubi",
+        "meaning": "Hari Jumat"
+      }
+    ]
+  }
+]
