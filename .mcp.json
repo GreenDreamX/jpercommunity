@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "firebase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firebase-tools@latest",
+        "experimental:mcp",
+        "--dir",
+        "/workspaces/jpercommunity"
+      ]
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=ufehqkmxqcqcmwkftqqf"
+    }
+  }
+}
