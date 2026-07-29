@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { FirebaseError } from "firebase/app"
@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils"
 import { firebaseAuth } from "@/lib/firebase/client"
 import { Button } from "@/components/ui/button"
+import { setSessionCookie } from "@/lib/session-cookie"
 import {
   Card,
   CardContent,
@@ -67,6 +68,12 @@ export function LoginForm({
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("jper_mock_session")
+    }
+  }, [])
+
   async function handleEmailLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsEmailLoading(true)
@@ -74,6 +81,10 @@ export function LoginForm({
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("jper_mock_session")
+      }
+      setSessionCookie()
       router.push("/lms")
     } catch (error) {
       setErrorMessage(getAuthErrorMessage(error))
@@ -88,12 +99,56 @@ export function LoginForm({
 
     try {
       await signInWithPopup(auth, googleProvider)
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("jper_mock_session")
+      }
+      setSessionCookie()
       router.push("/lms")
     } catch (error) {
       setErrorMessage(getAuthErrorMessage(error))
     } finally {
       setIsGoogleLoading(false)
     }
+  }
+
+  async function handleBypassStudentLogin() {
+    setErrorMessage(null)
+    setIsEmailLoading(true)
+    
+    if (typeof window !== "undefined") {
+      localStorage.setItem("jper_mock_session", "student")
+    }
+
+    try {
+      // Sync mock student profile with database
+      await fetch("/api/auth/sync-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer mock-student-token",
+        },
+        body: JSON.stringify({
+          registerData: {
+            namaLengkap: "Siswa Bypass",
+            email: "student@jper.my.id",
+            nomorTelepon: "081234567890",
+            angkatan: "2025",
+            kelas: "XI-A",
+            nisn: "0000000000",
+            nis: "00000",
+            alasanIkut: "Bypass login untuk melakukan peninjauan isi sistem LMS.",
+            password: "bypass-password-123",
+          },
+        }),
+      })
+    } catch (err) {
+      console.error("Gagal sinkronisasi mock student profile", err)
+    } finally {
+      setIsEmailLoading(false)
+    }
+
+    setSessionCookie()
+    window.location.href = "/lms"
   }
 
   return (
@@ -106,7 +161,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleEmailLogin}>
+          <form onSubmit={handleEmailLogin} method="POST">
             <FieldGroup>
               <Field>
                 <Button
@@ -164,6 +219,15 @@ export function LoginForm({
               <Field>
                 <Button type="submit" disabled={isEmailLoading || isGoogleLoading}>
                   {isEmailLoading ? "Memproses..." : "Login"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBypassStudentLogin}
+                  disabled={isEmailLoading || isGoogleLoading}
+                  className="bg-[#FAF9F6] text-[#2B3A55] border-[#E4E1DA] hover:bg-[#E4E1DA]/20 w-full"
+                >
+                  Bypass Login (Siswa)
                 </Button>
                 <FieldDescription className="text-center">
                   Belum punya akun? <Link href="/register">Sign up</Link>

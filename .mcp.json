@@ -5,7 +5,7 @@
       "args": [
         "-y",
         "firebase-tools@latest",
-        "experimental:mcp",
+        "mcp",
         "--dir",
         "/workspaces/jpercommunity"
       ]

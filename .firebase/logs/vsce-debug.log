@@ -1,0 +1,24 @@
+[debug] [2026-07-25T04:41:49.995Z] [Firebase Plugin] Activating Firebase extension.
+[info] [Firebase Plugin] Unable to check firebase-tools installation: TypeError: fetch failed
+[debug] [2026-07-25T04:41:50.350Z] [Firebase Plugin] requireAuthWrapper
+[debug] [2026-07-25T04:41:50.353Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-07-25T04:41:50.354Z] > authorizing via signed-in user (backup.photo2.yudhistira6727@gmail.com)
+[debug] [2026-07-25T04:41:50.360Z] Checked if tokens are valid: false, expires at: 1783655183118
+[debug] [2026-07-25T04:41:50.361Z] Checked if tokens are valid: false, expires at: 1783655183118
+[debug] [2026-07-25T04:41:50.361Z] > refreshing access token with scopes: []
+[debug] [2026-07-25T04:41:50.379Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-07-25T04:41:50.380Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-07-25T04:41:50.438Z] [Firebase Plugin] VSCode notification server listening on port 40001
+[debug] [2026-07-25T04:41:50.630Z] *** [apiv2] error from fetch(https://www.googleapis.com/oauth2/v3/token, {"headers":{},"method":"POST","body":{"_overheadLength":545,"_valueLength":212,"_valuesToMeasure":[],"writable":false,"readable":true,"dataSize":0,"maxDataSize":2097152,"pauseStreams":true,"_released":true,"_streams":[],"_currentStream":null,"_insideLoop":false,"_pendingNext":false,"_boundary":"--------------------------03474daea283517682b3b151","_events":{},"_eventsCount":1}}): FetchError: request to https://www.googleapis.com/oauth2/v3/token failed, reason: getaddrinfo ENOTFOUND www.googleapis.com
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[error] [Firebase Plugin] requireAuth error: Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[info] [Firebase Plugin] Starting SQL Connect toolkit (version 3.4.11) on port 50001
+[info] i  dataconnect: downloading dataconnect-emulator-3.4.11.exe... {"metadata":{"emulator":{"name":"dataconnect"},"message":"downloading dataconnect-emulator-3.4.11.exe..."}}
+[debug] [2026-07-25T04:41:51.448Z] >>> [apiv2][query] GET https://storage.googleapis.com/firemat-preview-drop/emulator/dataconnect-emulator-windows-amd64-v3.4.11 
+[debug] [2026-07-25T04:41:51.674Z] *** [apiv2] error from fetch(https://storage.googleapis.com/firemat-preview-drop/emulator/dataconnect-emulator-windows-amd64-v3.4.11, {"headers":{},"method":"GET"}): FetchError: request to https://storage.googleapis.com/firemat-preview-drop/emulator/dataconnect-emulator-windows-amd64-v3.4.11 failed, reason: getaddrinfo ENOTFOUND storage.googleapis.com
+[debug] [2026-07-25T04:41:51.676Z] 'fdc build' failed with error: Failed to make request to https://storage.googleapis.com/firemat-preview-drop/emulator/dataconnect-emulator-windows-amd64-v3.4.11 {"metadata":{"emulator":{"name":"dataconnect"},"message":"'fdc build' failed with error: Failed to make request to https://storage.googleapis.com/firemat-preview-drop/emulator/dataconnect-emulator-windows-amd64-v3.4.11"}}
+[warn] !  Setup required, please run: firebase setup:emulators:dataconnect 

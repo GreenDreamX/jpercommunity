@@ -37,6 +37,29 @@ export async function verifyFirebaseIdToken(
     }
   }
 
+  // Bypass Auth support for development & testing
+  if (idToken === "mock-student-token") {
+    return {
+      ok: true,
+      user: {
+        uid: "mock-student-uid",
+        email: "student@jper.my.id",
+        displayName: "Siswa Bypass",
+      },
+    }
+  }
+
+  if (idToken === "mock-admin-token") {
+    return {
+      ok: true,
+      user: {
+        uid: "mock-admin-uid",
+        email: "admin@jper.my.id",
+        displayName: "Admin Bypass",
+      },
+    }
+  }
+
   const lookupResponse = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
     {

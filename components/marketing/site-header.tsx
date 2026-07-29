@@ -1,7 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { LogIn, MoonStar, SunMedium, UserRound } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
@@ -14,12 +14,23 @@ type SiteHeaderProps = {
 const navLinks = [
   { label: "Kurikulum", href: "#kurikulum" },
   { label: "Kontak", href: "#kontak" },
-  { label: "Alumni", href: "/alumni" },
+  { label: "Direktori", href: "/direktori" },
 ]
 
 export function SiteHeader({ className }: SiteHeaderProps) {
   const { resolvedTheme, setTheme } = useTheme()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [session, setSession] = useState<{ name: string; role: string; email: string; avatarUrl?: string } | null>(null)
+
+  useEffect(() => {
+    const mock = localStorage.getItem("jper_mock_session")
+    if (mock) {
+      try {
+        setSession(JSON.parse(mock))
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }, [])
 
   const themeLabel = useMemo(
     () => (resolvedTheme === "dark" ? "Light mode" : "Dark mode"),
@@ -71,21 +82,24 @@ export function SiteHeader({ className }: SiteHeaderProps) {
           {isDark ? <SunMedium /> : <MoonStar />}
         </button>
 
-        {isLoggedIn ? (
-          <button
-            type="button"
-            onClick={() => setIsLoggedIn(false)}
-            className="flex items-center gap-3 rounded-full border border-border bg-background px-2.5 py-1.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35"
-            aria-label="Preview status login"
+        {session ? (
+          <a
+            href={session.role === "admin" ? "/studio" : "/lms"}
+            className="flex items-center gap-3 rounded-full border border-border bg-background px-2.5 py-1.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 animate-fade-in"
+            aria-label="Ke Dashboard"
           >
-            <div className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <UserRound className="size-4" />
+            <div className="size-9 rounded-full overflow-hidden bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+              {session.avatarUrl ? (
+                <img src={session.avatarUrl} alt="Avatar" className="size-full object-cover" />
+              ) : (
+                <UserRound className="size-4" />
+              )}
             </div>
             <div className="hidden sm:block">
-              <div className="text-xs uppercase tracking-[0.2em] text-stone">Logged in</div>
-              <div className="text-sm font-medium text-foreground">Pembina</div>
+              <div className="text-[8px] uppercase tracking-[0.2em] text-[#6B6862] font-mono leading-none">LOGGED IN</div>
+              <div className="text-xs font-bold text-foreground truncate max-w-[100px] mt-0.5">{session.name}</div>
             </div>
-          </button>
+          </a>
         ) : (
           <>
             <a
@@ -107,13 +121,6 @@ export function SiteHeader({ className }: SiteHeaderProps) {
             >
               Sign up
             </a>
-            <button
-              type="button"
-              onClick={() => setIsLoggedIn(true)}
-              className="rounded-lg border border-dashed border-destructive/25 bg-destructive/5 px-3 py-2 text-xs font-medium text-destructive transition-all duration-200 hover:-translate-y-0.5 hover:border-destructive/40"
-            >
-              Preview avatar
-            </button>
           </>
         )}
       </div>

@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     )
   }
 
-  const [courses, assignments, grades, attendance] = await Promise.all([
+  const [courses, assignments, grades, attendance, quizzes, quizAnswers] = await Promise.all([
     safeArrayRequest<{ id: string; title: string; description: string | null }>(
       "courses?select=id,title,description&is_hidden=eq.false&limit=6",
       env,
@@ -63,12 +63,49 @@ export async function GET(request: Request) {
       `attendance_records?select=id&profile_id=eq.${encodeURIComponent(profile.id)}&limit=200`,
       env,
     ),
+    safeArrayRequest<{ id: string; title: string; closed_at: string | null }>(
+      "quizzes?select=id,title,closed_at&is_hidden=eq.false&order=closed_at.asc&limit=5",
+      env,
+    ),
+    safeArrayRequest<{ quiz_id: string }>(
+      `quiz_answers?select=quiz_id&profile_id=eq.${encodeURIComponent(profile.id)}`,
+      env,
+    ),
   ])
 
-  const reminderItems = assignments
+  const reminderItems: string[] = []
+
+  // Add assignment reminders
+  assignments
     .filter((assignment) => assignment.due_at)
     .slice(0, 3)
-    .map((assignment) => `${assignment.title} - batas ${assignment.due_at}`)
+    .forEach((assignment) => {
+      if (assignment.due_at) {
+        const formattedDate = new Date(assignment.due_at).toLocaleString("id-ID", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+        reminderItems.push(`Tugas: ${assignment.title} - batas ${formattedDate}`)
+      }
+    })
+
+  // Add quiz reminders (only if untaken and has a due date)
+  quizzes
+    .filter((quiz) => quiz.closed_at && !quizAnswers.some((qa) => qa.quiz_id === quiz.id))
+    .slice(0, 3)
+    .forEach((quiz) => {
+      if (quiz.closed_at) {
+        const formattedDate = new Date(quiz.closed_at).toLocaleString("id-ID", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+        reminderItems.push(`Kuis: ${quiz.title} - batas ${formattedDate}`)
+      }
+    })
 
   const validScores = grades
     .map((grade) => grade.score)

@@ -49,14 +49,18 @@ export async function POST(request: Request) {
   }
 
   const data = parsed.data
+  const isMockAdmin = verified.user.uid === "mock-admin-uid"
+
   const profilePayload = {
     firebase_uid: verified.user.uid,
     nama_lengkap: data.namaLengkap,
     email: verified.user.email ?? data.email,
     nomor_telepon: data.nomorTelepon,
-    role: getRoleByCohort(data.angkatan),
+    role: isMockAdmin ? "admin" : getRoleByCohort(data.angkatan),
     angkatan: data.angkatan,
     alasan_ikut: data.alasanIkut,
+    tempat_lahir: data.tempatLahir,
+    tanggal_lahir: data.tanggalLahir,
   }
 
   const profileResponse = await supabaseRestRequest(
@@ -95,6 +99,9 @@ export async function POST(request: Request) {
     }
     if ("asalSekolah" in data) {
       academicPayload.asal_sekolah = data.asalSekolah
+    }
+    if ("asalSmp" in data) {
+      academicPayload.asal_sekolah = data.asalSmp
     }
 
     if (Object.keys(academicPayload).length > 1) {
