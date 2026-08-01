@@ -203,6 +203,11 @@ export function GlossaryTab() {
       const utterance = new SpeechSynthesisUtterance(cleanedText)
       utterance.lang = "ja-JP"
       utterance.rate = 0.85
+      const voices = window.speechSynthesis.getVoices()
+      const jaVoice = voices.find((v) => v.lang.toLowerCase().includes("ja"))
+      if (jaVoice) {
+        utterance.voice = jaVoice
+      }
       window.speechSynthesis.speak(utterance)
     } else {
       alert("TTS Pronunciation tidak didukung di browser ini.")

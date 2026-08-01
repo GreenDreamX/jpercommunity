@@ -22,13 +22,35 @@ export function SiteHeader({ className }: SiteHeaderProps) {
   const [session, setSession] = useState<{ name: string; role: string; email: string; avatarUrl?: string } | null>(null)
 
   useEffect(() => {
-    const mock = localStorage.getItem("jper_mock_session")
-    if (mock) {
-      try {
-        setSession(JSON.parse(mock))
-      } catch (e) {
-        console.error(e)
+    const syncSession = () => {
+      const mock = localStorage.getItem("jper_mock_session")
+      if (mock) {
+        try {
+          setSession(JSON.parse(mock))
+        } catch (e) {
+          console.error(e)
+        }
       }
+    }
+    syncSession()
+
+    const handleProfileUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail) {
+        setSession((prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            name: customEvent.detail.nama_lengkap ?? prev.name,
+            avatarUrl: customEvent.detail.avatar_url ?? prev.avatarUrl,
+          }
+        })
+      }
+    }
+
+    window.addEventListener("jper-profile-updated", handleProfileUpdated)
+    return () => {
+      window.removeEventListener("jper-profile-updated", handleProfileUpdated)
     }
   }, [])
 
@@ -46,8 +68,8 @@ export function SiteHeader({ className }: SiteHeaderProps) {
           href="#top"
           className="group flex items-center gap-3 transition-opacity hover:opacity-90"
         >
-          <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-background font-heading text-sm font-semibold tracking-[0.18em] text-primary transition-transform duration-200 group-hover:-translate-y-0.5">
-            JP
+          <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-white p-1 transition-transform duration-200 group-hover:-translate-y-0.5 shadow-sm">
+            <img src="/image/J-PER.png" alt="JPER Logo" className="size-full object-contain" />
           </div>
           <div className="hidden sm:block">
             <div className="font-heading text-base font-semibold tracking-[-0.03em] text-foreground">

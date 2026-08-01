@@ -133,7 +133,13 @@ export function FlashcardsTab() {
       window.speechSynthesis.cancel()
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = "ja-JP"
-      utterance.rate = 0.8
+      utterance.rate = 0.6 // Slower rate for clear pronunciation
+      utterance.pitch = 1.0
+      const voices = window.speechSynthesis.getVoices()
+      const jaVoice = voices.find((v) => v.lang.toLowerCase().includes("ja") || v.lang.toLowerCase().includes("jp"))
+      if (jaVoice) {
+        utterance.voice = jaVoice
+      }
       window.speechSynthesis.speak(utterance)
     }
   }
@@ -260,7 +266,7 @@ export function FlashcardsTab() {
             }`}
           >
             <HelpCircle className="size-3.5" />
-            Kuis Duolingo
+            Kuis
           </button>
         </div>
       </div>
@@ -312,61 +318,95 @@ export function FlashcardsTab() {
               {/* CARD BACK */}
               <div className="absolute inset-0 w-full h-full bg-[#1C1B1A] text-[#FAF9F6] border border-white/10 rounded-2xl shadow-md p-6 flex flex-col items-center justify-between rotate-y-180 backface-hidden">
                 <div className="w-full flex justify-between items-center border-b border-white/10 pb-2">
-                  <span className="text-[10px] font-mono text-white/50 uppercase">Pelafalan</span>
+                  <span className="text-[10px] font-mono text-emerald-400 uppercase font-semibold">ROMAJI &amp; CONTOH</span>
                   <button
                     type="button"
+                    title="Dengarkan Karakter"
                     onClick={(e) => {
                       e.stopPropagation()
                       speakKana(activeList[currentIndex].kana)
                     }}
-                    className="p-1.5 bg-white/10 hover:bg-white/20 rounded-md text-[#FAF9F6] transition-colors"
+                    className="p-1.5 bg-white/10 hover:bg-white/20 rounded-md text-[#FAF9F6] transition-colors flex items-center gap-1 text-[10px]"
                   >
-                    <Volume2 className="size-3.5" />
+                    <Volume2 className="size-3.5 text-emerald-400" />
+                    <span>Suara</span>
                   </button>
                 </div>
                 
-                <div className="flex flex-col items-center gap-1 my-auto">
-                  <div className="text-5xl font-mono font-bold text-green-400">
+                <div className="flex flex-col items-center gap-2 my-auto text-center">
+                  <div className="text-3xl font-bold font-serif text-white/70">
+                    {activeList[currentIndex].kana}
+                  </div>
+                  <div className="text-5xl font-mono font-bold text-emerald-400 tracking-wider">
                     {activeList[currentIndex].romaji}
                   </div>
-                  <div className="text-[10px] text-white/50 font-mono mt-1">ROMAJI</div>
+                  <div className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full font-mono font-bold uppercase tracking-widest">
+                    ROMAJI: {activeList[currentIndex].romaji}
+                  </div>
                 </div>
 
-                <div className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-center space-y-1">
-                  <div className="text-[9px] text-white/40 font-mono uppercase">Contoh Kata</div>
-                  <div className="text-xs font-bold text-yellow-400">{activeList[currentIndex].word}</div>
+                {/* CONTOH PENGGUNAAN */}
+                <div className="w-full bg-white/5 border border-white/10 rounded-xl p-3.5 text-center space-y-1 relative group/example">
+                  <div className="text-[9px] text-white/50 font-mono uppercase tracking-wider font-semibold">
+                    Contoh Penggunaan
+                  </div>
+                  <div className="text-xs font-bold text-amber-300 flex items-center justify-center gap-1.5">
+                    <span>{activeList[currentIndex].word}</span>
+                    <button
+                      type="button"
+                      title="Dengarkan Contoh Kata"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const japanesePartOfWord = activeList[currentIndex].word.split(" ")[0]
+                        speakKana(japanesePartOfWord || activeList[currentIndex].word)
+                      }}
+                      className="p-1 bg-white/10 hover:bg-white/20 rounded text-amber-300 transition-colors"
+                    >
+                      <Volume2 className="size-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* CONTROLS */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-3">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevStudy}
-              className="rounded-lg h-9 text-xs border-[#E4E1DA]"
+              onClick={() => setIsFlipped(!isFlipped)}
+              className="bg-[#2B3A55] text-white hover:bg-[#2B3A55]/95 rounded-lg h-9 text-xs font-semibold px-5 flex items-center gap-2 shadow-sm border-none"
             >
-              ← Mundur
+              <RotateCcw className="size-3.5" />
+              <span>{isFlipped ? "Tampilkan Depan (Karakter)" : "Balik Kartu (Lihat Romaji & Contoh)"}</span>
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShuffleStudy}
-              className="rounded-lg h-9 text-xs border-[#E4E1DA] flex items-center gap-1"
-            >
-              <RotateCcw className="size-3" />
-              Acak
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextStudy}
-              className="rounded-lg h-9 text-xs border-[#E4E1DA]"
-            >
-              Maju →
-            </Button>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevStudy}
+                className="rounded-lg h-9 text-xs border-[#E4E1DA] bg-[#FAF9F6]"
+              >
+                ← Mundur
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShuffleStudy}
+                className="rounded-lg h-9 text-xs border-[#E4E1DA] bg-[#FAF9F6] flex items-center gap-1"
+              >
+                <RotateCcw className="size-3" />
+                Acak
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextStudy}
+                className="rounded-lg h-9 text-xs border-[#E4E1DA] bg-[#FAF9F6]"
+              >
+                Lanjut →
+              </Button>
+            </div>
           </div>
         </div>
       )}

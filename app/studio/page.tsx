@@ -16,6 +16,7 @@ import { GradesManagement } from "@/components/studio/grades-management"
 import { NotulensiTab } from "@/components/studio/notulensi-tab"
 import { FileBankTab } from "@/components/studio/file-bank-tab"
 import { AnalyticsDashboard } from "@/components/studio/analytics-dashboard"
+import { LoggingTab } from "@/components/studio/logging-tab"
 
 type StudioOverview = {
   profile: {
@@ -42,6 +43,31 @@ export default function StudioPage() {
   const [overview, setOverview] = useState<StudioOverview | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handleProfileUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail) {
+        const updated = customEvent.detail
+        setOverview((prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              nama_lengkap: updated.nama_lengkap ?? prev.profile.nama_lengkap,
+              avatar_url: updated.avatar_url !== undefined ? updated.avatar_url : prev.profile.avatar_url,
+            },
+          }
+        })
+      }
+    }
+
+    window.addEventListener("jper-profile-updated", handleProfileUpdated)
+    return () => {
+      window.removeEventListener("jper-profile-updated", handleProfileUpdated)
+    }
+  }, [])
 
   useEffect(() => {
     if (authLoading) {
@@ -127,6 +153,8 @@ export default function StudioPage() {
         return <AttendanceManagement token={token} />
       case "grades":
         return <GradesManagement token={token} />
+      case "logs":
+        return <LoggingTab token={token} />
       case "dashboard":
       default:
         return <AnalyticsDashboard token={token} />

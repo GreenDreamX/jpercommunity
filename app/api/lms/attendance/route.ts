@@ -1,5 +1,6 @@
 import { verifyFirebaseIdToken } from "@/lib/server/firebase-auth"
 import { getSupabaseServerEnv, supabaseRestRequest } from "@/lib/server/supabase-rest"
+import { logActivity } from "@/lib/server/activity-logger"
 
 export async function GET(request: Request) {
   const env = getSupabaseServerEnv()
@@ -53,14 +54,15 @@ export async function POST(request: Request) {
 
   // Get user profile
   const profileResponse = await supabaseRestRequest(
-    `profiles?select=id&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
+    `profiles?select=id,nama_lengkap,role&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
     env,
   )
   if (!profileResponse.ok) {
     return Response.json({ message: "Profile tidak ditemukan." }, { status: 404 })
   }
-  const profiles = await profileResponse.json() as Array<{ id: string }>
-  const profileId = profiles[0]?.id
+  const profiles = await profileResponse.json() as Array<{ id: string; nama_lengkap: string; role: string }>
+  const userProfile = profiles[0]
+  const profileId = userProfile?.id
   if (!profileId) {
     return Response.json({ message: "Profile belum sinkron." }, { status: 404 })
   }
@@ -77,16 +79,45 @@ export async function POST(request: Request) {
     return Response.json({ message: "QR token absensi diperlukan." }, { status: 400 })
   }
 
-  // Look up attendance session by token
-  const sessionResponse = await supabaseRestRequest(
-    `attendance_sessions?select=id,opened_at,closed_at&qr_token=eq.${encodeURIComponent(qrToken)}&limit=1`,
-    env,
-  )
-  if (!sessionResponse.ok) {
-    return Response.json({ message: "Gagal memverifikasi sesi absensi." }, { status: 500 })
+  let session: { id: string; opened_at: string; closed_at: string | null } | null = null
+
+  // Check if token is dynamic 30s format: jper-att-${sessionId}-${timeBlock}
+  const dynamicMatch = qrToken.match(/^jper-att-([a-f0-9\-]+)-(\d+)$/i)
+
+  if (dynamicMatch) {
+    const sessionId = dynamicMatch[1]
+    const scannedBlock = parseInt(dynamicMatch[2], 10)
+    const currentBlock = Math.floor(Date.now() / 30000)
+
+    // Validate 30-second window (allow +-1 block for latency)
+    if (Math.abs(currentBlock - scannedBlock) > 1) {
+      return Response.json(
+        { message: "Kode QR ini sudah kedaluwarsa (diperbarui setiap 30 detik). Silakan pindai QR terbaru dari layar admin." },
+        { status: 400 },
+      )
+    }
+
+    const sessionResponse = await supabaseRestRequest(
+      `attendance_sessions?select=id,opened_at,closed_at&id=eq.${encodeURIComponent(sessionId)}&limit=1`,
+      env,
+    )
+    if (!sessionResponse.ok) {
+      return Response.json({ message: "Gagal memverifikasi sesi absensi." }, { status: 500 })
+    }
+    const sessions = (await sessionResponse.json()) as Array<{ id: string; opened_at: string; closed_at: string | null }>
+    session = sessions[0] || null
+  } else {
+    // Fallback lookup by static qr_token
+    const sessionResponse = await supabaseRestRequest(
+      `attendance_sessions?select=id,opened_at,closed_at&qr_token=eq.${encodeURIComponent(qrToken)}&limit=1`,
+      env,
+    )
+    if (!sessionResponse.ok) {
+      return Response.json({ message: "Gagal memverifikasi sesi absensi." }, { status: 500 })
+    }
+    const sessions = (await sessionResponse.json()) as Array<{ id: string; opened_at: string; closed_at: string | null }>
+    session = sessions[0] || null
   }
-  const sessions = await sessionResponse.json() as Array<{ id: string; opened_at: string; closed_at: string | null }>
-  const session = sessions[0]
 
   if (!session) {
     return Response.json({ message: "Sesi absensi tidak ditemukan atau QR token tidak valid." }, { status: 400 })
@@ -94,14 +125,6 @@ export async function POST(request: Request) {
 
   if (session.closed_at) {
     return Response.json({ message: "Sesi absensi ini sudah ditutup oleh admin." }, { status: 400 })
-  }
-
-  // Token is short-lived: verify if session opened_at is less than 10 minutes ago
-  const openedTime = new Date(session.opened_at).getTime()
-  const now = Date.now()
-  const expiryDuration = 10 * 60 * 1000 // 10 menit
-  if (now - openedTime > expiryDuration) {
-    return Response.json({ message: "QR token sudah kedaluwarsa. Silakan minta kode QR baru ke admin." }, { status: 400 })
   }
 
   // Check if user already scanned for this session
@@ -133,6 +156,15 @@ export async function POST(request: Request) {
     const errorText = await insertResponse.text()
     return Response.json({ message: "Gagal menyimpan absensi.", details: errorText }, { status: 500 })
   }
+
+  void logActivity({
+    actorId: userProfile.id,
+    actorName: userProfile.nama_lengkap || "Siswa JPER",
+    actorRole: userProfile.role || "student",
+    action: "SCAN_ABSENSI",
+    details: `${userProfile.nama_lengkap || "Siswa"} berhasil melakukan scan absensi kelas.`,
+    category: "ABSENSI",
+  })
 
   return Response.json({ ok: true, message: "Absensi berhasil dicatat." })
 }

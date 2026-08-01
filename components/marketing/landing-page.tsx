@@ -66,16 +66,16 @@ const curriculum = [
 ]
 
 const contacts = [
-  { label: "Email", value: "jper.community@gmail.com", href: "mailto:jper.community@gmail.com", icon: Mail },
-  { label: "WhatsApp", value: "Hubungi Pembina", href: "https://wa.me/6280000000000", icon: MessageSquareText },
-  { label: "Lokasi", value: "SMKN 1 Majalaya", href: "#", icon: MapPin },
+  { label: "Email", value: "petugasromusha@gmail.com", href: "mailto:petugasromusha@gmail.com", icon: Mail },
+  { label: "WhatsApp", value: "Hubungi Kami", href: "https://wa.me/6283850967918", icon: MessageSquareText },
+  { label: "Lokasi", value: "SMKN 1 Majalaya", href: "https://maps.app.goo.gl/TBYeFDHF1ufQd9uf9", icon: MapPin },
   { label: "Website", value: "jper.my.id", href: "https://jper.my.id", icon: Globe },
 ]
 
 const socials = [
   { label: "Instagram", href: "https://instagram.com/jpercommunity" },
   { label: "TikTok", href: "https://tiktok.com/@jpercommunity" },
-  { label: "YouTube", href: "https://youtube.com/@jpercommunity" },
+  { label: "YouTube", href: "https://youtube.com/@j-perchannel1297?si=lbaHo5FRj2S4bVYJ" },
 ]
 
 export function LandingPage() {
@@ -372,8 +372,11 @@ export function LandingPage() {
         <div className="mx-auto w-full max-w-6xl px-6 py-8 md:px-8 lg:px-10">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-md">
-              <div className="font-heading text-lg font-semibold tracking-[-0.03em] text-foreground">
-                JPER Community
+              <div className="flex items-center gap-2.5">
+                <img src="/image/J-PER.png" alt="JPER Logo" className="size-7 object-contain" />
+                <div className="font-heading text-lg font-semibold tracking-[-0.03em] text-foreground">
+                  JPER Community
+                </div>
               </div>
               <p className="mt-2 text-sm leading-7 text-stone">
                 Ekstrakurikuler Bahasa Jepang di SMKN 1 Majalaya.

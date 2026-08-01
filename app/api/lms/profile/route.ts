@@ -1,5 +1,6 @@
 import { verifyFirebaseIdToken } from "@/lib/server/firebase-auth"
 import { getSupabaseServerEnv, supabaseRestRequest } from "@/lib/server/supabase-rest"
+import { logActivity } from "@/lib/server/activity-logger"
 
 export async function GET(request: Request) {
   const env = getSupabaseServerEnv()
@@ -108,10 +109,6 @@ export async function PATCH(request: Request) {
 
     // Check email change rules if email is updated
     if (email && email !== profile.email) {
-      if (profile.email.endsWith("@shokunin.jper.my.id") || email.endsWith("@shokunin.jper.my.id")) {
-        return Response.json({ message: "Email SSO institusi tidak dapat diubah." }, { status: 400 })
-      }
-
       // Check email uniqueness in Supabase
       const emailCheck = await supabaseRestRequest(
         `profiles?select=id&email=eq.${encodeURIComponent(email)}&id=neq.${encodeURIComponent(profile.id)}&limit=1`,
@@ -156,7 +153,7 @@ export async function PATCH(request: Request) {
       updated_at: new Date().toISOString(),
     }
 
-    if (email && !profile.email.endsWith("@shokunin.jper.my.id")) {
+    if (email) {
       updateFields.email = email.trim()
     }
 
@@ -236,7 +233,20 @@ export async function PATCH(request: Request) {
     }
 
     const finalRows = await finalProfileResponse.json()
-    return Response.json({ ok: true, profile: finalRows[0] })
+    const updatedProfile = finalRows[0]
+
+    if (updatedProfile) {
+      void logActivity({
+        actorId: updatedProfile.id,
+        actorName: updatedProfile.nama_lengkap || "Pengguna",
+        actorRole: updatedProfile.role || "student",
+        action: "UPDATE_PROFIL",
+        details: `${updatedProfile.nama_lengkap || "Pengguna"} memperbarui informasi foto dan data profil.`,
+        category: "PROFIL",
+      })
+    }
+
+    return Response.json({ ok: true, profile: updatedProfile })
   } catch (err: unknown) {
     return Response.json({ message: err instanceof Error ? err.message : "Terjadi kesalahan internal." }, { status: 500 })
   }

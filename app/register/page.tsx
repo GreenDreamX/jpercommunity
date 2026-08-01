@@ -286,10 +286,10 @@ export default function RegisterPage() {
       }
 
       setSuccessMessage(
-        "Pendaftaran berhasil. Akun Anda langsung aktif dan bisa dipakai login.",
+        "Pendaftaran berhasil. Akun Anda langsung aktif dan siap dipakai login.",
       )
       setForm(initialState)
-      router.push("/lms")
+      router.push("/login?registered=true")
     } catch (error) {
       setErrorMessage(mapFirebaseError(error))
     } finally {
@@ -631,7 +631,7 @@ export default function RegisterPage() {
                         
                         <div className="bg-[#FAF9F6] border border-[#E4E1DA] rounded-lg p-2.5 space-y-1.5 font-mono text-xs">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[10px] text-[#6B6862]">EMAIL SSO ANDA:</span>
+                            <span className="text-[10px] text-[#6B6862]">EMAIL SSO ANDA (Dapat Disesuaikan):</span>
                             <button
                               type="button"
                               onClick={() => copyToClipboard(form.email, "Email SSO")}
@@ -640,7 +640,19 @@ export default function RegisterPage() {
                               Copy
                             </button>
                           </div>
-                          <div className="text-xs font-bold text-[#1C1B1A] break-all select-all">{form.email}</div>
+                          <Input
+                            id="email_sso"
+                            type="email"
+                            value={form.email}
+                            onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+                            required
+                            disabled={isSubmitting}
+                            className="bg-white border-[#E4E1DA] font-mono text-xs font-bold text-[#1C1B1A]"
+                            placeholder="nama@shokunin.jper.my.id"
+                          />
+                          <p className="text-[10px] text-[#6B6862] font-sans">
+                            Jika nama depan Anda Muhammad atau memiliki konflik nama, Anda dapat mengubah alamat email di atas.
+                          </p>
                         </div>
                       </div>
 

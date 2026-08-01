@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState, useRef, useCallback } from "react"
-import { QrCode, ClipboardCheck, AlertCircle, Check } from "lucide-react"
-import { Html5QrcodeScanner } from "html5-qrcode"
+import { QrCode, ClipboardCheck, AlertCircle, Check, Camera, RefreshCw } from "lucide-react"
+import { Html5Qrcode } from "html5-qrcode"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -43,7 +43,12 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
   const [scanStatus, setScanStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [scanMessage, setScanMessage] = useState("")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+
+  // Camera states
+  const [isCameraActive, setIsCameraActive] = useState(false)
+  const [cameraError, setCameraError] = useState<string | null>(null)
+  const [cameraStarting, setCameraStarting] = useState(false)
+  const html5QrcodeRef = useRef<Html5Qrcode | null>(null)
 
   useEffect(() => {
     let active = true
@@ -115,48 +120,87 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
     }
   }, [firebaseToken])
 
-  // Initialize QR scanner when scan dialog is open
+  // Camera start & stop helpers
+  const stopCamera = useCallback(async () => {
+    if (html5QrcodeRef.current) {
+      try {
+        if (html5QrcodeRef.current.isScanning) {
+          await html5QrcodeRef.current.stop()
+        }
+      } catch (e) {
+        console.error("Error stopping camera", e)
+      }
+      html5QrcodeRef.current = null
+    }
+    setIsCameraActive(false)
+    setCameraStarting(false)
+  }, [])
+
+  const startCamera = useCallback(async () => {
+    setCameraError(null)
+    setCameraStarting(true)
+    setIsCameraActive(false)
+
+    await stopCamera()
+
+    // Wait for Dialog DOM to be ready
+    await new Promise((resolve) => setTimeout(resolve, 350))
+
+    const readerEl = document.getElementById("qr-camera-reader")
+    if (!readerEl) {
+      setCameraStarting(false)
+      return
+    }
+
+    try {
+      const scanner = new Html5Qrcode("qr-camera-reader")
+      html5QrcodeRef.current = scanner
+
+      await scanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 220, height: 220 },
+          aspectRatio: 1.0,
+        },
+        async (decodedText) => {
+          // Successfully scanned!
+          await stopCamera()
+          await handleScanSubmit(decodedText)
+        },
+        () => {
+          // Frame missed, keep scanning
+        }
+      )
+
+      setIsCameraActive(true)
+    } catch (err: unknown) {
+      console.error("Failed to start camera", err)
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.toLowerCase().includes("permission") || msg.toLowerCase().includes("notallowed")) {
+        setCameraError("Izin kamera ditolak. Silakan izinkan akses kamera di pengaturan browser Anda, atau gunakan token manual di bawah.")
+      } else if (msg.toLowerCase().includes("notfound") || msg.toLowerCase().includes("devicesnotfound")) {
+        setCameraError("Kamera tidak ditemukan pada perangkat Anda. Silakan gunakan token manual di bawah.")
+      } else {
+        setCameraError("Gagal membuka kamera. Pastikan browser diizinkan mengakses kamera, atau ketik token di bawah secara manual.")
+      }
+      setIsCameraActive(false)
+    } finally {
+      setCameraStarting(false)
+    }
+  }, [stopCamera, handleScanSubmit])
+
+  // Dialog open / close effect
   useEffect(() => {
     if (isScanOpen) {
-      // Wait a moment for dialog content DOM to mount
-      const timer = setTimeout(() => {
-        const container = document.getElementById("reader")
-        if (container && !scannerRef.current) {
-          const scanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            /* verbose= */ false
-          )
-          
-          scanner.render(
-            async (decodedText) => {
-              // Successfully scanned QR code
-              scanner.clear()
-              scannerRef.current = null
-              await handleScanSubmit(decodedText)
-            },
-            () => {
-              // Error callback, can ignore to keep console clean
-            }
-          )
-          scannerRef.current = scanner
-        }
-      }, 300)
-
-      return () => {
-        clearTimeout(timer)
-        if (scannerRef.current) {
-          scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err))
-          scannerRef.current = null
-        }
-      }
+      void startCamera()
     } else {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err))
-        scannerRef.current = null
-      }
+      void stopCamera()
     }
-  }, [isScanOpen, handleScanSubmit])
+    return () => {
+      void stopCamera()
+    }
+  }, [isScanOpen, startCamera, stopCamera])
 
   return (
     <div className="space-y-6">
@@ -183,7 +227,7 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
               Pindai QR Absensi
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md bg-[#FAF9F6] border border-[#E4E1DA] rounded-lg">
+          <DialogContent className="max-w-md bg-[#FAF9F6] border border-[#E4E1DA] rounded-xl p-6">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold text-[#1C1B1A]">Pindai QR Absensi</DialogTitle>
               <DialogDescription className="text-xs text-[#6B6862]">
@@ -192,16 +236,38 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
             </DialogHeader>
 
             <div className="flex flex-col gap-4 py-2">
-              {/* QR Reader element */}
-              <div 
-                id="reader" 
-                className="overflow-hidden rounded-lg border border-[#E4E1DA] bg-black/5"
-                style={{ width: "100%" }}
-              ></div>
+              {/* Camera Scanner View */}
+              <div className="relative overflow-hidden rounded-xl border border-[#E4E1DA] bg-stone-900 min-h-[260px] flex items-center justify-center">
+                <div id="qr-camera-reader" className="w-full h-full min-h-[260px]" />
+
+                {/* Overlay loading state */}
+                {cameraStarting && !isCameraActive && (
+                  <div className="absolute inset-0 bg-stone-900/90 flex flex-col items-center justify-center gap-2 text-white p-4">
+                    <RefreshCw className="size-6 animate-spin text-[#B23A2E]" />
+                    <span className="text-xs font-mono">Mengaktifkan kamera...</span>
+                  </div>
+                )}
+
+                {/* Error state */}
+                {cameraError && !cameraStarting && (
+                  <div className="absolute inset-0 bg-stone-900/95 flex flex-col items-center justify-center gap-3 p-6 text-center">
+                    <Camera className="size-8 text-[#B23A2E]" />
+                    <div className="text-xs text-stone-300 leading-relaxed max-w-xs">{cameraError}</div>
+                    <Button
+                      size="sm"
+                      onClick={() => void startCamera()}
+                      className="bg-[#2B3A55] text-white hover:bg-[#2B3A55]/90 text-xs font-semibold rounded-lg h-8 px-3 border-none shadow-none"
+                    >
+                      <RefreshCw className="size-3.5 mr-1" />
+                      Coba Buka Kamera Lagi
+                    </Button>
+                  </div>
+                )}
+              </div>
 
               {/* Status messages */}
               {scanStatus === "loading" && (
-                <div className="text-center text-xs text-[#6B6862] animate-pulse">
+                <div className="text-center text-xs text-[#6B6862] animate-pulse font-mono">
                   Memproses absensi...
                 </div>
               )}
@@ -253,7 +319,7 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
       )}
 
       {loading ? (
-        <div className="text-xs text-[#6B6862] py-4">Memuat riwayat kehadiran...</div>
+        <div className="text-xs text-[#6B6862] py-4 font-mono">Memuat riwayat kehadiran...</div>
       ) : records.length === 0 ? (
         <Card className="border border-[#E4E1DA] bg-[#FAF9F6]/50 shadow-none rounded-lg">
           <CardContent className="p-8 text-center text-xs text-[#6B6862]">

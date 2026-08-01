@@ -1,14 +1,21 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Save, User, Image, Link2, Quote, Sparkles, RefreshCw, ArrowUpRight, Lock, Trash2, ShieldAlert, BookOpen, Share2, Eye, EyeOff, Heart } from "lucide-react"
+import { Save, User, Image, Link2, Quote, Sparkles, RefreshCw, ArrowUpRight, Lock, Trash2, ShieldAlert, BookOpen, Share2, Eye, EyeOff, Heart, Upload, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { firebaseAuth } from "@/lib/firebase/client"
-import { updatePassword, updateEmail, deleteUser } from "firebase/auth"
+import { updatePassword, updateEmail, deleteUser, updateProfile } from "firebase/auth"
 
 const PRESET_AVATARS = [
   "https://api.dicebear.com/7.x/adventurer/svg?seed=Sakura",
@@ -96,6 +103,49 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
   const [cardBorder, setCardBorder] = useState("default")
   const [avatarBorder, setAvatarBorder] = useState("default")
   const [badgeLabel, setBadgeLabel] = useState("none")
+
+  // Photo Upload Dialog States
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
+  const handleUploadPhoto = async () => {
+    if (!selectedFile) return
+    setUploadingPhoto(true)
+    setUploadError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", selectedFile)
+
+      const res = await fetch("/api/lms/upload-image", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${firebaseToken}`,
+        },
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.message ?? "Gagal mengunggah foto.")
+      }
+
+      const payload = await res.json()
+      if (payload.url) {
+        setAvatarUrl(payload.url)
+        setIsUploadDialogOpen(false)
+        setSelectedFile(null)
+        setSelectedFilePreview(null)
+      }
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Gagal mengunggah foto.")
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
 
   // Additional Profile Fields
   const [tempatLahir, setTempatLahir] = useState("")
@@ -313,6 +363,17 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
 
       const payload = await res.json()
       setProfile(payload.profile)
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("jper-profile-updated", { detail: payload.profile }))
+      }
+
+      if (firebaseAuth.currentUser) {
+        void updateProfile(firebaseAuth.currentUser, {
+          displayName: namaLengkap.trim(),
+          photoURL: avatarUrl.trim() || null,
+        }).catch(() => {})
+      }
 
       // Sync mock local session
       const mock = localStorage.getItem("jper_mock_session")
@@ -625,13 +686,94 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
                           </button>
                         ))}
                       </div>
-                      <Input
-                        placeholder="Atau masukkan URL foto profil kustom Anda sendiri..."
-                        value={avatarUrl}
-                        onChange={(e) => setAvatarUrl(e.target.value)}
-                        className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Atau masukkan URL foto profil kustom Anda sendiri..."
+                          value={avatarUrl}
+                          onChange={(e) => setAvatarUrl(e.target.value)}
+                          className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsUploadDialogOpen(true)
+                            setUploadError(null)
+                          }}
+                          className="h-9 px-3 text-xs font-semibold rounded-lg border-[#E4E1DA] flex items-center gap-1.5 shrink-0 hover:bg-[#E4E1DA]/30"
+                        >
+                          <Upload className="size-3.5 text-[#B23A2E]" />
+                          <span>Unggah Foto</span>
+                        </Button>
+                      </div>
                     </Field>
+
+                    {/* PHOTO UPLOAD DIALOG */}
+                    <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                      <DialogContent className="max-w-md bg-[#FAF9F6] border border-[#E4E1DA] rounded-xl p-6">
+                        <DialogHeader>
+                          <DialogTitle className="text-base font-bold text-[#1C1B1A]">Unggah Foto Profil</DialogTitle>
+                          <DialogDescription className="text-xs text-[#6B6862]">
+                            Pilih file foto dari perangkat Anda. Gambar akan otomatis di-convert menjadi tautan cloud gambar publik (tanpa blob database).
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4 py-2">
+                          <div className="border-2 border-dashed border-[#E4E1DA] bg-white p-6 rounded-xl text-center flex flex-col items-center justify-center gap-3">
+                            {selectedFilePreview ? (
+                              <img src={selectedFilePreview} alt="Preview Upload" className="size-28 rounded-full object-cover border border-[#E4E1DA] shadow-sm" />
+                            ) : (
+                              <div className="size-20 rounded-full bg-stone-100 flex items-center justify-center text-[#6B6862]">
+                                <Upload className="size-8 stroke-[1.5]" />
+                              </div>
+                            )}
+
+                            <label className="cursor-pointer">
+                              <span className="bg-[#2B3A55] text-white hover:bg-[#2B3A55]/95 text-xs font-semibold px-4 py-2 rounded-lg inline-block shadow-sm">
+                                {selectedFile ? "Ganti File Gambar" : "Pilih File Foto"}
+                              </span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) {
+                                    setSelectedFile(file)
+                                    setSelectedFilePreview(URL.createObjectURL(file))
+                                  }
+                                }}
+                              />
+                            </label>
+                            {selectedFile && (
+                              <div className="text-[11px] font-mono text-[#6B6862]">
+                                {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                              </div>
+                            )}
+                          </div>
+
+                          {uploadError && (
+                            <div className="text-xs text-[#B23A2E] bg-red-50 border border-red-200 p-2.5 rounded-lg flex items-center gap-1.5">
+                              <AlertCircle className="size-4 shrink-0" />
+                              <span>{uploadError}</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-end gap-2 pt-2">
+                            <Button variant="outline" size="sm" onClick={() => setIsUploadDialogOpen(false)} className="h-9 text-xs rounded-lg border-[#E4E1DA]">
+                              Batal
+                            </Button>
+                            <Button
+                              onClick={handleUploadPhoto}
+                              disabled={!selectedFile || uploadingPhoto}
+                              className="bg-[#B23A2E] text-white hover:bg-[#B23A2E]/90 h-9 text-xs font-semibold rounded-lg shadow-none border-none"
+                            >
+                              {uploadingPhoto ? "Mengunggah..." : "Convert & Jadikan Foto Profil"}
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
 
                     {/* Cover selection (CSS gradients) */}
                     <Field>
@@ -940,16 +1082,18 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
                             <FieldLabel htmlFor="jurusan_id" className="text-xs font-semibold">Jurusan</FieldLabel>
                             <select
                               id="jurusan_id"
-                              value={jurusan}
+                              value={["TJKT", "TEI", "DKV", "TITL", "TSM", "IPA", "IPS"].includes(jurusan) ? jurusan : "Lainnya"}
                               onChange={(e) => setJurusan(e.target.value)}
                               className="w-full border border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 px-2 rounded-lg text-[#1C1B1A]"
                             >
-                              <option value="TEI">TEI (Teknik Elektronika Industri)</option>
-                              <option value="TJKT">TJKT (Teknik Jaringan Komputer Telekomunikasi)</option>
-                              <option value="PPLG">PPLG (Pengembangan Perangkat Lunak Gim)</option>
-                              <option value="DKV">DKV (Desain Komunikasi Visual)</option>
-                              <option value="MPLB">MPLB (Manajemen Perkantoran Layanan Bisnis)</option>
-                              <option value="AKL">AKL (Akuntansi Keuangan Lembaga)</option>
+                              <option value="TJKT">TJKT</option>
+                              <option value="TEI">TEI</option>
+                              <option value="DKV">DKV</option>
+                              <option value="TITL">TITL</option>
+                              <option value="TSM">TSM</option>
+                              <option value="IPA">IPA</option>
+                              <option value="IPS">IPS</option>
+                              <option value="Lainnya">Lainnya (Custom)</option>
                             </select>
                           </Field>
 

@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react"
-import { QrCode, Plus, Clock, AlertCircle, Lock } from "lucide-react"
+import { QrCode, Plus, Clock, AlertCircle, Lock, Trash2, RefreshCw } from "lucide-react"
+import QRCode from "qrcode"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -48,6 +49,12 @@ export function AttendanceManagement({ token }: AttendanceManagementProps) {
   const [loading, setLoading] = useState(true)
   const [activeSession, setActiveSession] = useState<AttendanceSession | null>(null)
   
+  // Dynamic 30s rotating QR code states
+  const [currentDynamicToken, setCurrentDynamicToken] = useState<string>("")
+  const [qrDataUrl, setQrDataUrl] = useState<string>("")
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(30)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
   // Closing Session Form States
   const [materi, setMateri] = useState("")
   const [feedback, setFeedback] = useState("")
@@ -121,6 +128,80 @@ export function AttendanceManagement({ token }: AttendanceManagementProps) {
         })
     }
   }, [selectedCourseId, token])
+
+  // Dynamic 30-second QR Code rotation timer
+  useEffect(() => {
+    if (!activeSession) {
+      setCurrentDynamicToken("")
+      setQrDataUrl("")
+      return
+    }
+
+    const updateQr = async () => {
+      const nowMs = Date.now()
+      const timeBlock = Math.floor(nowMs / 30000)
+      const secsLeft = 30 - (Math.floor(nowMs / 1000) % 30)
+      setSecondsRemaining(secsLeft)
+
+      const tokenStr = `jper-att-${activeSession.id}-${timeBlock}`
+      if (tokenStr !== currentDynamicToken) {
+        setCurrentDynamicToken(tokenStr)
+        try {
+          const url = await QRCode.toDataURL(tokenStr, {
+            margin: 1,
+            width: 240,
+            color: {
+              dark: "#1C1B1A",
+              light: "#FFFFFF",
+            },
+          })
+          setQrDataUrl(url)
+        } catch (err) {
+          console.error("Gagal men-generate QR Code URL", err)
+        }
+      }
+    }
+
+    void updateQr()
+    const interval = setInterval(() => {
+      void updateQr()
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [activeSession, currentDynamicToken])
+
+  // Delete Attendance Session
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus sesi absensi ini? Seluruh data kehadiran siswa pada sesi ini juga akan dihapus.")) {
+      return
+    }
+
+    setDeletingId(sessionId)
+    try {
+      const res = await fetch(`/api/studio/attendance-sessions?id=${sessionId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.message ?? "Gagal menghapus sesi absensi.")
+      }
+
+      if (activeSession?.id === sessionId) {
+        setActiveSession(null)
+        setMateri("")
+        setFeedback("")
+        setDokumentasiUrl("")
+      }
+
+      await fetchData()
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Gagal menghapus sesi absensi.")
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   // Open Sesi Absensi Baru
   const handleOpenSession = async () => {
@@ -227,27 +308,57 @@ export function AttendanceManagement({ token }: AttendanceManagementProps) {
                     Dibuka pada: {new Date(activeSession.opened_at).toLocaleTimeString()}
                   </CardDescription>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[9px] font-mono font-bold uppercase animate-pulse">
-                  AKTIF
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-red-100 text-red-800 text-[9px] font-mono font-bold uppercase animate-pulse">
+                    AKTIF
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteSession(activeSession.id)}
+                    disabled={deletingId === activeSession.id}
+                    className="h-7 text-[10px] text-red-700 border-red-200 hover:bg-red-50 hover:text-red-800 font-semibold flex items-center gap-1"
+                  >
+                    <Trash2 className="size-3" />
+                    Hapus Sesi
+                  </Button>
+                </div>
               </CardHeader>
-              <CardContent className="pt-4 flex flex-col items-center gap-6">
+              <CardContent className="pt-4 flex flex-col items-center gap-5">
                 
-                {/* Simulated QR Code Canvas */}
-                <div className="border border-[#E4E1DA] bg-white p-4 rounded-lg flex flex-col items-center gap-3">
-                  <div className="size-40 bg-zinc-100 rounded flex items-center justify-center border border-zinc-200">
-                    <QrCode className="size-28 text-zinc-800" />
-                  </div>
-                  <div className="text-center">
-                    <div className="text-[10px] font-mono text-[#6B6862]">TOKEN ABSENSI</div>
-                    <div className="font-mono text-xs font-bold text-[#1C1B1A] bg-[#E4E1DA]/30 px-3 py-1 rounded-md mt-1 select-all select-all-inline">
-                      {activeSession.qr_token}
+                {/* Dynamic Scannable QR Code Canvas */}
+                <div className="border border-[#E4E1DA] bg-white p-4 rounded-xl flex flex-col items-center gap-3 shadow-sm w-full max-w-xs">
+                  {qrDataUrl ? (
+                    <img src={qrDataUrl} alt="QR Code Absensi Dinamis" className="size-48 object-contain rounded-md" />
+                  ) : (
+                    <div className="size-48 bg-zinc-100 rounded flex items-center justify-center border border-zinc-200 animate-pulse">
+                      <QrCode className="size-20 text-zinc-400" />
+                    </div>
+                  )}
+                  
+                  {/* Dynamic 30s Countdown Bar */}
+                  <div className="w-full text-center space-y-1.5">
+                    <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#B23A2E]">
+                      <RefreshCw className="size-3.5 animate-spin" />
+                      <span>QR berganti dalam {secondsRemaining}s</span>
+                    </div>
+                    <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#B23A2E] h-full transition-all duration-1000 ease-linear rounded-full"
+                        style={{ width: `${(secondsRemaining / 30) * 100}%` }}
+                      />
+                    </div>
+                    <div className="text-[10px] font-mono text-[#6B6862] pt-1">
+                      TOKEN AKTIF SEKARANG:
+                    </div>
+                    <div className="font-mono text-[10px] font-bold text-[#1C1B1A] bg-[#E4E1DA]/30 px-2 py-1 rounded-md max-w-full truncate mx-auto select-all">
+                      {currentDynamicToken || activeSession.qr_token}
                     </div>
                   </div>
                 </div>
 
                 <div className="text-xs text-center leading-relaxed text-[#6B6862] max-w-sm">
-                  Siswa dapat memindai kode QR di atas dari dashboard LMS mereka, atau memasukkan token di atas secara manual pada tab Kehadiran.
+                  Siswa memindai kode QR di atas dari halaman Kehadiran LMS. Kode QR otomatis diperbarui setiap 30 detik untuk mencegah kecurangan.
                 </div>
               </CardContent>
             </Card>
@@ -328,7 +439,7 @@ export function AttendanceManagement({ token }: AttendanceManagementProps) {
                         <th className="py-2 font-medium">Tanggal Sesi</th>
                         <th className="py-2 font-medium">Materi Pelajaran</th>
                         <th className="py-2 font-medium">Dokumentasi</th>
-                        <th className="py-2 font-medium text-right">Status</th>
+                        <th className="py-2 font-medium text-right">Status & Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -355,15 +466,27 @@ export function AttendanceManagement({ token }: AttendanceManagementProps) {
                             )}
                           </td>
                           <td className="py-2.5 text-right">
-                            {sess.closed_at ? (
-                              <span className="px-1.5 py-0.5 rounded bg-[#E4E1DA] text-[#6B6862] text-[9px] font-mono font-bold uppercase">
-                                DITUTUP
-                              </span>
-                            ) : (
-                              <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-800 text-[9px] font-mono font-bold uppercase animate-pulse">
-                                AKTIF
-                              </span>
-                            )}
+                            <div className="flex items-center justify-end gap-2">
+                              {sess.closed_at ? (
+                                <span className="px-1.5 py-0.5 rounded bg-[#E4E1DA] text-[#6B6862] text-[9px] font-mono font-bold uppercase">
+                                  DITUTUP
+                                </span>
+                              ) : (
+                                <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-800 text-[9px] font-mono font-bold uppercase animate-pulse">
+                                  AKTIF
+                                </span>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteSession(sess.id)}
+                                disabled={deletingId === sess.id}
+                                title="Hapus Sesi Absensi"
+                                className="size-7 text-[#6B6862] hover:text-red-700 hover:bg-red-50 rounded-lg"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}

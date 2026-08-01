@@ -2,13 +2,10 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { FirebaseError } from "firebase/app"
-import {
-  GoogleAuthProvider,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { CheckCircle2, Shield, User } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { firebaseAuth } from "@/lib/firebase/client"
@@ -27,16 +24,14 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
 const auth = firebaseAuth
-const googleProvider = new GoogleAuthProvider()
 
 function getAuthErrorMessage(error: unknown) {
   if (!(error instanceof FirebaseError)) {
-    return "Terjadi gangguan saat login. Coba lagi beberapa saat."
+    return error instanceof Error ? error.message : "Terjadi gangguan saat login. Coba lagi beberapa saat."
   }
 
   switch (error.code) {
@@ -48,24 +43,28 @@ function getAuthErrorMessage(error: unknown) {
       return "Email atau password tidak cocok."
     case "auth/too-many-requests":
       return "Terlalu banyak percobaan login. Tunggu beberapa menit lalu coba lagi."
-    case "auth/popup-closed-by-user":
-      return "Popup login Google ditutup sebelum proses selesai."
-    case "auth/popup-blocked":
-      return "Popup login diblokir browser. Izinkan popup lalu coba lagi."
     default:
       return "Login gagal. Periksa kembali data akun Anda."
   }
 }
 
+interface LoginFormProps extends React.ComponentProps<"div"> {
+  initialMode?: "lms" | "studio"
+}
+
 export function LoginForm({
   className,
+  initialMode = "lms",
   ...props
-}: React.ComponentProps<"div">) {
+}: LoginFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const registered = searchParams.get("registered") === "true"
+
+  const [mode, setMode] = useState<"lms" | "studio">(initialMode)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isEmailLoading, setIsEmailLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -74,133 +73,133 @@ export function LoginForm({
     }
   }, [])
 
-  async function handleEmailLogin(event: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setIsEmailLoading(true)
+    setIsLoading(true)
     setErrorMessage(null)
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      
+      if (mode === "studio") {
+        const token = await userCredential.user.getIdToken()
+        const response = await fetch("/api/studio/overview", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        if (!response.ok) {
+          await auth.signOut()
+          setErrorMessage("Akses ditolak. Akun Anda bukan admin/pengurus Studio.")
+          setIsLoading(false)
+          return
+        }
+      }
+
       if (typeof window !== "undefined") {
         localStorage.removeItem("jper_mock_session")
       }
       setSessionCookie()
-      router.push("/lms")
+      router.push(mode === "studio" ? "/studio" : "/lms")
     } catch (error) {
       setErrorMessage(getAuthErrorMessage(error))
     } finally {
-      setIsEmailLoading(false)
+      setIsLoading(false)
     }
-  }
-
-  async function handleGoogleLogin() {
-    setIsGoogleLoading(true)
-    setErrorMessage(null)
-
-    try {
-      await signInWithPopup(auth, googleProvider)
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("jper_mock_session")
-      }
-      setSessionCookie()
-      router.push("/lms")
-    } catch (error) {
-      setErrorMessage(getAuthErrorMessage(error))
-    } finally {
-      setIsGoogleLoading(false)
-    }
-  }
-
-  async function handleBypassStudentLogin() {
-    setErrorMessage(null)
-    setIsEmailLoading(true)
-    
-    if (typeof window !== "undefined") {
-      localStorage.setItem("jper_mock_session", "student")
-    }
-
-    try {
-      // Sync mock student profile with database
-      await fetch("/api/auth/sync-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer mock-student-token",
-        },
-        body: JSON.stringify({
-          registerData: {
-            namaLengkap: "Siswa Bypass",
-            email: "student@jper.my.id",
-            nomorTelepon: "081234567890",
-            angkatan: "2025",
-            kelas: "XI-A",
-            nisn: "0000000000",
-            nis: "00000",
-            alasanIkut: "Bypass login untuk melakukan peninjauan isi sistem LMS.",
-            password: "bypass-password-123",
-          },
-        }),
-      })
-    } catch (err) {
-      console.error("Gagal sinkronisasi mock student profile", err)
-    } finally {
-      setIsEmailLoading(false)
-    }
-
-    setSessionCookie()
-    window.location.href = "/lms"
   }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Selamat datang kembali</CardTitle>
-          <CardDescription>
-            Masuk dengan email atau akun Google Anda
-          </CardDescription>
+      <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-md rounded-2xl overflow-hidden">
+        {/* LOGO & BRANDING HEADER */}
+        <CardHeader className="text-center pb-2 pt-6 flex flex-col items-center gap-3">
+          <div className="size-16 rounded-2xl bg-white border border-[#E4E1DA] p-2 flex items-center justify-center shadow-sm">
+            <img
+              src="/image/J-PER.png"
+              alt="JPER Community Logo"
+              className="size-full object-contain"
+            />
+          </div>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold tracking-tight text-[#1C1B1A]">
+              JPER Community Login
+            </CardTitle>
+            <CardDescription className="text-xs text-[#6B6862]">
+              Masuk ke portal pembelajaran dan sistem manajemen ekskul
+            </CardDescription>
+          </div>
+
+          {/* DESTINATION PORTAL TAB SWITCHER */}
+          <div className="grid grid-cols-2 gap-1 w-full bg-[#E4E1DA]/40 p-1 rounded-xl mt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMode("lms")
+                setErrorMessage(null)
+              }}
+              className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                mode === "lms"
+                  ? "bg-[#FAF9F6] text-[#B23A2E] shadow-sm"
+                  : "text-[#6B6862] hover:text-[#1C1B1A]"
+              }`}
+            >
+              <User className="size-3.5" />
+              LMS (Member)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("studio")
+                setErrorMessage(null)
+              }}
+              className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                mode === "studio"
+                  ? "bg-[#FAF9F6] text-[#2B3A55] shadow-sm"
+                  : "text-[#6B6862] hover:text-[#1C1B1A]"
+              }`}
+            >
+              <Shield className="size-3.5" />
+              Studio (Admin)
+            </button>
+          </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleEmailLogin} method="POST">
-            <FieldGroup>
+
+        <CardContent className="pt-2">
+          {registered && (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 flex items-start gap-2.5 text-emerald-800 mb-4">
+              <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="text-xs leading-relaxed font-medium">
+                Pendaftaran berhasil! Akun Anda langsung aktif. Silakan masuk di bawah.
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} method="POST">
+            <FieldGroup className="space-y-4">
               <Field>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={isGoogleLoading || isEmailLoading}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  {isGoogleLoading ? "Memproses..." : "Login dengan Google"}
-                </Button>
-              </Field>
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                atau lanjut dengan email
-              </FieldSeparator>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email" className="text-xs font-semibold text-[#1C1B1A]">
+                  Email SSO / Akun
+                </FieldLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="nama@email.com"
+                  placeholder={mode === "studio" ? "admin@jper.my.id" : "nama@shokunin.jper.my.id"}
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  disabled={isEmailLoading || isGoogleLoading}
+                  disabled={isLoading}
+                  className="border-[#E4E1DA] bg-white text-xs h-10 rounded-lg text-[#1C1B1A]"
                 />
               </Field>
+              
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="password" className="text-xs font-semibold text-[#1C1B1A]">
+                    Password
+                  </FieldLabel>
                   <Link
                     href="#"
-                    className="ml-auto text-sm underline-offset-4 hover:underline"
+                    className="text-xs text-[#B23A2E] hover:underline"
                   >
                     Lupa password?
                   </Link>
@@ -212,34 +211,48 @@ export function LoginForm({
                   required
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  disabled={isEmailLoading || isGoogleLoading}
+                  disabled={isLoading}
+                  className="border-[#E4E1DA] bg-white text-xs h-10 rounded-lg text-[#1C1B1A]"
+                  placeholder="Masukkan password akun Anda"
                 />
               </Field>
-              {errorMessage && <FieldError>{errorMessage}</FieldError>}
-              <Field>
-                <Button type="submit" disabled={isEmailLoading || isGoogleLoading}>
-                  {isEmailLoading ? "Memproses..." : "Login"}
-                </Button>
+
+              {errorMessage && (
+                <FieldError className="text-xs text-[#B23A2E] bg-[#B23A2E]/5 border border-[#B23A2E]/20 p-2.5 rounded-lg">
+                  {errorMessage}
+                </FieldError>
+              )}
+
+              <Field className="pt-2 space-y-3">
                 <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBypassStudentLogin}
-                  disabled={isEmailLoading || isGoogleLoading}
-                  className="bg-[#FAF9F6] text-[#2B3A55] border-[#E4E1DA] hover:bg-[#E4E1DA]/20 w-full"
+                  type="submit"
+                  disabled={isLoading}
+                  className={cn(
+                    "w-full h-10 text-xs font-bold rounded-lg text-white border-none shadow-sm transition-all",
+                    mode === "studio"
+                      ? "bg-[#2B3A55] hover:bg-[#2B3A55]/90"
+                      : "bg-[#B23A2E] hover:bg-[#B23A2E]/90"
+                  )}
                 >
-                  Bypass Login (Siswa)
+                  {isLoading ? "Memproses Login..." : mode === "studio" ? "Masuk ke Studio Admin" : "Masuk ke Dashboard LMS"}
                 </Button>
-                <FieldDescription className="text-center">
-                  Belum punya akun? <Link href="/register">Sign up</Link>
-                </FieldDescription>
+
+                {mode === "lms" && (
+                  <FieldDescription className="text-center text-xs text-[#6B6862]">
+                    Belum punya akun member?{" "}
+                    <Link href="/register" className="font-bold text-[#B23A2E] hover:underline">
+                      Daftar Anggota Baru
+                    </Link>
+                  </FieldDescription>
+                )}
               </Field>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
-        Dengan login, Anda menyetujui <Link href="#">Ketentuan Layanan</Link> dan{" "}
-        <Link href="#">Kebijakan Privasi</Link>.
+      
+      <FieldDescription className="px-6 text-center text-[11px] text-[#6B6862]">
+        JPER Community &copy; 2026 — Hak Cipta Dilindungi Undang-Undang.
       </FieldDescription>
     </div>
   )

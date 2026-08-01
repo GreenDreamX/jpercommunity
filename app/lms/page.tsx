@@ -131,6 +131,33 @@ export default function LmsPage() {
   }, [authLoading, router, user])
 
   useEffect(() => {
+    const handleProfileUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail) {
+        const updated = customEvent.detail
+        setOverview((prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              nama_lengkap: updated.nama_lengkap ?? prev.profile.nama_lengkap,
+              email: updated.email ?? prev.profile.email,
+              angkatan: updated.angkatan ?? prev.profile.angkatan,
+              avatar_url: updated.avatar_url !== undefined ? updated.avatar_url : prev.profile.avatar_url,
+            },
+          }
+        })
+      }
+    }
+
+    window.addEventListener("jper-profile-updated", handleProfileUpdated)
+    return () => {
+      window.removeEventListener("jper-profile-updated", handleProfileUpdated)
+    }
+  }, [])
+
+  useEffect(() => {
     if (activeTab === "courses" && token) {
       const timer = setTimeout(() => {
         void fetchAllCourses(token)

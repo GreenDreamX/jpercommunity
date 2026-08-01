@@ -1,5 +1,6 @@
 import { verifyFirebaseIdToken } from "@/lib/server/firebase-auth"
 import { getSupabaseServerEnv, supabaseRestRequest } from "@/lib/server/supabase-rest"
+import { logActivity } from "@/lib/server/activity-logger"
 
 async function verifyAdmin(request: Request, env: { supabaseUrl: string; supabaseSecret: string }) {
   const verified = await verifyFirebaseIdToken(request.headers.get("authorization"))
@@ -8,7 +9,7 @@ async function verifyAdmin(request: Request, env: { supabaseUrl: string; supabas
   }
 
   const profileResponse = await supabaseRestRequest(
-    `profiles?select=id,role&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
+    `profiles?select=id,nama_lengkap,role&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
     env,
   )
 
@@ -16,14 +17,14 @@ async function verifyAdmin(request: Request, env: { supabaseUrl: string; supabas
     return { ok: false, status: 404, message: "Profile admin tidak ditemukan." }
   }
 
-  const profileRows = (await profileResponse.json()) as Array<{ id: string; role: string }>
+  const profileRows = (await profileResponse.json()) as Array<{ id: string; nama_lengkap: string; role: string }>
   const profile = profileRows[0]
 
   if (!profile || profile.role !== "admin") {
     return { ok: false, status: 403, message: "Akses ditolak. Khusus admin." }
   }
 
-  return { ok: true }
+  return { ok: true, profile }
 }
 
 export async function GET(request: Request) {
@@ -93,6 +94,16 @@ export async function POST(request: Request) {
     }
 
     const data = await insertResponse.json()
+    if (authCheck.profile) {
+      void logActivity({
+        actorId: authCheck.profile.id,
+        actorName: authCheck.profile.nama_lengkap,
+        actorRole: "admin",
+        action: "MEMBUKA_SESI_ABSENSI",
+        details: `Admin ${authCheck.profile.nama_lengkap} membuka sesi absensi QR baru.`,
+        category: "ABSENSI",
+      })
+    }
     return Response.json({ ok: true, session: data[0] })
   } catch (err: unknown) {
     return Response.json({ message: err instanceof Error ? err.message : "Terjadi kesalahan internal." }, { status: 500 })
@@ -145,8 +156,76 @@ export async function PATCH(request: Request) {
     }
 
     const data = await updateResponse.json()
+    if (authCheck.profile) {
+      void logActivity({
+        actorId: authCheck.profile.id,
+        actorName: authCheck.profile.nama_lengkap,
+        actorRole: "admin",
+        action: close_session ? "MENUTUP_SESI_ABSENSI" : "UPDATE_SESI_ABSENSI",
+        details: close_session
+          ? `Admin ${authCheck.profile.nama_lengkap} menutup sesi absensi dan mengisi jurnal materi: "${materi_diajarkan || '-'}"`
+          : `Admin ${authCheck.profile.nama_lengkap} memperbarui jurnal sesi absensi.`,
+        category: "ABSENSI",
+      })
+    }
     return Response.json({ ok: true, session: data[0] })
   } catch (err: unknown) {
     return Response.json({ message: err instanceof Error ? err.message : "Terjadi kesalahan internal." }, { status: 500 })
   }
 }
+
+export async function DELETE(request: Request) {
+  const env = getSupabaseServerEnv()
+  if (!env.ok) {
+    return Response.json({ message: env.message }, { status: 500 })
+  }
+
+  const authCheck = await verifyAdmin(request, env)
+  if (!authCheck.ok) {
+    return Response.json({ message: authCheck.message }, { status: authCheck.status })
+  }
+
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+
+    if (!id) {
+      return Response.json({ message: "Parameter id wajib disertakan." }, { status: 400 })
+    }
+
+    // 1. Delete associated attendance records
+    await supabaseRestRequest(
+      `attendance_records?attendance_session_id=eq.${encodeURIComponent(id)}`,
+      env,
+      { method: "DELETE" },
+    )
+
+    // 2. Delete attendance session
+    const deleteResponse = await supabaseRestRequest(
+      `attendance_sessions?id=eq.${encodeURIComponent(id)}`,
+      env,
+      { method: "DELETE" },
+    )
+
+    if (!deleteResponse.ok) {
+      const details = await deleteResponse.text()
+      return Response.json({ message: "Gagal menghapus sesi absensi.", details }, { status: 500 })
+    }
+
+    if (authCheck.profile) {
+      void logActivity({
+        actorId: authCheck.profile.id,
+        actorName: authCheck.profile.nama_lengkap,
+        actorRole: "admin",
+        action: "HAPUS_SESI_ABSENSI",
+        details: `Admin ${authCheck.profile.nama_lengkap} menghapus sesi absensi beserta seluruh catatan kehadiran terkait.`,
+        category: "ABSENSI",
+      })
+    }
+
+    return Response.json({ ok: true, message: "Sesi absensi berhasil dihapus." })
+  } catch (err: unknown) {
+    return Response.json({ message: err instanceof Error ? err.message : "Terjadi kesalahan internal." }, { status: 500 })
+  }
+}
+

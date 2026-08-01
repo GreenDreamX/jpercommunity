@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
-import { LayoutGrid, BookOpen, Users, Edit3, FolderOpen, QrCode, ClipboardList, LogOut, ArrowLeft } from "lucide-react"
+import React, { useState } from "react"
+import { LayoutGrid, BookOpen, Users, Edit3, FolderOpen, QrCode, ClipboardList, LogOut, ArrowLeft, AlertTriangle, Activity } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { buttonVariants, Button } from "@/components/ui/button"
 
 interface SidebarItem {
   label: string
@@ -21,6 +21,8 @@ interface StudioLayoutProps {
 }
 
 export function StudioLayout({ children, activeTab, setActiveTab, adminName, avatarUrl }: StudioLayoutProps) {
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+
   const menuItems: SidebarItem[] = [
     { label: "Beranda Overview", value: "dashboard", icon: <LayoutGrid className="size-4" /> },
     { label: "Kelas & Silabus", value: "courses", icon: <BookOpen className="size-4" /> },
@@ -29,13 +31,13 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
     { label: "Arsip File Bank", value: "file_bank", icon: <FolderOpen className="size-4" /> },
     { label: "Sesi QR Absensi", value: "attendance", icon: <QrCode className="size-4" /> },
     { label: "Penilaian Siswa", value: "grades", icon: <ClipboardList className="size-4" /> },
+    { label: "Activity Logs", value: "logs", icon: <Activity className="size-4" /> },
   ]
 
-  const handleLogout = () => {
+  const confirmLogout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("jper_mock_session")
     }
-    // Delete session cookie
     document.cookie = "jper_session=; path=/; max-age=0; SameSite=Lax"
     window.location.href = "/studio/login"
   }
@@ -45,10 +47,8 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
       {/* SIDEBAR NAVIGATION */}
       <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-6 flex flex-col gap-6 shrink-0 md:h-screen md:sticky md:top-0">
         <div className="flex items-center justify-between md:justify-start gap-2">
-          <div className="flex items-center gap-2">
-            <div className="size-6 rounded-md bg-[#2B3A55] text-[#FAF9F6] flex items-center justify-center font-bold font-mono text-xs">
-              S
-            </div>
+          <div className="flex items-center gap-2.5">
+            <img src="/image/J-PER.png" alt="JPER Community Logo" className="size-7 object-contain" />
             <span className="font-mono text-sm font-bold tracking-wider">JPER Studio</span>
           </div>
           
@@ -109,7 +109,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
             Ke Landing Page
           </Link>
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             className="w-full flex items-center px-3 py-2 rounded-lg text-xs font-semibold text-[#B23A2E] hover:bg-[#B23A2E]/5 transition-colors text-left"
           >
             <LogOut className="size-4 mr-2.5" />
@@ -125,6 +125,40 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
           {children}
         </div>
       </main>
+
+      {/* LOGOUT CONFIRMATION DIALOG MODAL */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-xl border border-[#E4E1DA] bg-[#FAF9F6] p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#B23A2E]/10 rounded-full text-[#B23A2E]">
+                <AlertTriangle className="size-5" />
+              </div>
+              <h3 className="text-base font-bold text-[#1C1B1A]">Konfirmasi Logout</h3>
+            </div>
+            <p className="text-xs text-[#6B6862] leading-relaxed">
+              Apakah Anda yakin log out Akun? Sesi pengurus Studio akan diakhiri.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLogoutModal(false)}
+                className="border-[#E4E1DA] text-xs h-9 rounded-lg font-semibold"
+              >
+                Batal
+              </Button>
+              <Button
+                size="sm"
+                onClick={confirmLogout}
+                className="bg-[#B23A2E] hover:bg-[#B23A2E]/90 text-white text-xs h-9 rounded-lg font-semibold border-none"
+              >
+                Ya, Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
