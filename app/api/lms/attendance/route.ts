@@ -28,8 +28,9 @@ export async function GET(request: Request) {
   }
 
   // Get attendance records with session and course week details
+  // Only return records with status='hadir' for percentage calculation
   const attendanceResponse = await supabaseRestRequest(
-    `attendance_records?select=id,scanned_at,attendance_sessions(opened_at,materi_diajarkan,course_weeks(week_number,title))&profile_id=eq.${profileId}&order=scanned_at.desc`,
+    `attendance_records?select=id,scanned_at,status,attendance_sessions(opened_at,materi_diajarkan,course_weeks(week_number,title))&profile_id=eq.${profileId}&order=scanned_at.desc`,
     env,
   )
 
@@ -37,8 +38,11 @@ export async function GET(request: Request) {
     return Response.json({ message: "Gagal mengambil riwayat absensi." }, { status: 500 })
   }
 
-  const records = await attendanceResponse.json()
-  return Response.json({ ok: true, records })
+  const allRecords = await attendanceResponse.json() as Array<Record<string, unknown> & { status: string }>
+  // Records with status='hadir' count toward attendance percentage
+  const hadirRecords = allRecords.filter(r => r.status === "hadir")
+  return Response.json({ ok: true, records: allRecords, hadirCount: hadirRecords.length, totalCount: allRecords.length })
+
 }
 
 export async function POST(request: Request) {
@@ -139,7 +143,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // Insert attendance record
+  // Insert attendance record (QR scan = always 'hadir')
   const insertResponse = await supabaseRestRequest(
     "attendance_records",
     env,
@@ -148,6 +152,7 @@ export async function POST(request: Request) {
       body: [{
         attendance_session_id: session.id,
         profile_id: profileId,
+        status: "hadir",
       }],
     },
   )

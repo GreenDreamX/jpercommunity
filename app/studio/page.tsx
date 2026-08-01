@@ -17,6 +17,11 @@ import { NotulensiTab } from "@/components/studio/notulensi-tab"
 import { FileBankTab } from "@/components/studio/file-bank-tab"
 import { AnalyticsDashboard } from "@/components/studio/analytics-dashboard"
 import { LoggingTab } from "@/components/studio/logging-tab"
+import { DictionaryManagement } from "@/components/studio/dictionary-management"
+import { GrammarManagement } from "@/components/studio/grammar-management"
+import { FinanceManagement } from "@/components/studio/finance-management"
+
+const STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
 
 type StudioOverview = {
   profile: {
@@ -55,8 +60,7 @@ export default function StudioPage() {
             ...prev,
             profile: {
               ...prev.profile,
-              nama_lengkap: updated.nama_lengkap ?? prev.profile.nama_lengkap,
-              avatar_url: updated.avatar_url !== undefined ? updated.avatar_url : prev.profile.avatar_url,
+              ...updated,
             },
           }
         })
@@ -106,7 +110,7 @@ export default function StudioPage() {
         }
 
         const payload = (await response.json()) as StudioOverview & { ok: boolean }
-        if (payload.profile.role !== "admin") {
+        if (!STUDIO_ROLES.includes(payload.profile.role)) {
           router.replace("/lms")
           return
         }
@@ -131,8 +135,8 @@ export default function StudioPage() {
     )
   }
 
-  // Block rendering if not authenticated or not an admin
-  if (!overview || overview.profile.role !== "admin") {
+  // Block rendering if not authenticated or not a studio manager role
+  if (!overview || !STUDIO_ROLES.includes(overview.profile.role)) {
     return null
   }
 
@@ -141,10 +145,16 @@ export default function StudioPage() {
     if (!token) return null
 
     switch (activeTab) {
+      case "finance":
+        return <FinanceManagement token={token} />
       case "courses":
         return <CourseManagement token={token} />
       case "members":
         return <MemberManagement token={token} />
+      case "dictionary":
+        return <DictionaryManagement token={token} />
+      case "grammar":
+        return <GrammarManagement token={token} />
       case "notulensi":
         return <NotulensiTab token={token} />
       case "file_bank":
@@ -167,6 +177,7 @@ export default function StudioPage() {
       setActiveTab={setActiveTab}
       adminName={overview?.profile.nama_lengkap}
       avatarUrl={overview?.profile.avatar_url || undefined}
+      userRole={overview?.profile.role}
     >
       {renderContent()}
     </StudioLayout>

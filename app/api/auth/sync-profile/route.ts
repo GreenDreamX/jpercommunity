@@ -1,6 +1,7 @@
 import { registerSchema } from "@/lib/validators/register"
 import { verifyFirebaseIdToken } from "@/lib/server/firebase-auth"
 import { getSupabaseServerEnv, supabaseRestRequest } from "@/lib/server/supabase-rest"
+import { logActivity } from "@/lib/server/activity-logger"
 
 type SyncPayload = {
   registerData: unknown
@@ -119,6 +120,15 @@ export async function POST(request: Request) {
         },
       )
     }
+
+    void logActivity({
+      actorId: profileId,
+      actorName: data.namaLengkap,
+      actorRole: profilePayload.role,
+      action: "MEMBUAT_AKUN",
+      details: `Pengguna ${data.namaLengkap} mendaftar akun baru sebagai ${profilePayload.role} angkatan ${data.angkatan} (${profilePayload.email}).`,
+      category: "MEMBER",
+    })
   }
 
   return Response.json({

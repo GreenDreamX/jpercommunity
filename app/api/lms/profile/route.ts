@@ -83,8 +83,8 @@ export async function PATCH(request: Request) {
       dream,
     } = body
 
-    // Validate alasan_ikut length if provided
-    if (alasan_ikut !== undefined && alasan_ikut !== null) {
+    // Validate alasan_ikut length if non-empty string provided
+    if (typeof alasan_ikut === "string" && alasan_ikut.trim() !== "") {
       if (alasan_ikut.trim().length < 25) {
         return Response.json({ message: "Alasan mengikuti ekskul minimal 25 karakter." }, { status: 400 })
       }
@@ -107,55 +107,35 @@ export async function PATCH(request: Request) {
       return Response.json({ message: "Profil tidak ditemukan." }, { status: 404 })
     }
 
-    // Check email change rules if email is updated
-    if (email && email !== profile.email) {
-      // Check email uniqueness in Supabase
-      const emailCheck = await supabaseRestRequest(
-        `profiles?select=id&email=eq.${encodeURIComponent(email)}&id=neq.${encodeURIComponent(profile.id)}&limit=1`,
-        env,
-      )
-      if (emailCheck.ok) {
-        const emailCheckRows = await emailCheck.json()
-        if (emailCheckRows.length > 0) {
-          return Response.json({ message: "Email sudah digunakan oleh anggota lain." }, { status: 400 })
-        }
-      }
-    }
+    // 2. Perform profile update safely
+    const updateFields: Record<string, any> = {}
 
-    // 2. Perform profile update
-    const updateFields: any = {
-      nama_lengkap,
-      avatar_url: avatar_url?.trim() || null,
-      cover_url: cover_url?.trim() || null,
-      bio: bio?.trim() || null,
-      quote: quote?.trim() || null,
-      instagram_username: instagram_username?.trim() || null,
-      github_username: github_username?.trim() || null,
-      card_border,
-      avatar_border,
-      badge_label: badge_label === "none" ? null : badge_label,
-      nomor_telepon: nomor_telepon?.trim() || null,
-      tempat_lahir: tempat_lahir?.trim() || null,
-      tanggal_lahir: tanggal_lahir?.trim() || null,
-      alasan_ikut: alasan_ikut?.trim() || null,
-      hide_whatsapp: hide_whatsapp ?? false,
-      twitter_username: twitter_username?.trim() || null,
-      linkedin_username: linkedin_username?.trim() || null,
-      discord_username: discord_username?.trim() || null,
-      telegram_username: telegram_username?.trim() || null,
-      angkatan,
-      nickname: nickname?.trim() || null,
-      hobby: hobby?.trim() || null,
-      favorite_anime: favorite_anime?.trim() || null,
-      japanese_level: japanese_level || null,
-      learning_interest: learning_interest || null,
-      dream: dream || null,
-      updated_at: new Date().toISOString(),
-    }
-
-    if (email) {
-      updateFields.email = email.trim()
-    }
+    if (nama_lengkap && nama_lengkap.trim() !== "") updateFields.nama_lengkap = nama_lengkap.trim()
+    if (avatar_url !== undefined) updateFields.avatar_url = avatar_url?.trim() || null
+    if (cover_url !== undefined) updateFields.cover_url = cover_url?.trim() || null
+    if (bio !== undefined) updateFields.bio = bio?.trim() || null
+    if (quote !== undefined) updateFields.quote = quote?.trim() || null
+    if (instagram_username !== undefined) updateFields.instagram_username = instagram_username?.trim() || null
+    if (github_username !== undefined) updateFields.github_username = github_username?.trim() || null
+    if (card_border !== undefined) updateFields.card_border = card_border || "default"
+    if (avatar_border !== undefined) updateFields.avatar_border = avatar_border || "default"
+    if (badge_label !== undefined) updateFields.badge_label = badge_label === "none" ? null : badge_label
+    if (nomor_telepon !== undefined) updateFields.nomor_telepon = nomor_telepon?.trim() || null
+    if (tempat_lahir !== undefined) updateFields.tempat_lahir = tempat_lahir?.trim() || null
+    if (tanggal_lahir !== undefined) updateFields.tanggal_lahir = tanggal_lahir?.trim() || null
+    if (alasan_ikut !== undefined) updateFields.alasan_ikut = alasan_ikut?.trim() || null
+    if (hide_whatsapp !== undefined) updateFields.hide_whatsapp = hide_whatsapp ?? false
+    if (twitter_username !== undefined) updateFields.twitter_username = twitter_username?.trim() || null
+    if (linkedin_username !== undefined) updateFields.linkedin_username = linkedin_username?.trim() || null
+    if (discord_username !== undefined) updateFields.discord_username = discord_username?.trim() || null
+    if (telegram_username !== undefined) updateFields.telegram_username = telegram_username?.trim() || null
+    if (angkatan !== undefined) updateFields.angkatan = angkatan || "2026"
+    if (nickname !== undefined) updateFields.nickname = nickname?.trim() || null
+    if (hobby !== undefined) updateFields.hobby = hobby?.trim() || null
+    if (favorite_anime !== undefined) updateFields.favorite_anime = favorite_anime?.trim() || null
+    if (japanese_level !== undefined) updateFields.japanese_level = japanese_level || null
+    if (learning_interest !== undefined) updateFields.learning_interest = learning_interest || null
+    if (dream !== undefined) updateFields.dream = dream || null
 
     const updateResponse = await supabaseRestRequest(
       `profiles?id=eq.${encodeURIComponent(profile.id)}`,

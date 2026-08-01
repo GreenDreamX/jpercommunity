@@ -17,6 +17,9 @@
 
 # production
 /build
+/Shoui Yomitan Dictionary
+/scratch
+/jlpt-wordlist
 
 # misc
 .DS_Store

@@ -16,11 +16,13 @@ import { AttendanceTab } from "@/components/lms/attendance-tab"
 import { GradesTab } from "@/components/lms/grades-tab"
 import { CourseCard } from "@/components/lms/course-card"
 import { FlashcardsTab } from "@/components/lms/flashcards-tab"
-import { GlossaryTab } from "@/components/lms/glossary-tab"
+import { DictionaryTab } from "@/components/lms/dictionary-tab"
+import { GrammarTab } from "@/components/lms/grammar-tab"
 import { ProfileTab } from "@/components/lms/profile-tab"
+import { KasReminder } from "@/components/lms/kas-reminder"
 
 type LmsOverview = {
-  profile: {
+  profile: Record<string, any> & {
     id: string
     nama_lengkap: string
     email: string
@@ -141,10 +143,7 @@ export default function LmsPage() {
             ...prev,
             profile: {
               ...prev.profile,
-              nama_lengkap: updated.nama_lengkap ?? prev.profile.nama_lengkap,
-              email: updated.email ?? prev.profile.email,
-              angkatan: updated.angkatan ?? prev.profile.angkatan,
-              avatar_url: updated.avatar_url !== undefined ? updated.avatar_url : prev.profile.avatar_url,
+              ...updated,
             },
           }
         })
@@ -184,6 +183,7 @@ export default function LmsPage() {
       angkatan={overview?.profile.angkatan}
       studentEmail={overview?.profile.email}
       avatarUrl={overview?.profile?.avatar_url || undefined}
+      studentRole={overview?.profile.role}
     >
       {copiedText && (
         <div className="fixed bottom-5 right-5 z-50 bg-[#1C1B1A] text-[#FAF9F6] text-[11px] font-mono px-3.5 py-2 rounded-lg shadow-lg border border-white/10">
@@ -198,7 +198,11 @@ export default function LmsPage() {
       )}
 
       {/* TAB 1: OVERVIEW DASHBOARD */}
-      {activeTab === "dashboard" && (
+      {activeTab === "dashboard" && token && (
+        <>
+        {/* KAS REMINDER BANNER */}
+        <KasReminder token={token} />
+
         <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <Card className="bg-[#FAF9F6] border-[#E4E1DA] shadow-none rounded-lg">
             <CardHeader>
@@ -406,6 +410,7 @@ export default function LmsPage() {
             </Card>
           </div>
         </section>
+        </>
       )}
 
       {/* TAB 2: MY COURSES */}
@@ -449,9 +454,14 @@ export default function LmsPage() {
         <FlashcardsTab />
       )}
 
-      {/* TAB 6: GLOSSARY */}
-      {activeTab === "glossary" && (
-        <GlossaryTab />
+      {/* TAB 6: DICTIONARY & KOSAKATA */}
+      {activeTab === "dictionary" && token && (
+        <DictionaryTab firebaseToken={token} />
+      )}
+
+      {/* TAB 7: TATA BAHASA (GRAMMAR) */}
+      {activeTab === "grammar" && token && (
+        <GrammarTab firebaseToken={token} />
       )}
 
       {/* TAB 7: PROFILE */}

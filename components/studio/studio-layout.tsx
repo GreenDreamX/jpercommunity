@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { LayoutGrid, BookOpen, Users, Edit3, FolderOpen, QrCode, ClipboardList, LogOut, ArrowLeft, AlertTriangle, Activity } from "lucide-react"
+import { LayoutGrid, BookOpen, Users, Edit3, FolderOpen, QrCode, ClipboardList, LogOut, ArrowLeft, AlertTriangle, Activity, Bookmark, Wallet } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants, Button } from "@/components/ui/button"
@@ -15,18 +15,22 @@ interface SidebarItem {
 interface StudioLayoutProps {
   children: React.ReactNode
   activeTab: string
-  setActiveTab: (tab: string) => void
+  setActiveTab?: (tab: string) => void
   adminName?: string
   avatarUrl?: string
+  userRole?: string
 }
 
-export function StudioLayout({ children, activeTab, setActiveTab, adminName, avatarUrl }: StudioLayoutProps) {
+export function StudioLayout({ children, activeTab, setActiveTab, adminName, avatarUrl, userRole }: StudioLayoutProps) {
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const menuItems: SidebarItem[] = [
     { label: "Beranda Overview", value: "dashboard", icon: <LayoutGrid className="size-4" /> },
+    { label: "Keuangan & Uang Kas", value: "finance", icon: <Wallet className="size-4 text-[#B23A2E]" /> },
     { label: "Kelas & Silabus", value: "courses", icon: <BookOpen className="size-4" /> },
     { label: "Manajemen Member", value: "members", icon: <Users className="size-4" /> },
+    { label: "Kamus & Kosakata", value: "dictionary", icon: <BookOpen className="size-4" /> },
+    { label: "Tata Bahasa (Grammar)", value: "grammar", icon: <Bookmark className="size-4" /> },
     { label: "Jurnal Notulensi", value: "notulensi", icon: <Edit3 className="size-4" /> },
     { label: "Arsip File Bank", value: "file_bank", icon: <FolderOpen className="size-4" /> },
     { label: "Sesi QR Absensi", value: "attendance", icon: <QrCode className="size-4" /> },
@@ -40,6 +44,16 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
     }
     document.cookie = "jper_session=; path=/; max-age=0; SameSite=Lax"
     window.location.href = "/studio/login"
+  }
+
+  const formatRoleLabel = (role?: string) => {
+    switch (role) {
+      case "bendahara": return "BENDAHARA KOMUNITAS"
+      case "pembina": return "PEMBINA EKSTRAKURIKULER"
+      case "ketua_komunitas": return "KETUA KOMUNITAS"
+      case "ketua_angkatan": return "KETUA ANGKATAN"
+      default: return "ADMINISTRATOR STUDIO"
+    }
   }
 
   return (
@@ -66,7 +80,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
           {menuItems.map((item) => (
             <button
               key={item.value}
-              onClick={() => setActiveTab(item.value)}
+              onClick={() => setActiveTab?.(item.value)}
               className={cn(
                 "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
                 activeTab === item.value
@@ -94,7 +108,9 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
             <div className="flex-1 min-w-0">
               <div className="text-[9px] text-[#6B6862] font-mono leading-none">LOGGED IN AS</div>
               <div className="text-xs font-bold truncate text-[#1C1B1A] mt-1">{adminName || "Pengurus Ekskul"}</div>
-              <div className="text-[8px] text-[#B23A2E] font-mono font-semibold tracking-wider uppercase mt-0.5 leading-none">ADMINISTRATOR</div>
+              <div className="text-[8px] text-[#B23A2E] font-mono font-semibold tracking-wider uppercase mt-0.5 leading-none">
+                {formatRoleLabel(userRole)}
+              </div>
             </div>
           </div>
 

@@ -11,15 +11,33 @@ type Member = {
   nama_lengkap: string
   email: string
   nomor_telepon: string
-  role: "student" | "alumni" | "admin"
+  role: "student" | "alumni" | "admin" | "bendahara" | "pembina" | "ketua_komunitas" | "ketua_angkatan"
   angkatan: string
   alasan_ikut: string
   created_at: string
+  avatar_url?: string | null
+  cover_url?: string | null
+  bio?: string | null
+  quote?: string | null
+  nickname?: string | null
+  hobby?: string | null
+  favorite_anime?: string | null
+  japanese_level?: string | null
+  learning_interest?: string | null
+  dream?: string | null
+  badge_label?: string | null
+  instagram_username?: string | null
+  github_username?: string | null
+  twitter_username?: string | null
+  linkedin_username?: string | null
+  discord_username?: string | null
+  telegram_username?: string | null
   student_academic_info?: Array<{
     nisn: string
     nis: string
     asal_sekolah: string
     kelas: string
+    jurusan?: string
   }>
 }
 
@@ -241,28 +259,48 @@ export function MemberManagement({ token }: MemberManagementProps) {
                             />
                           </div>
                         ) : (
-                          <>
-                            <div className="font-semibold text-[#1C1B1A]">{member.nama_lengkap}</div>
-                            <div className="text-[10px] text-[#6B6862] font-mono">{member.email}</div>
-                            <div className="text-[10px] text-[#6B6862] font-mono">{member.nomor_telepon || "-"}</div>
-                          </>
+                          <div className="flex items-center gap-2.5">
+                            <div className="size-8 rounded-full overflow-hidden bg-[#2B3A55] text-white flex items-center justify-center shrink-0 text-[10px] font-bold shadow-sm">
+                              {member.avatar_url ? (
+                                <img src={member.avatar_url} alt={member.nama_lengkap} className="size-full object-cover" />
+                              ) : (
+                                member.nama_lengkap.substring(0, 2).toUpperCase()
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-[#1C1B1A] flex items-center gap-1">
+                                {member.nama_lengkap}
+                                {member.nickname && <span className="text-[10px] text-[#2B3A55] font-mono">(@{member.nickname})</span>}
+                              </div>
+                              <div className="text-[10px] text-[#6B6862] font-mono">{member.email}</div>
+                              <div className="text-[10px] text-[#6B6862] font-mono">{member.nomor_telepon || "-"}</div>
+                            </div>
+                          </div>
                         )}
                       </td>
                       <td className="py-3">
                         {isEditing ? (
                           <select
                             value={editRole}
-                            onChange={(e) => setEditRole(e.target.value as Member["role"])}
+                            onChange={(e) => setEditRole(e.target.value as any)}
                             className="border border-[#E4E1DA] bg-[#FAF9F6] text-xs h-7 px-1 rounded-md text-[#1C1B1A]"
                           >
                             <option value="student">student</option>
                             <option value="alumni">alumni</option>
                             <option value="admin">admin</option>
+                            <option value="bendahara">bendahara</option>
+                            <option value="pembina">pembina</option>
+                            <option value="ketua_komunitas">ketua_komunitas</option>
+                            <option value="ketua_angkatan">ketua_angkatan</option>
                           </select>
                         ) : (
                           <span className={`px-2 py-0.5 rounded-full font-mono text-[9px] font-bold ${
-                            member.role === "admin"
+                            member.role === "admin" || member.role === "pembina" || member.role === "ketua_komunitas"
                               ? "bg-[#2B3A55]/10 text-[#2B3A55]"
+                              : member.role === "bendahara"
+                              ? "bg-emerald-500/10 text-emerald-700"
+                              : member.role === "ketua_angkatan"
+                              ? "bg-amber-500/10 text-amber-800"
                               : member.role === "alumni"
                               ? "bg-[#E4E1DA] text-[#6B6862]"
                               : "bg-[#B23A2E]/10 text-[#B23A2E]"

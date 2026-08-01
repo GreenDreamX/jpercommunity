@@ -2,10 +2,12 @@ import { verifyFirebaseIdToken } from "@/lib/server/firebase-auth"
 import { getSupabaseServerEnv, supabaseRestRequest } from "@/lib/server/supabase-rest"
 import { logActivity } from "@/lib/server/activity-logger"
 
-async function verifyAdmin(request: Request, env: { supabaseUrl: string; supabaseSecret: string }) {
+const ALLOWED_STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
+
+async function verifyStudio(request: Request, env: { supabaseUrl: string; supabaseSecret: string }) {
   const verified = await verifyFirebaseIdToken(request.headers.get("authorization"))
   if (!verified.ok) {
-    return { ok: false, status: verified.status, message: verified.message }
+    return { ok: false as const, status: verified.status, message: verified.message, profile: null }
   }
 
   const profileResponse = await supabaseRestRequest(
@@ -14,17 +16,17 @@ async function verifyAdmin(request: Request, env: { supabaseUrl: string; supabas
   )
 
   if (!profileResponse.ok) {
-    return { ok: false, status: 404, message: "Profile admin tidak ditemukan." }
+    return { ok: false as const, status: 404, message: "Profile tidak ditemukan.", profile: null }
   }
 
   const profileRows = (await profileResponse.json()) as Array<{ id: string; nama_lengkap: string; role: string }>
   const profile = profileRows[0]
 
-  if (!profile || profile.role !== "admin") {
-    return { ok: false, status: 403, message: "Akses ditolak. Khusus admin." }
+  if (!profile || !ALLOWED_STUDIO_ROLES.includes(profile.role)) {
+    return { ok: false as const, status: 403, message: "Akses ditolak. Khusus pengurus.", profile: null }
   }
 
-  return { ok: true, profile }
+  return { ok: true as const, profile }
 }
 
 export async function GET(request: Request) {
@@ -33,7 +35,7 @@ export async function GET(request: Request) {
     return Response.json({ message: env.message }, { status: 500 })
   }
 
-  const authCheck = await verifyAdmin(request, env)
+  const authCheck = await verifyStudio(request, env)
   if (!authCheck.ok) {
     return Response.json({ message: authCheck.message }, { status: authCheck.status })
   }
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
     return Response.json({ message: env.message }, { status: 500 })
   }
 
-  const authCheck = await verifyAdmin(request, env)
+  const authCheck = await verifyStudio(request, env)
   if (!authCheck.ok) {
     return Response.json({ message: authCheck.message }, { status: authCheck.status })
   }
@@ -116,7 +118,7 @@ export async function PATCH(request: Request) {
     return Response.json({ message: env.message }, { status: 500 })
   }
 
-  const authCheck = await verifyAdmin(request, env)
+  const authCheck = await verifyStudio(request, env)
   if (!authCheck.ok) {
     return Response.json({ message: authCheck.message }, { status: authCheck.status })
   }
@@ -180,7 +182,7 @@ export async function DELETE(request: Request) {
     return Response.json({ message: env.message }, { status: 500 })
   }
 
-  const authCheck = await verifyAdmin(request, env)
+  const authCheck = await verifyStudio(request, env)
   if (!authCheck.ok) {
     return Response.json({ message: authCheck.message }, { status: authCheck.status })
   }

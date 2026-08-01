@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   }
 
   const profileResponse = await supabaseRestRequest(
-    `profiles?select=id,nama_lengkap,role&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
+    `profiles?select=*,student_academic_info(*)&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
     env,
   )
 
@@ -31,15 +31,12 @@ export async function GET(request: Request) {
     return Response.json({ message: "Profile admin tidak ditemukan." }, { status: 404 })
   }
 
-  const profileRows = (await profileResponse.json()) as Array<{
-    id: string
-    nama_lengkap: string
-    role: string
-  }>
+  const profileRows = (await profileResponse.json()) as Array<Record<string, any>>
   const profile = profileRows[0]
 
-  if (!profile || profile.role !== "admin") {
-    return Response.json({ message: "Akses Studio hanya untuk admin." }, { status: 403 })
+  const ALLOWED_STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
+  if (!profile || !ALLOWED_STUDIO_ROLES.includes(profile.role)) {
+    return Response.json({ message: "Akses Studio khusus pengurus komunitas." }, { status: 403 })
   }
 
   const [memberCount, courseCount, sessionCount] = await Promise.all([

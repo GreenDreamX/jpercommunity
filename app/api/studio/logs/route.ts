@@ -21,8 +21,9 @@ export async function GET(request: Request) {
     return Response.json({ message: "Profile admin tidak ditemukan." }, { status: 404 })
   }
   const profiles = (await profileResponse.json()) as Array<{ id: string; role: string }>
-  if (!profiles[0] || profiles[0].role !== "admin") {
-    return Response.json({ message: "Akses ditolak. Khusus admin." }, { status: 403 })
+  const ALLOWED_STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
+  if (!profiles[0] || !ALLOWED_STUDIO_ROLES.includes(profiles[0].role)) {
+    return Response.json({ message: "Akses ditolak. Khusus pengurus." }, { status: 403 })
   }
 
   const { searchParams } = new URL(request.url)

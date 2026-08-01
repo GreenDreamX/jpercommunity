@@ -15,21 +15,23 @@ interface SidebarItem {
 interface LmsLayoutProps {
   children: React.ReactNode
   activeTab: string
-  setActiveTab: (tab: string) => void
+  setActiveTab?: (tab: string) => void
   studentName?: string
   angkatan?: string
   studentEmail?: string
   avatarUrl?: string
+  studentRole?: string
 }
 
-export function LmsLayout({ children, activeTab, setActiveTab, studentName, angkatan, studentEmail, avatarUrl }: LmsLayoutProps) {
+export function LmsLayout({ children, activeTab, setActiveTab, studentName, angkatan, studentEmail, avatarUrl, studentRole }: LmsLayoutProps) {
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const menuItems: SidebarItem[] = [
     { label: "Beranda Overview", value: "dashboard", icon: <LayoutGrid className="size-4" /> },
     { label: "Kelas Saya", value: "courses", icon: <BookOpen className="size-4" /> },
     { label: "Profil & Pengaturan", value: "profile", icon: <User className="size-4" /> },
-    { label: "Glosarium & Kamus", value: "glossary", icon: <Bookmark className="size-4" /> },
+    { label: "Kamus & Kosakata", value: "dictionary", icon: <BookOpen className="size-4" /> },
+    { label: "Tata Bahasa (Grammar)", value: "grammar", icon: <Bookmark className="size-4" /> },
     { label: "Kehadiran Mandiri", value: "attendance", icon: <QrCode className="size-4" /> },
     { label: "Transkrip Nilai", value: "grades", icon: <ClipboardList className="size-4" /> },
     { label: "Flash Cards Kana", value: "flashcards", icon: <Languages className="size-4" /> },
@@ -67,7 +69,7 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
           {menuItems.map((item) => (
             <button
               key={item.value}
-              onClick={() => setActiveTab(item.value)}
+              onClick={() => setActiveTab?.(item.value)}
               className={cn(
                 "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
                 activeTab === item.value
@@ -85,7 +87,7 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
         <div className="mt-auto hidden md:flex flex-col gap-2 pt-4 border-t border-[#E4E1DA]/50">
           {/* Student info */}
           <button 
-            onClick={() => setActiveTab("profile")}
+            onClick={() => setActiveTab?.("profile")}
             className="w-full text-left py-2.5 px-2 -mx-2 rounded-lg hover:bg-[#E4E1DA]/20 border-b border-[#E4E1DA]/30 flex items-center gap-3 transition-colors group"
           >
             <div className="size-9 rounded-full overflow-hidden bg-stone-200 text-[#6B6862] flex items-center justify-center shrink-0 border border-[#E4E1DA] group-hover:border-[#B23A2E]/50 transition-colors">
@@ -104,7 +106,13 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
               </div>
               <div className="text-xs font-bold truncate text-[#1C1B1A] mt-1 group-hover:text-[#B23A2E] transition-colors">{studentName || "Siswa JPER"}</div>
               <div className="text-[8px] text-[#B23A2E] font-mono font-semibold tracking-wider uppercase mt-0.5 leading-none">
-                SISWA AKTIF {angkatan ? `— ANGKATAN ${angkatan}` : ""}
+                {studentRole === "admin"
+                  ? (angkatan ? `PENGURUS / ADMIN — ANGKATAN ${angkatan}` : "PENGURUS / ADMIN")
+                  : (studentRole === "alumni" || (angkatan && parseInt(angkatan, 10) <= 2023))
+                  ? `ALUMNI — ANGKATAN ${angkatan || ""}`
+                  : (angkatan && parseInt(angkatan, 10) >= 2027)
+                  ? `CALON SISWA BARU — ANGKATAN ${angkatan}`
+                  : `SISWA AKTIF — ANGKATAN ${angkatan || ""}`}
               </div>
             </div>
           </button>

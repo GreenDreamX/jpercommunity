@@ -19,8 +19,9 @@ async function verifyAdmin(request: Request, env: { supabaseUrl: string; supabas
   const profileRows = (await profileResponse.json()) as Array<{ id: string; role: string }>
   const profile = profileRows[0]
 
-  if (!profile || profile.role !== "admin") {
-    return { ok: false, status: 403, message: "Akses ditolak. Khusus admin." }
+  const ALLOWED_STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
+  if (!profile || !ALLOWED_STUDIO_ROLES.includes(profile.role)) {
+    return { ok: false, status: 403, message: "Akses ditolak. Khusus pengurus." }
   }
 
   return { ok: true }

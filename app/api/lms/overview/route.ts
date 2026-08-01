@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   }
 
   const profileResponse = await supabaseRestRequest(
-    `profiles?select=id,nama_lengkap,email,role,angkatan&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
+    `profiles?select=*,student_academic_info(*)&firebase_uid=eq.${encodeURIComponent(verified.user.uid)}&limit=1`,
     env,
   )
 
@@ -30,13 +30,7 @@ export async function GET(request: Request) {
     return Response.json({ message: "Profile tidak ditemukan." }, { status: 404 })
   }
 
-  const profileRows = (await profileResponse.json()) as Array<{
-    id: string
-    nama_lengkap: string
-    email: string
-    role: string
-    angkatan: string
-  }>
+  const profileRows = (await profileResponse.json()) as Array<Record<string, any>>
   const profile = profileRows[0]
 
   if (!profile) {

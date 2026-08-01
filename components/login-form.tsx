@@ -80,9 +80,9 @@ export function LoginForm({
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const token = await userCredential.user.getIdToken()
       
       if (mode === "studio") {
-        const token = await userCredential.user.getIdToken()
         const response = await fetch("/api/studio/overview", {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -94,6 +94,20 @@ export function LoginForm({
           return
         }
       }
+
+      // Record activity log
+      fetch("/api/auth/record-log", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "LOGIN",
+          details: `Pengguna (${userCredential.user.email}) berhasil login ke ${mode === "studio" ? "Studio Admin" : "LMS Member"}.`,
+          category: "MEMBER",
+        }),
+      }).catch(() => {})
 
       if (typeof window !== "undefined") {
         localStorage.removeItem("jper_mock_session")

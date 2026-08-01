@@ -147,6 +147,40 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
     }
   }
 
+  const [uploadingCover, setUploadingCover] = useState(false)
+
+  const handleUploadCoverFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingCover(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch("/api/lms/upload-image", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${firebaseToken}`,
+        },
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.message ?? "Gagal mengunggah banner sampul ke Imgur.")
+      }
+
+      const payload = await res.json()
+      if (payload.url) {
+        setCoverUrl(payload.url)
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Gagal mengunggah banner sampul.")
+    } finally {
+      setUploadingCover(false)
+    }
+  }
+
   // Additional Profile Fields
   const [tempatLahir, setTempatLahir] = useState("")
   const [tanggalLahir, setTanggalLahir] = useState("")
@@ -348,11 +382,11 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
           dream,
 
           // Academic fields
-          nisn: (angkatan === "2026" || angkatan === "2025" || angkatan === "2024") ? nisn.trim() : null,
-          nis: (angkatan === "2026" || angkatan === "2025" || angkatan === "2024") ? nis.trim() : null,
+          nisn: nisn.trim() || null,
+          nis: nis.trim() || null,
           kelas: calculatedClass || null,
-          jurusan: (angkatan === "2026" || angkatan === "2025" || angkatan === "2024") ? jurusan : null,
-          asal_sekolah: angkatan === "2026" ? asalSekolah.trim() : (angkatan === "2027" || angkatan === "2028") ? asalSekolah.trim() : null,
+          jurusan: jurusan || null,
+          asal_sekolah: asalSekolah.trim() || null,
         }),
       })
 
@@ -793,12 +827,27 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
                           </button>
                         ))}
                       </div>
-                      <Input
-                        placeholder="Atau masukkan URL gambar banner sampul eksternal..."
-                        value={coverUrl}
-                        onChange={(e) => setCoverUrl(e.target.value)}
-                        className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Atau masukkan URL gambar banner sampul..."
+                          value={coverUrl}
+                          onChange={(e) => setCoverUrl(e.target.value)}
+                          className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
+                        />
+                        <label className="cursor-pointer shrink-0">
+                          <span className="h-9 px-3 text-xs font-semibold rounded-lg border border-[#E4E1DA] bg-white hover:bg-[#E4E1DA]/30 flex items-center gap-1.5 text-[#1C1B1A]">
+                            <Upload className="size-3.5 text-[#B23A2E]" />
+                            <span>{uploadingCover ? "Mengunggah..." : "Unggah Banner"}</span>
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingCover}
+                            onChange={handleUploadCoverFile}
+                          />
+                        </label>
+                      </div>
                     </Field>
 
                     {/* Custom Design Selector Dropdowns */}

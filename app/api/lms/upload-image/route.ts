@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData()
-    const file = formData.get("file") as File | null
+    const file = (formData.get("file") || formData.get("image")) as File | null
 
     if (!file) {
       return Response.json({ message: "File gambar tidak ditemukan." }, { status: 400 })
@@ -25,10 +25,41 @@ export async function POST(request: Request) {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer())
-    const ext = file.name.split(".").pop() || "png"
-    const fileName = `avatar-${verified.user.uid}-${Date.now()}.${ext}`
+    const base64Image = fileBuffer.toString("base64")
 
-    // 1. Ensure jper_uploads public bucket exists
+    // Upload to Imgur API
+    const imgurClientId = process.env.IMGUR_CLIENT_ID || "544ba315e3728cc"
+
+    const imgurFormData = new FormData()
+    imgurFormData.append("image", base64Image)
+    imgurFormData.append("type", "base64")
+
+    try {
+      const imgurRes = await fetch("https://api.imgur.com/3/image", {
+        method: "POST",
+        headers: {
+          Authorization: `Client-ID ${imgurClientId}`,
+        },
+        body: imgurFormData,
+      })
+
+      if (imgurRes.ok) {
+        const imgurData = await imgurRes.json()
+        if (imgurData.success && imgurData.data?.link) {
+          return Response.json({
+            ok: true,
+            url: imgurData.data.link,
+          })
+        }
+      }
+    } catch (imgurErr) {
+      console.warn("Imgur upload failed, fallback to Supabase storage:", imgurErr)
+    }
+
+    // Fallback: Upload to Supabase Storage if Imgur is rate-limited
+    const ext = file.name.split(".").pop() || "png"
+    const fileName = `jper-${verified.user.uid}-${Date.now()}.${ext}`
+
     await fetch(`${env.supabaseUrl}/storage/v1/bucket`, {
       method: "POST",
       headers: {
@@ -43,7 +74,6 @@ export async function POST(request: Request) {
       }),
     }).catch(() => {})
 
-    // 2. Upload object to public bucket
     const uploadRes = await fetch(`${env.supabaseUrl}/storage/v1/object/jper_uploads/${fileName}`, {
       method: "POST",
       headers: {
@@ -57,7 +87,7 @@ export async function POST(request: Request) {
 
     if (!uploadRes.ok) {
       const errorText = await uploadRes.text()
-      return Response.json({ message: "Gagal mengunggah gambar ke cloud.", details: errorText }, { status: 500 })
+      return Response.json({ message: "Gagal mengunggah gambar ke storage.", details: errorText }, { status: 500 })
     }
 
     const publicUrl = `${env.supabaseUrl}/storage/v1/object/public/jper_uploads/${fileName}`

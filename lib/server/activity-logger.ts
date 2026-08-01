@@ -6,7 +6,7 @@ export type LogActivityParams = {
   actorRole?: string
   action: string
   details: string
-  category?: "ABSENSI" | "NILAI" | "MEMBER" | "PROFIL" | "SILABUS" | "SISTEM" | "UMUM"
+  category?: "ABSENSI" | "NILAI" | "MEMBER" | "PROFIL" | "SILABUS" | "SISTEM" | "UMUM" | "KEUANGAN"
 }
 
 export async function logActivity(params: LogActivityParams) {
