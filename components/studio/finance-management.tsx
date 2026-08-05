@@ -92,6 +92,16 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
   const [txSearch, setTxSearch] = useState("")
   const [txFilterType, setTxFilterType] = useState("all")
 
+  // Paginations
+  const [kasLimit, setKasLimit] = useState(30)
+  const [kasPage, setKasPage] = useState(1)
+
+  const [txLimit, setTxLimit] = useState(30)
+  const [txPage, setTxPage] = useState(1)
+
+  const [auditLimit, setAuditLimit] = useState(30)
+  const [auditPage, setAuditPage] = useState(1)
+
   const fetchFinanceData = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -252,6 +262,22 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
     const matchesType = txFilterType === "all" ? true : t.type === txFilterType
     return matchesSearch && matchesType
   })
+
+  // Sliced arrays for pagination
+  const totalKasItems = filteredKasMembers.length
+  const totalKasPages = Math.ceil(totalKasItems / kasLimit)
+  const paginatedKasMembers = filteredKasMembers.slice((kasPage - 1) * kasLimit, kasPage * kasLimit)
+  const kasStartIndex = (kasPage - 1) * kasLimit
+
+  const totalTxItems = filteredTransactions.length
+  const totalTxPages = Math.ceil(totalTxItems / txLimit)
+  const paginatedTransactions = filteredTransactions.slice((txPage - 1) * txLimit, txPage * txLimit)
+  const txStartIndex = (txPage - 1) * txLimit
+
+  const totalAuditItems = auditLogs.length
+  const totalAuditPages = Math.ceil(totalAuditItems / auditLimit)
+  const paginatedAuditLogs = auditLogs.slice((auditPage - 1) * auditLimit, auditPage * auditLimit)
+  const auditStartIndex = (auditPage - 1) * auditLimit
 
   if (loading) {
     return (
@@ -434,7 +460,10 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
 
               <select
                 value={kasCohort}
-                onChange={(e) => setKasCohort(e.target.value)}
+                onChange={(e) => {
+                  setKasCohort(e.target.value)
+                  setKasPage(1)
+                }}
                 className="border border-[#E4E1DA] bg-white text-xs h-8 px-2.5 rounded-lg text-[#1C1B1A]"
               >
                 <option value="all">Semua Angkatan</option>
@@ -448,10 +477,26 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
                 <Input
                   placeholder="Cari nama siswa..."
                   value={kasSearch}
-                  onChange={(e) => setKasSearch(e.target.value)}
+                  onChange={(e) => {
+                    setKasSearch(e.target.value)
+                    setKasPage(1)
+                  }}
                   className="pl-8 border-[#E4E1DA] bg-white text-xs h-8 w-40 rounded-lg"
                 />
               </div>
+
+              <select
+                value={kasLimit}
+                onChange={(e) => {
+                  setKasLimit(Number(e.target.value))
+                  setKasPage(1)
+                }}
+                className="border border-[#E4E1DA] bg-white text-xs h-8 px-2.5 rounded-lg text-[#1C1B1A] font-semibold focus:outline-none"
+              >
+                <option value={30}>30 baris</option>
+                <option value={50}>50 baris</option>
+                <option value={100}>100 baris</option>
+              </select>
             </div>
           </CardHeader>
           <CardContent className="pt-4">
@@ -467,7 +512,7 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredKasMembers.map((member) => {
+                  {paginatedKasMembers.map((member) => {
                     const record = kasRecords.find(
                       (r) => r.profile_id === member.id && r.week_number === selectedWeek
                     )
@@ -514,6 +559,35 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-[#E4E1DA] mt-4 text-[11px]">
+              <div className="text-[#6B6862]">
+                Menampilkan {kasStartIndex + 1} - {Math.min(kasStartIndex + kasLimit, totalKasItems)} dari {totalKasItems} anggota
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={kasPage === 1}
+                  onClick={() => setKasPage(prev => Math.max(prev - 1, 1))}
+                  className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+                >
+                  Sebelumnya
+                </Button>
+                <span className="font-mono text-[10px] text-[#1C1B1A]">
+                  Halaman {kasPage} dari {totalKasPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={kasPage === totalKasPages || totalKasPages === 0}
+                  onClick={() => setKasPage(prev => Math.min(prev + 1, totalKasPages))}
+                  className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+                >
+                  Berikutnya
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -670,7 +744,7 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTransactions.map((tx) => (
+                    {paginatedTransactions.map((tx) => (
                       <tr key={tx.id} className="border-b border-[#E4E1DA]/50 hover:bg-stone-50 transition-colors">
                         <td className="py-3 font-mono text-[11px] text-[#6B6862]">
                           {new Date(tx.transaction_date).toLocaleString("id-ID", {
@@ -719,6 +793,35 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
                   </tbody>
                 </table>
               </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-[#E4E1DA] mt-4 text-[11px]">
+                <div className="text-[#6B6862]">
+                  Menampilkan {txStartIndex + 1} - {Math.min(txStartIndex + txLimit, totalTxItems)} dari {totalTxItems} transaksi
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={txPage === 1}
+                    onClick={() => setTxPage(prev => Math.max(prev - 1, 1))}
+                    className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+                  >
+                    Sebelumnya
+                  </Button>
+                  <span className="font-mono text-[10px] text-[#1C1B1A]">
+                    Halaman {txPage} dari {totalTxPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={txPage === totalTxPages || totalTxPages === 0}
+                    onClick={() => setTxPage(prev => Math.min(prev + 1, totalTxPages))}
+                    className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+                  >
+                    Berikutnya
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -727,14 +830,30 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
       {/* SUB TAB 3: AUDIT LOG KEUANGAN (ANTI-FRAUD) */}
       {activeSubTab === "audit" && (
         <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-xl">
-          <CardHeader className="pb-3 border-b border-[#E4E1DA]">
-            <CardTitle className="text-sm font-bold text-[#1C1B1A] flex items-center gap-2">
-              <ShieldCheck className="size-4 text-emerald-600" />
-              Audit Log Keuangan Immutable (Anti-Fraud)
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Seluruh riwayat pencatatan uang kas dan arus dana tercatat permanen di audit log dan tidak dapat dimanipulasi.
-            </CardDescription>
+          <CardHeader className="pb-3 border-b border-[#E4E1DA] flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <CardTitle className="text-sm font-bold text-[#1C1B1A] flex items-center gap-2">
+                <ShieldCheck className="size-4 text-emerald-600" />
+                Audit Log Keuangan Immutable (Anti-Fraud)
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Seluruh riwayat pencatatan uang kas dan arus dana tercatat permanen di audit log dan tidak dapat dimanipulasi.
+              </CardDescription>
+            </div>
+            <div>
+              <select
+                value={auditLimit}
+                onChange={(e) => {
+                  setAuditLimit(Number(e.target.value))
+                  setAuditPage(1)
+                }}
+                className="border border-[#E4E1DA] bg-white text-xs h-8 px-2.5 rounded-lg text-[#1C1B1A] font-semibold focus:outline-none"
+              >
+                <option value={30}>30 baris</option>
+                <option value={50}>50 baris</option>
+                <option value={100}>100 baris</option>
+              </select>
+            </div>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="overflow-x-auto">
@@ -748,7 +867,7 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {auditLogs.map((log) => (
+                  {paginatedAuditLogs.map((log) => (
                     <tr key={log.id} className="border-b border-[#E4E1DA]/50 hover:bg-stone-50 transition-colors">
                       <td className="py-3 font-mono text-[10px] text-[#6B6862]">
                         {new Date(log.created_at).toLocaleString("id-ID", {
@@ -776,6 +895,35 @@ export function FinanceManagement({ token }: FinanceManagementProps) {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-[#E4E1DA] mt-4 text-[11px]">
+              <div className="text-[#6B6862]">
+                Menampilkan {auditStartIndex + 1} - {Math.min(auditStartIndex + auditLimit, totalAuditItems)} dari {totalAuditItems} log
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={auditPage === 1}
+                  onClick={() => setAuditPage(prev => Math.max(prev - 1, 1))}
+                  className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+                >
+                  Sebelumnya
+                </Button>
+                <span className="font-mono text-[10px] text-[#1C1B1A]">
+                  Halaman {auditPage} dari {totalAuditPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={auditPage === totalAuditPages || totalAuditPages === 0}
+                  onClick={() => setAuditPage(prev => Math.min(prev + 1, totalAuditPages))}
+                  className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+                >
+                  Berikutnya
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

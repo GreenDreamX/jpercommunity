@@ -88,6 +88,20 @@ export function LoginForm({
         })
 
         if (!response.ok) {
+          // Record unauthorized access log
+          fetch("/api/auth/record-log", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              action: "LOGIN_UNAUTHORIZED",
+              details: `Pengguna (${userCredential.user.email}) mencoba masuk ke Studio Admin tetapi ditolak (Bukan pengurus/admin).`,
+              category: "MEMBER",
+            }),
+          }).catch(() => {})
+
           await auth.signOut()
           setErrorMessage("Akses ditolak. Akun Anda bukan admin/pengurus Studio.")
           setIsLoading(false)
@@ -115,7 +129,22 @@ export function LoginForm({
       setSessionCookie()
       router.push(mode === "studio" ? "/studio" : "/lms")
     } catch (error) {
-      setErrorMessage(getAuthErrorMessage(error))
+      const errorMsg = getAuthErrorMessage(error)
+      setErrorMessage(errorMsg)
+      
+      // Record failed login activity
+      fetch("/api/auth/record-log", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "LOGIN_FAILED",
+          actorName: email || "Anonymous",
+          details: `Percobaan login gagal ke portal ${mode === "studio" ? "Studio Admin" : "LMS Member"}. Alasan: ${errorMsg}`,
+          category: "MEMBER",
+        }),
+      }).catch(() => {})
     } finally {
       setIsLoading(false)
     }

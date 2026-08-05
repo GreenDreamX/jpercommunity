@@ -5,6 +5,7 @@ import { LayoutGrid, BookOpen, QrCode, ClipboardList, LogOut, ArrowLeft, Languag
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants, Button } from "@/components/ui/button"
+import { useIdleTimeout } from "@/hooks/use-idle-timeout"
 
 interface SidebarItem {
   label: string
@@ -44,6 +45,8 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
     document.cookie = "jper_session=; path=/; max-age=0; SameSite=Lax"
     window.location.href = "/login"
   }
+
+  useIdleTimeout(confirmLogout, 10 * 60 * 1000)
 
   return (
     <div className="min-h-svh bg-[#FAF9F6] text-[#1C1B1A] flex flex-col md:flex-row">

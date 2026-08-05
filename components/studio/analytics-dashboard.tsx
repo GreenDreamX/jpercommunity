@@ -5,12 +5,23 @@ import { Users, BookOpen, Calendar, Award, AlertTriangle, RefreshCw, BarChart2, 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
+type ActivityLog = {
+  id: string
+  actor_name: string
+  actor_role: string
+  action: string
+  details: string
+  created_at: string
+  category: string
+}
+
 type AnalyticsData = {
   stats: {
     totalStudents: number
     totalCourses: number
     averageQuizScore: number
     attendanceRate: number
+    currentBalance: number
   }
   cohorts: {
     alumni: number
@@ -28,6 +39,7 @@ type AnalyticsData = {
     attendanceCount: number
     avgScore: number | null
   }>
+  recentLogs: ActivityLog[]
 }
 
 interface AnalyticsDashboardProps {
@@ -84,7 +96,7 @@ export function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
   }
 
   // Calculate SVG helper values
-  const { stats, cohorts, weeklyAverages, atRiskStudents } = data
+  const { stats, cohorts, weeklyAverages, atRiskStudents, recentLogs } = data
 
   // Circular gauge calculations for Attendance Rate
   const radius = 36
@@ -351,6 +363,80 @@ export function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Recent Activities & Finance Widget */}
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Activity Logs (2/3 width) */}
+        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-lg md:col-span-2">
+          <CardHeader className="pb-3 border-b border-[#E4E1DA]">
+            <CardTitle className="text-sm font-bold tracking-tight text-[#1C1B1A]">Aktivitas & Log Sistem Terbaru</CardTitle>
+            <CardDescription className="text-[10px]">Pemberitahuan audit log real-time dari tindakan admin dan siswa.</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {recentLogs && recentLogs.length > 0 ? (
+              <div className="space-y-4">
+                {recentLogs.map((log) => (
+                  <div key={log.id} className="flex items-start gap-3 text-xs pb-3 border-b border-[#E4E1DA]/40 last:border-none last:pb-0">
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono shrink-0 ${
+                      log.category === "ABSENSI" ? "bg-blue-100 text-blue-700 border border-blue-200" :
+                      log.category === "NILAI" ? "bg-amber-100 text-amber-700 border border-amber-200" :
+                      log.category === "KEUANGAN" ? "bg-emerald-100 text-emerald-700 border border-emerald-200" :
+                      log.category === "PROFIL" ? "bg-purple-100 text-purple-700 border border-purple-200" :
+                      log.category === "MEMBER" ? "bg-rose-100 text-rose-700 border border-rose-200" :
+                      "bg-stone-200 text-[#6B6862]"
+                    }`}>
+                      {log.category}
+                    </span>
+                    <div className="flex-1 space-y-0.5">
+                      <p className="font-semibold text-[#1C1B1A] leading-relaxed">{log.details}</p>
+                      <p className="text-[9px] text-[#6B6862] font-mono">
+                        Oleh: <span className="font-bold">{log.actor_name}</span> ({log.actor_role}) • {new Date(log.created_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-xs text-[#6B6862] italic">Belum ada aktivitas tercatat.</div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Finance Quick Overview (1/3 width) */}
+        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-lg flex flex-col justify-between">
+          <div>
+            <CardHeader className="pb-3 border-b border-[#E4E1DA]">
+              <CardTitle className="text-sm font-bold tracking-tight text-[#1C1B1A]">Kas JPER Community</CardTitle>
+              <CardDescription className="text-[10px]">Posisi keuangan kas studio saat ini.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="space-y-1">
+                <div className="text-[10px] font-mono text-[#6B6862] uppercase tracking-wider">Saldo Uang Kas</div>
+                <div className="text-2xl font-black text-emerald-700 font-mono">
+                  {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(stats.currentBalance || 0)}
+                </div>
+              </div>
+              <p className="text-[11px] text-[#6B6862] leading-relaxed">
+                Pembayaran uang kas siswa otomatis masuk ke kas bendahara. Kelola seluruh transaksi, log audit keuangan, dan cetak PDF laporan di tab keuangan.
+              </p>
+            </CardContent>
+          </div>
+          <div className="p-4 border-t border-[#E4E1DA] bg-[#FAF9F6]/50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Find and trigger click on navigation tab
+                const btn = document.querySelector('button[value="finance"]') as HTMLButtonElement
+                if (btn) btn.click()
+              }}
+              className="w-full text-xs font-bold border-[#E4E1DA] bg-white h-9 rounded-lg"
+            >
+              Buka Manajemen Keuangan
+            </Button>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -106,9 +106,8 @@ export async function GET(request: Request) {
         const studentScores = studentAnswers.map((a) => a.score).filter((s) => typeof s === "number")
         const avgScore =
           studentScores.length > 0 ? Math.round(studentScores.reduce((acc, s) => acc + s, 0) / studentScores.length) : null
-        
         const attendanceCount = attendanceRecords.filter((r) => r.profile_id === student.id).length
-
+        
         return {
           id: student.id,
           nama_lengkap: student.nama_lengkap,
@@ -136,6 +135,21 @@ export async function GET(request: Request) {
       }
     }).sort((a, b) => a.week - b.week)
 
+    // 6. Fetch recent activity logs (last 5)
+    const logsRes = await supabaseRestRequest("activity_logs?select=*&order=created_at.desc&limit=5", env)
+    const recentLogs = logsRes.ok ? await logsRes.json() : []
+
+    // 7. Fetch financial summary stats
+    const txResponse = await supabaseRestRequest("finance_transactions?select=amount,type", env)
+    const transactions = txResponse.ok ? await txResponse.json() : []
+    const totalIncome = transactions
+      .filter((t: any) => t.type === "in")
+      .reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0)
+    const totalExpense = transactions
+      .filter((t: any) => t.type === "out")
+      .reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0)
+    const currentBalance = totalIncome - totalExpense
+
     return Response.json({
       ok: true,
       stats: {
@@ -143,6 +157,7 @@ export async function GET(request: Request) {
         totalCourses: coursesCount,
         averageQuizScore,
         attendanceRate: Math.min(attendanceRate, 100),
+        currentBalance,
       },
       cohorts,
       weeklyAverages: weeklyAverages.length > 0 ? weeklyAverages : [
@@ -151,6 +166,7 @@ export async function GET(request: Request) {
         { week: 3, avg: 85 }
       ],
       atRiskStudents,
+      recentLogs,
     })
   } catch (err: unknown) {
     return Response.json({ message: err instanceof Error ? err.message : "Terjadi kesalahan internal." }, { status: 500 })

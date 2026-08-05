@@ -1,5 +1,7 @@
+import pkg from "../../../../package.json"
 import { verifyFirebaseIdToken } from "@/lib/server/firebase-auth"
 import { getSupabaseServerEnv, supabaseRestRequest } from "@/lib/server/supabase-rest"
+import { logActivity } from "@/lib/server/activity-logger"
 
 async function safeCount(path: string, env: { supabaseUrl: string; supabaseSecret: string }) {
   const response = await supabaseRestRequest(path, env)
@@ -37,6 +39,26 @@ export async function GET(request: Request) {
   const ALLOWED_STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
   if (!profile || !ALLOWED_STUDIO_ROLES.includes(profile.role)) {
     return Response.json({ message: "Akses Studio khusus pengurus komunitas." }, { status: 403 })
+  }
+
+  // Auto-log system update if version has changed or not yet logged
+  const version = pkg.version || "0.0.1"
+  const checkLogRes = await supabaseRestRequest(
+    `activity_logs?select=id&action=eq.SYSTEM_BOOT&details=ilike.*versi%20${encodeURIComponent(version)}*&limit=1`,
+    env,
+  )
+  if (checkLogRes.ok) {
+    const logRows = await checkLogRes.json() as any[]
+    if (!logRows || logRows.length === 0) {
+      void logActivity({
+        actorId: profile.id,
+        actorName: "Sistem JPER",
+        actorRole: "admin",
+        action: "SYSTEM_BOOT",
+        details: `Aplikasi JPER Community berhasil dijalankan/diperbarui ke versi ${version}.`,
+        category: "SISTEM",
+      })
+    }
   }
 
   const [memberCount, courseCount, sessionCount] = await Promise.all([

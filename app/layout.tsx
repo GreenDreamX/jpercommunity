@@ -16,6 +16,42 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
+export const metadata = {
+  title: {
+    default: "JPER Community - Komunitas & Belajar Bahasa Jepang",
+    template: "%s - JPER Community",
+  },
+  description: "JPER Community adalah website pembelajaran bahasa Jepang interaktif. Belajar kanji, belajar hiragana, katakana, tata bahasa (grammar), dan kosakata bahasa Jepang. Gabung komunitas bahasa Jepang, buat karya paperart menarik, dan ikuti LMS bahasa Jepang terstruktur.",
+  keywords: [
+    "LMS bahasa jepang",
+    "belajar kanji",
+    "belajar hiragana",
+    "komunitas bahasa jepang",
+    "paperart",
+    "JPER Community",
+    "jper.my.id",
+    "belajar bahasa jepang online",
+    "kelas bahasa jepang",
+    "nihongo"
+  ],
+  metadataBase: new URL("https://jper.my.id"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "JPER Community - Komunitas & Belajar Bahasa Jepang",
+    description: "LMS Bahasa Jepang & Komunitas Belajar Bahasa Jepang Interaktif.",
+    url: "https://jper.my.id",
+    siteName: "JPER Community",
+    locale: "id_ID",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{

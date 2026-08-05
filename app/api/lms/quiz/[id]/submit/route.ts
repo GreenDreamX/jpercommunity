@@ -95,30 +95,59 @@ export async function POST(
 
   // Fetch all questions for this quiz
   const questionsResponse = await supabaseRestRequest(
-    `quiz_questions?select=id,answer&quiz_id=eq.${quizId}`,
+    `quiz_questions?select=id,answer,type&quiz_id=eq.${quizId}`,
     env,
   )
   if (!questionsResponse.ok) {
     return Response.json({ message: "Gagal memuat pertanyaan kuis." }, { status: 500 })
   }
 
-  const questions = await questionsResponse.json() as Array<{ id: string; answer: string }>
+  const questions = await questionsResponse.json() as Array<{ id: string; answer: string; type?: string }>
   if (questions.length === 0) {
     return Response.json({ message: "Kuis ini tidak memiliki pertanyaan." }, { status: 400 })
   }
 
   // Calculate score
   let correctCount = 0
+  let hasShortAnswer = false
   questions.forEach((q) => {
-    const userAnswer = userAnswers[q.id]?.trim()
-    const correctAnswer = q.answer.trim()
-    if (userAnswer && userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
-      correctCount++
+    const qType = q.type || "multiple_choice"
+    if (qType === "short_answer") {
+      hasShortAnswer = true
+      return
+    }
+
+    const userAnswer = userAnswers[q.id]
+    if (qType === "multiple_select") {
+      try {
+        const correctArr = JSON.parse(q.answer) as string[]
+        const studentArr = Array.isArray(userAnswer)
+          ? userAnswer
+          : (typeof userAnswer === "string" && userAnswer.startsWith("[")
+              ? JSON.parse(userAnswer) as string[]
+              : [userAnswer].filter(Boolean))
+        
+        const cSorted = [...correctArr].map(x => String(x).trim().toLowerCase()).sort()
+        const sSorted = [...studentArr].map(x => String(x).trim().toLowerCase()).sort()
+        if (JSON.stringify(cSorted) === JSON.stringify(sSorted)) {
+          correctCount++
+        }
+      } catch {
+        if (userAnswer && String(userAnswer).trim().toLowerCase() === q.answer.trim().toLowerCase()) {
+          correctCount++
+        }
+      }
+    } else {
+      const userAnswerStr = typeof userAnswer === "string" ? userAnswer.trim() : ""
+      const correctAnswer = q.answer.trim()
+      if (userAnswerStr && userAnswerStr.toLowerCase() === correctAnswer.toLowerCase()) {
+        correctCount++
+      }
     }
   })
 
-  const score = Math.round((correctCount / questions.length) * 100)
-  const isPassed = score >= quiz.min_score
+  const score = hasShortAnswer ? null : Math.round((correctCount / questions.length) * 100)
+  const isPassed = score !== null ? score >= quiz.min_score : false
 
   // Save to quiz_answers (upsert on_conflict)
   const insertResponse = await supabaseRestRequest(
@@ -132,6 +161,7 @@ export async function POST(
         profile_id: profileId,
         score,
         attempts: currentAttempts + 1,
+        selected_answers: userAnswers,
       }],
     },
   )
@@ -153,6 +183,8 @@ export async function POST(
     maxAttempts: quiz.max_attempts,
     minScore: quiz.min_score,
     isPassed,
-    message: `Kuis berhasil diselesaikan dengan nilai ${score}. Kelulusan: ${isPassed ? "LULUS (合格)" : "TIDAK LULUS (不合格)"}`,
+    message: hasShortAnswer 
+      ? "Jawaban kuis telah terkirim. Pengurus akan mengoreksi jawaban isian singkat Anda terlebih dahulu."
+      : `Kuis berhasil diselesaikan dengan nilai ${score}. Kelulusan: ${isPassed ? "LULUS (合格)" : "TIDAK LULUS (不合格)"}`,
   })
 }

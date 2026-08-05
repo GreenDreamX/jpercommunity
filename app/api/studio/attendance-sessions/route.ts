@@ -96,6 +96,32 @@ export async function POST(request: Request) {
     }
 
     const data = await insertResponse.json()
+    const session = data[0]
+
+    // Populate default 'alpa' records for all active student members
+    const studentsResponse = await supabaseRestRequest(
+      "profiles?select=id&role=eq.student",
+      env,
+    )
+    if (studentsResponse.ok) {
+      const students = (await studentsResponse.json()) as Array<{ id: string }>
+      if (students.length > 0) {
+        const recordsBody = students.map((s) => ({
+          attendance_session_id: session.id,
+          profile_id: s.id,
+          status: "alpa",
+          scanned_at: new Date().toISOString(),
+        }))
+        const recordsResponse = await supabaseRestRequest("attendance_records", env, {
+          method: "POST",
+          body: recordsBody,
+        })
+        if (!recordsResponse.ok) {
+          console.error("Gagal membuat record default absensi alpa:", await recordsResponse.text())
+        }
+      }
+    }
+
     if (authCheck.profile) {
       void logActivity({
         actorId: authCheck.profile.id,
@@ -106,7 +132,7 @@ export async function POST(request: Request) {
         category: "ABSENSI",
       })
     }
-    return Response.json({ ok: true, session: data[0] })
+    return Response.json({ ok: true, session })
   } catch (err: unknown) {
     return Response.json({ message: err instanceof Error ? err.message : "Terjadi kesalahan internal." }, { status: 500 })
   }

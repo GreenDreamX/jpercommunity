@@ -30,7 +30,9 @@ export async function GET(request: Request) {
   const category = searchParams.get("category")
   const search = searchParams.get("search")
 
-  let path = "activity_logs?select=*&order=created_at.desc&limit=150"
+  const limitParam = searchParams.get("limit")
+  const limit = limitParam ? parseInt(limitParam) : 30
+  let path = `activity_logs?select=*&order=created_at.desc&limit=${limit}`
   if (category && category !== "SEMUA") {
     path += `&category=eq.${encodeURIComponent(category)}`
   }

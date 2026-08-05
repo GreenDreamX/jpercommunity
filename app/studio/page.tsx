@@ -20,6 +20,10 @@ import { LoggingTab } from "@/components/studio/logging-tab"
 import { DictionaryManagement } from "@/components/studio/dictionary-management"
 import { GrammarManagement } from "@/components/studio/grammar-management"
 import { FinanceManagement } from "@/components/studio/finance-management"
+import { QuizManagement } from "@/components/studio/quiz-management"
+import { SubmissionsTab } from "@/components/studio/submissions-tab"
+import { RaporTab } from "@/components/studio/rapor-tab"
+import { SettingsTab } from "@/components/studio/settings-tab"
 
 const STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
 
@@ -149,6 +153,8 @@ export default function StudioPage() {
         return <FinanceManagement token={token} />
       case "courses":
         return <CourseManagement token={token} />
+      case "quizzes":
+        return <QuizManagement token={token} />
       case "members":
         return <MemberManagement token={token} />
       case "dictionary":
@@ -163,6 +169,12 @@ export default function StudioPage() {
         return <AttendanceManagement token={token} />
       case "grades":
         return <GradesManagement token={token} />
+      case "submissions":
+        return <SubmissionsTab token={token} />
+      case "rapor":
+        return <RaporTab token={token} />
+      case "settings":
+        return <SettingsTab token={token} />
       case "logs":
         return <LoggingTab token={token} />
       case "dashboard":

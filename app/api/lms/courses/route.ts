@@ -12,11 +12,28 @@ export async function GET(request: Request) {
     return Response.json({ message: verified.message }, { status: verified.status })
   }
 
-  const response = await supabaseRestRequest("courses?select=id,title,description,image_url,is_locked&is_hidden=eq.false&order=created_at.desc", env)
+  const response = await supabaseRestRequest("courses?select=id,title,description,image_url,is_locked,course_weeks(id)&is_hidden=eq.false&order=created_at.desc", env)
   if (!response.ok) {
     return Response.json({ message: "Gagal mengambil daftar kelas." }, { status: 500 })
   }
 
-  const courses = await response.json()
+  const rawCourses = await response.json() as Array<{
+    id: string
+    title: string
+    description: string | null
+    image_url: string | null
+    is_locked: boolean
+    course_weeks?: Array<{ id: string }>
+  }>
+
+  const courses = rawCourses.map((c) => ({
+    id: c.id,
+    title: c.title,
+    description: c.description,
+    image_url: c.image_url,
+    is_locked: c.is_locked,
+    weekCount: c.course_weeks?.length ?? 0,
+  }))
+
   return Response.json({ ok: true, courses })
 }

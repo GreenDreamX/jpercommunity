@@ -133,13 +133,41 @@ export async function POST(request: Request) {
 
   // Check if user already scanned for this session
   const checkResponse = await supabaseRestRequest(
-    `attendance_records?select=id&attendance_session_id=eq.${session.id}&profile_id=eq.${profileId}&limit=1`,
+    `attendance_records?select=id,status&attendance_session_id=eq.${session.id}&profile_id=eq.${profileId}&limit=1`,
     env,
   )
   if (checkResponse.ok) {
-    const existing = await checkResponse.json() as Array<unknown>
+    const existing = await checkResponse.json() as Array<{ id: string; status: string }>
     if (existing.length > 0) {
-      return Response.json({ message: "Anda sudah melakukan absensi untuk sesi ini." }, { status: 400 })
+      const rec = existing[0]
+      if (rec.status === "hadir") {
+        return Response.json({ message: "Anda sudah melakukan absensi untuk sesi ini." }, { status: 400 })
+      } else {
+        // Update status to 'hadir'
+        const updateResponse = await supabaseRestRequest(
+          `attendance_records?id=eq.${rec.id}`,
+          env,
+          {
+            method: "PATCH",
+            body: { status: "hadir", scanned_at: new Date().toISOString() },
+          },
+        )
+        if (!updateResponse.ok) {
+          const errText = await updateResponse.text()
+          return Response.json({ message: "Gagal mencatat absensi.", details: errText }, { status: 500 })
+        }
+
+        void logActivity({
+          actorId: userProfile.id,
+          actorName: userProfile.nama_lengkap || "Siswa JPER",
+          actorRole: userProfile.role || "student",
+          action: "SCAN_ABSENSI",
+          details: `${userProfile.nama_lengkap || "Siswa"} berhasil melakukan scan absensi kelas.`,
+          category: "ABSENSI",
+        })
+
+        return Response.json({ ok: true, message: "Absensi berhasil dicatat." })
+      }
     }
   }
 

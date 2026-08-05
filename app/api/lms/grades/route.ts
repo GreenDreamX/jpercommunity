@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
   // Get grades with week and course details
   const gradesResponse = await supabaseRestRequest(
-    `grades?select=id,score,note,created_at,course_weeks(week_number,title,courses(title))&profile_id=eq.${profileId}&order=created_at.desc`,
+    `grades?select=id,score,note,nilai_tugas,nilai_kuis,nilai_kumpulan,created_at,course_weeks(week_number,title,courses(title))&profile_id=eq.${profileId}&order=created_at.desc`,
     env,
   )
 

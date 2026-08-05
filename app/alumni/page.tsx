@@ -5,6 +5,11 @@ import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
+export const metadata = {
+  title: "Direktori Alumni & Angkatan",
+  description: "Daftar alumni JPER Community, sebaran angkatan, dan pencapaian akademik dalam pembelajaran bahasa Jepang.",
+}
+
 export default function AlumniPage() {
   return (
     <main className="min-h-svh bg-background px-6 py-10 text-foreground md:px-8 lg:px-10">

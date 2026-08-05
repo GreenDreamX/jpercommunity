@@ -46,6 +46,7 @@ type Course = {
   description: string | null
   image_url: string | null
   is_locked: boolean
+  weekCount?: number
 }
 
 export default function LmsPage() {
@@ -415,7 +416,12 @@ export default function LmsPage() {
 
       {/* TAB 2: MY COURSES */}
       {activeTab === "courses" && (
-        <>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-base font-bold text-[#1C1B1A]">Daftar Kelas Ekskul</h2>
+            <p className="text-xs text-[#6B6862] mt-0.5">Pilih kelas aktif Anda untuk memulai pembelajaran interaktif</p>
+          </div>
+
           {loadingCourses ? (
             <div className="text-xs text-[#6B6862] font-mono">Memuat daftar kelas...</div>
           ) : allCourses.length === 0 ? (
@@ -432,11 +438,12 @@ export default function LmsPage() {
                   description={course.description}
                   imageUrl={course.image_url}
                   isLocked={course.is_locked}
+                  weekCount={course.weekCount}
                 />
               ))}
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* TAB 3: ATTENDANCE */}

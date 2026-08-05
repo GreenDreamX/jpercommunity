@@ -38,11 +38,22 @@ export async function GET(request: Request) {
     return Response.json({ message: authCheck.message }, { status: authCheck.status })
   }
 
+  const { searchParams } = new URL(request.url)
+  const search = searchParams.get("search")
+  const limit = parseInt(searchParams.get("limit") ?? "200")
+
+  let query: string
+  if (search && search.trim()) {
+    // Simple search by name or email using ilike
+    const s = encodeURIComponent(`%${search.trim()}%`)
+    query = `profiles?select=id,nama_lengkap,email,angkatan&or=(nama_lengkap.ilike.${s},email.ilike.${s})&order=nama_lengkap.asc&limit=${limit}`
+  } else {
+    // Full fetch with academic info when no search
+    query = `profiles?select=*,student_academic_info(*)&order=nama_lengkap.asc&limit=${limit}`
+  }
+
   // Fetch all profiles along with academic info if available
-  const response = await supabaseRestRequest(
-    "profiles?select=*,student_academic_info(*)&order=nama_lengkap.asc",
-    env,
-  )
+  const response = await supabaseRestRequest(query, env)
 
   if (!response.ok) {
     return Response.json({ message: "Gagal mengambil daftar anggota." }, { status: 500 })

@@ -8,6 +8,9 @@ type GradeRecord = {
   id: string
   score: string | number | null
   note: string | null
+  nilai_tugas: string | number | null
+  nilai_kuis: string | number | null
+  nilai_kumpulan: string | number | null
   created_at: string
   course_weeks: {
     week_number: number
@@ -52,7 +55,7 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
   }, [firebaseToken])
 
   const validScores = grades
-    .map((g) => (g.score ? Number(g.score) : null))
+    .map((g) => (g.nilai_kumpulan ? Number(g.nilai_kumpulan) : null))
     .filter((s): s is number => s !== null)
 
   const averageScore =
@@ -63,7 +66,7 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
   const passedCount = validScores.filter((s) => s >= 70).length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-[#1C1B1A]">
       <div>
         <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A]">Transkrip Nilai</h2>
         <p className="text-xs text-[#6B6862]">Rekapitulasi pencapaian tugas dan kuis Anda per pertemuan kelas.</p>
@@ -126,7 +129,9 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
             <thead>
               <tr className="border-b border-[#E4E1DA] bg-[#FAF9F6] text-[#6B6862] font-mono tracking-wider">
                 <th className="p-3.5 font-medium">MATERI & KELAS</th>
-                <th className="p-3.5 font-medium">NILAI</th>
+                <th className="p-3.5 font-medium text-center">NILAI TUGAS</th>
+                <th className="p-3.5 font-medium text-center">NILAI KUIS</th>
+                <th className="p-3.5 font-medium text-center">NILAI KUMPULAN</th>
                 <th className="p-3.5 font-medium">CATATAN PEMBINA</th>
                 <th className="p-3.5 font-medium text-right">STATUS</th>
               </tr>
@@ -135,8 +140,10 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
               {grades.map((grade) => {
                 const week = grade.course_weeks
                 const course = week?.courses
-                const scoreNum = grade.score ? Number(grade.score) : null
-                const isPassed = scoreNum !== null && scoreNum >= 70
+                const tugasNum = grade.nilai_tugas !== null && grade.nilai_tugas !== undefined ? Number(grade.nilai_tugas) : 0
+                const kuisNum = grade.nilai_kuis !== null && grade.nilai_kuis !== undefined ? Number(grade.nilai_kuis) : 0
+                const kumpulanNum = grade.nilai_kumpulan !== null && grade.nilai_kumpulan !== undefined ? Number(grade.nilai_kumpulan) : 0
+                const isPassed = kumpulanNum >= 70
 
                 return (
                   <tr key={grade.id} className="border-b border-[#E4E1DA] bg-[#FAF9F6]/20 last:border-none">
@@ -146,22 +153,27 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
                       </div>
                       <div className="text-[10px] text-[#6B6862] mt-0.5">{course?.title}</div>
                     </td>
-                    <td className="p-3.5 font-mono text-base font-bold text-[#2B3A55]">
-                      {scoreNum ?? "-"}
+                    <td className="p-3.5 text-center font-mono text-sm font-semibold text-stone-700">
+                      {tugasNum}
                     </td>
-                    <td className="p-3.5 text-[#6B6862] italic max-w-xs truncate">
+                    <td className="p-3.5 text-center font-mono text-sm font-semibold text-stone-700">
+                      {kuisNum}
+                    </td>
+                    <td className="p-3.5 text-center font-mono text-base font-bold text-[#2B3A55]">
+                      {kumpulanNum}
+                    </td>
+                    <td className="p-3.5 text-[#6B6862] italic max-w-xs truncate" title={grade.note || ""}>
                       {grade.note ?? "Tidak ada catatan."}
                     </td>
                     <td className="p-3.5 text-right flex justify-end items-center h-16">
                       {isPassed ? (
-                        /* Hanko stamp: thin circular red border with 合格 (Passed) inside, slightly tilted */
                         <div className="relative flex items-center justify-center w-11 h-11 border border-dashed border-[#B23A2E]/25 rounded-full">
                           <div className="absolute transform rotate-[6deg] flex items-center justify-center w-9 h-9 border border-[#B23A2E] rounded-full text-[9px] font-bold text-[#B23A2E] tracking-tight bg-white/40">
                             合格
                           </div>
                         </div>
                       ) : (
-                        <div className="text-[10px] font-medium text-[#6B6862] bg-[#E4E1DA]/50 px-2 py-0.5 rounded border border-[#E4E1DA]">
+                        <div className="text-[10px] font-medium text-[#B23A2E] bg-[#B23A2E]/10 px-2 py-0.5 rounded border border-[#B23A2E]/25">
                           Mengulang
                         </div>
                       )}

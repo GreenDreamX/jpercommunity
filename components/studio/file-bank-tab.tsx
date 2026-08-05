@@ -1,11 +1,14 @@
 "use client"
 
-import React, { useEffect, useState, useCallback } from "react"
-import { Copy, Trash2, Search, Plus, Filter, FileText, Image as ImageIcon, Link as LinkIcon, Archive, Folder } from "lucide-react"
+import React, { useEffect, useState, useCallback, useRef } from "react"
+import {
+  Copy, Trash2, Search, Plus, Filter, FileText, Image as ImageIcon,
+  Link as LinkIcon, Archive, Folder, Grid, List, Download, HardDrive,
+  ExternalLink, UploadCloud, CheckCircle2, AlertCircle, FileCheck
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 
 type FileItem = {
   id: string
@@ -25,27 +28,22 @@ export function FileBankTab({ token }: FileBankTabProps) {
   const [files, setFiles] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
-  // Form states
-  const [title, setTitle] = useState("")
-  const [fileUrl, setFileUrl] = useState("")
-  const [category, setCategory] = useState<FileItem["category"]>("document")
-  const [fileSize, setFileSize] = useState("")
-  const [fileType, setFileType] = useState("")
-  const [submitting, setSubmitting] = useState(false)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
-  
-  // Search & Filter states
+
+  // Layout & Filter states
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [search, setSearch] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  
+  // File Upload states
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Clipboard copied indicator
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const fetchFiles = useCallback(async () => {
-    setTimeout(() => {
-      setLoading(true)
-    }, 0)
+    setLoading(true)
     try {
       const res = await fetch("/api/studio/file-bank", {
         headers: { Authorization: `Bearer ${token}` },
@@ -60,96 +58,91 @@ export function FileBankTab({ token }: FileBankTabProps) {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.")
     } finally {
-      setTimeout(() => {
-        setLoading(false)
-      }, 0)
+      setLoading(false)
     }
   }, [token])
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      void fetchFiles()
-    }, 0)
-    return () => clearTimeout(timer)
+    void fetchFiles()
   }, [fetchFiles])
 
-  // Handle mock file upload simulation
-  const handleSimulateUpload = () => {
-    if (!title) {
-      alert("Masukkan judul file terlebih dahulu.")
-      return
-    }
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "_")
-    let ext = ".pdf"
-    let mime = "application/pdf"
-    
-    if (category === "image") {
-      ext = ".jpg"
-      mime = "image/jpeg"
-    } else if (category === "archive") {
-      ext = ".zip"
-      mime = "application/zip"
-    }
-    
-    const randomId = Math.floor(Math.random() * 10000)
-    const simulatedUrl = `https://ufehqkmxqcqcmwkftqqf.supabase.co/storage/v1/object/public/archives/${cleanTitle}_${randomId}${ext}`
-    
-    setFileUrl(simulatedUrl)
-    setFileType(mime)
-    setFileSize((Math.floor(Math.random() * 5000000) + 100000).toString()) // 100KB - 5.1MB
-  }
+  // Handle actual file upload to Supabase Storage
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  // Handle manual submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim() || !fileUrl.trim()) return
-
-    setSubmitting(true)
-    setSuccessMsg(null)
+    setUploading(true)
     setError(null)
+    setSuccessMsg(null)
 
     try {
-      const res = await fetch("/api/studio/file-bank", {
+      // 1. Upload to Supabase Storage API
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("folder", "materials")
+
+      const uploadRes = await fetch("/api/studio/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+
+      if (!uploadRes.ok) {
+        const payload = await uploadRes.json().catch(() => null)
+        throw new Error(payload?.message ?? "Gagal mengunggah file ke storage.")
+      }
+
+      const uploadData = await uploadRes.json()
+      const fileUrl = uploadData.url
+      const fileSize = uploadData.size
+      const fileType = file.type
+
+      // Determine category based on MIME type or name
+      let category: FileItem["category"] = "other"
+      if (fileType.includes("pdf") || fileType.includes("word") || fileType.includes("document") || fileType.includes("text")) {
+        category = "document"
+      } else if (fileType.includes("image")) {
+        category = "image"
+      } else if (fileType.includes("zip") || fileType.includes("tar") || fileType.includes("rar")) {
+        category = "archive"
+      } else if (file.name.toLowerCase().includes("silabus") || file.name.toLowerCase().includes("kurikulum") || file.name.toLowerCase().includes("modul")) {
+        category = "syllabus"
+      }
+
+      // 2. Save metadata to File Bank database
+      const dbRes = await fetch("/api/studio/file-bank", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          title: title.trim(),
-          file_url: fileUrl.trim(),
-          file_size: fileSize ? parseInt(fileSize) : null,
-          file_type: fileType || null,
+          title: file.name,
+          file_url: fileUrl,
+          file_size: fileSize,
+          file_type: fileType,
           category,
         }),
       })
 
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null)
-        throw new Error(payload?.message ?? "Gagal menyimpan berkas.")
+      if (!dbRes.ok) {
+        throw new Error("Gagal mendaftarkan file ke database bank berkas.")
       }
 
-      setTitle("")
-      setFileUrl("")
-      setFileSize("")
-      setFileType("")
-      setCategory("document")
-      setSuccessMsg("Berkas berhasil disimpan ke File Bank!")
-      
-      // Reload list
+      setSuccessMsg(`File "${file.name}" berhasil diunggah!`)
       await fetchFiles()
-      
-      setTimeout(() => setSuccessMsg(null), 3000)
+      setTimeout(() => setSuccessMsg(null), 3500)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Gagal menyimpan berkas.")
+      setError(err instanceof Error ? err.message : "Gagal mengunggah file.")
     } finally {
-      setSubmitting(false)
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
     }
   }
 
   // Handle Delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus berkas arsip ini?")) return
+    if (!confirm("Apakah Anda yakin ingin menghapus berkas arsip ini dari cloud?")) return
 
     try {
       const res = await fetch(`/api/studio/file-bank?id=${id}`, {
@@ -175,27 +168,37 @@ export function FileBankTab({ token }: FileBankTabProps) {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  // Formatting utils
+  // File size formatting
   const formatBytes = (bytes: number | null) => {
     if (bytes === null || bytes === undefined) return "-"
     if (bytes === 0) return "0 Bytes"
     const k = 1024
     const sizes = ["Bytes", "KB", "MB", "GB"]
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i]
   }
 
   const getCategoryIcon = (cat: string) => {
     switch (cat) {
-      case "document": return <FileText className="size-4 text-blue-600" />
-      case "image": return <ImageIcon className="size-4 text-emerald-600" />
-      case "syllabus": return <Folder className="size-4 text-amber-600" />
-      case "archive": return <Archive className="size-4 text-purple-600" />
-      default: return <LinkIcon className="size-4 text-[#6B6862]" />
+      case "document": return <FileText className="size-8 text-blue-500" />
+      case "image": return <ImageIcon className="size-8 text-emerald-500" />
+      case "syllabus": return <Folder className="size-8 text-amber-500" />
+      case "archive": return <Archive className="size-8 text-purple-500" />
+      default: return <LinkIcon className="size-8 text-[#6B6862]" />
     }
   }
 
-  // Search and Filtered lists
+  const getCategoryMiniIcon = (cat: string) => {
+    switch (cat) {
+      case "document": return <FileText className="size-3.5 text-blue-500" />
+      case "image": return <ImageIcon className="size-3.5 text-emerald-500" />
+      case "syllabus": return <Folder className="size-3.5 text-amber-500" />
+      case "archive": return <Archive className="size-3.5 text-purple-500" />
+      default: return <LinkIcon className="size-3.5 text-[#6B6862]" />
+    }
+  }
+
+  // Filtered files
   const filteredFiles = files.filter((f) => {
     const matchesSearch = f.title.toLowerCase().includes(search.toLowerCase()) || 
                           (f.file_type && f.file_type.toLowerCase().includes(search.toLowerCase()))
@@ -203,220 +206,299 @@ export function FileBankTab({ token }: FileBankTabProps) {
     return matchesSearch && matchesCat
   })
 
+  // Calculate storage metrics (limit 1GB = 1,073,741,824 Bytes)
+  const storageLimitBytes = 1073741824
+  const totalStorageUsed = files.reduce((acc, f) => acc + (f.file_size || 0), 0)
+  const storageUsedPercentage = Math.min((totalStorageUsed / storageLimitBytes) * 100, 100)
+
+  // Recent Uploads (first 3)
+  const recentFiles = files.slice(0, 3)
+
   return (
-    <div className="space-y-6 text-[#1C1B1A]">
-      <section className="grid gap-6 md:grid-cols-[1.1fr_0.9fr]">
-        {/* LEFT COLUMN: FILE LIST */}
-        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-lg">
-          <CardHeader className="pb-3 border-b border-[#E4E1DA]">
-            <CardTitle className="text-lg font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
-              <Folder className="size-5 text-[#2B3A55]" />
-              Arsip Berkas Dokumen
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-4">
-            {/* Search & Category Filter */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-2.5 size-4 text-[#6B6862]" />
-                <Input
-                  placeholder="Cari arsip..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Filter className="size-4 text-[#6B6862]" />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="border border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 px-2 rounded-lg text-[#1C1B1A] focus:outline-none"
-                >
-                  <option value="all">Semua Kategori</option>
-                  <option value="document">Dokumen / PDF</option>
-                  <option value="image">Gambar / Foto</option>
-                  <option value="syllabus">Silabus / Modul</option>
-                  <option value="archive">Arsip / ZIP</option>
-                  <option value="other">Lainnya</option>
-                </select>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-10 text-xs text-[#6B6862] font-mono">Memuat bank file...</div>
-            ) : filteredFiles.length === 0 ? (
-              <div className="text-center py-10 text-xs text-[#6B6862] border border-dashed border-[#E4E1DA] rounded-lg">
-                Tidak ada dokumen yang ditemukan.
-              </div>
+    <div className="grid gap-6 md:grid-cols-[240px_1fr] text-[#1C1B1A]">
+      {/* DRIVE SIDEBAR */}
+      <aside className="space-y-6">
+        {/* Real file upload button */}
+        <div className="relative">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            className="hidden"
+            disabled={uploading}
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="w-full bg-[#2B3A55] text-white hover:bg-[#2B3A55]/90 h-10 rounded-lg flex items-center justify-center gap-2 text-xs font-bold border-none shadow-sm"
+          >
+            {uploading ? (
+              <>
+                <UploadCloud className="size-4 animate-bounce" />
+                Mengunggah...
+              </>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-[#E4E1DA] text-[#6B6862] font-mono">
-                      <th className="py-2 font-medium">Judul Arsip</th>
-                      <th className="py-2 font-medium">Kategori</th>
-                      <th className="py-2 font-medium">Ukuran</th>
-                      <th className="py-2 font-medium text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredFiles.map((file) => (
-                      <tr key={file.id} className="border-b border-[#E4E1DA]/50 hover:bg-[#E4E1DA]/10 transition-colors">
-                        <td className="py-3 pr-2">
-                          <div className="font-semibold text-[#1C1B1A]">{file.title}</div>
-                          <div className="text-[10px] text-[#6B6862] font-mono truncate max-w-[200px] sm:max-w-[300px]">
-                            {file.file_url}
-                          </div>
-                        </td>
-                        <td className="py-3">
-                          <div className="flex items-center gap-1.5 capitalize font-mono text-[10px]">
-                            {getCategoryIcon(file.category)}
-                            {file.category}
-                          </div>
-                        </td>
-                        <td className="py-3 font-mono text-[#6B6862]">
-                          {formatBytes(file.file_size)}
-                        </td>
-                        <td className="py-3 text-right space-x-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCopyLink(file.file_url, file.id)}
-                            className="h-7 px-2 border-[#E4E1DA] bg-[#FAF9F6] text-[10px] rounded-lg"
-                          >
-                            <Copy className="size-3 mr-1" />
-                            {copiedId === file.id ? "Copied!" : "Copy Link"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleDelete(file.id)}
-                            className="h-7 px-2 bg-[#B23A2E] text-[#FAF9F6] hover:bg-[#B23A2E]/90 rounded-lg border-none"
-                          >
-                            <Trash2 className="size-3" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                <Plus className="size-4" />
+                Upload File Baru
+              </>
             )}
-          </CardContent>
+          </Button>
+        </div>
+
+        {/* Categories Menu */}
+        <div className="space-y-1 bg-[#FAF9F6] border border-[#E4E1DA] p-2 rounded-xl">
+          {[
+            { value: "all", label: "Semua File", icon: <HardDrive className="size-4" /> },
+            { value: "document", label: "Dokumen & PDF", icon: <FileText className="size-4 text-blue-500" /> },
+            { value: "image", label: "Gambar & Media", icon: <ImageIcon className="size-4 text-emerald-500" /> },
+            { value: "syllabus", label: "Silabus & Modul", icon: <Folder className="size-4 text-amber-500" /> },
+            { value: "archive", label: "Arsip Kompresi", icon: <Archive className="size-4 text-purple-500" /> },
+          ].map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setSelectedCategory(cat.value)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                selectedCategory === cat.value
+                  ? "bg-[#2B3A55]/10 text-[#2B3A55]"
+                  : "text-[#6B6862] hover:text-[#1C1B1A] hover:bg-[#E4E1DA]/30"
+              }`}
+            >
+              {cat.icon}
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Storage Bar Indicator */}
+        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-xl p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#1C1B1A] mb-2">
+            <HardDrive className="size-4 text-[#2B3A55]" />
+            <span>Penyimpanan Cloud</span>
+          </div>
+          <div className="w-full h-2 rounded-full bg-[#E4E1DA] overflow-hidden mb-1.5">
+            <div
+              style={{ width: `${storageUsedPercentage}%` }}
+              className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+            />
+          </div>
+          <div className="text-[10px] font-mono text-[#6B6862] flex justify-between">
+            <span>{formatBytes(totalStorageUsed)}</span>
+            <span>dari 1 GB</span>
+          </div>
         </Card>
+      </aside>
 
-        {/* RIGHT COLUMN: UPLOAD / ADD FILE */}
-        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-lg h-fit">
-          <CardHeader className="pb-3 border-b border-[#E4E1DA]">
-            <CardTitle className="text-lg font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
-              <Plus className="size-5 text-[#2B3A55]" />
-              Tambah Arsip Baru
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {successMsg && (
-                <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-xs text-emerald-800">
-                  {successMsg}
-                </div>
-              )}
-              {error && (
-                <div className="rounded-lg border border-[#B23A2E]/30 bg-[#B23A2E]/5 p-3 text-xs text-[#B23A2E]">
-                  {error}
-                </div>
-              )}
+      {/* DRIVE MAIN PANELS */}
+      <main className="space-y-6">
+        {error && (
+          <div className="rounded-lg border border-[#B23A2E]/30 bg-[#B23A2E]/5 p-3.5 text-xs text-[#B23A2E] flex items-center gap-2">
+            <AlertCircle className="size-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-              <FieldGroup className="space-y-3">
-                <Field>
-                  <FieldLabel htmlFor="title" className="text-xs font-semibold text-[#1C1B1A]">Judul Berkas / Arsip</FieldLabel>
-                  <Input
-                    id="title"
-                    placeholder="Contoh: Silabus Bahasa Jepang N5"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    disabled={submitting}
-                    className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
-                  />
-                </Field>
+        {successMsg && (
+          <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-3.5 text-xs text-emerald-800 font-medium flex items-center gap-2">
+            <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+            <span>{successMsg}</span>
+          </div>
+        )}
 
-                <Field>
-                  <FieldLabel htmlFor="category" className="text-xs font-semibold text-[#1C1B1A]">Kategori Arsip</FieldLabel>
-                  <select
-                    id="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as FileItem["category"])}
-                    disabled={submitting}
-                    className="w-full border border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 px-3 rounded-lg text-[#1C1B1A] focus:outline-none"
-                  >
-                    <option value="document">Dokumen / PDF</option>
-                    <option value="image">Gambar / Foto</option>
-                    <option value="syllabus">Silabus / Modul</option>
-                    <option value="archive">Arsip / ZIP</option>
-                    <option value="other">Lainnya</option>
-                  </select>
-                </Field>
+        {/* DRIVE HEADER SEARCH & VIEW TOGGLE */}
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between border-b border-[#E4E1DA] pb-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-2.5 size-4 text-[#6B6862]" />
+            <Input
+              placeholder="Cari file, tipe, atau format..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
+            />
+          </div>
 
-                <Field>
-                  <div className="flex justify-between items-center mb-1">
-                    <FieldLabel htmlFor="file_url" className="text-xs font-semibold text-[#1C1B1A]">URL Berkas</FieldLabel>
-                    <button
-                      type="button"
-                      onClick={handleSimulateUpload}
-                      disabled={submitting}
-                      className="text-[10px] text-blue-600 hover:underline font-mono"
-                    >
-                      Simulasikan Upload Storage
-                    </button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setViewMode("grid")}
+              className={`h-8 w-8 p-0 rounded-lg border-[#E4E1DA] ${viewMode === "grid" ? "bg-[#2B3A55]/10 border-[#2B3A55]/30 text-[#2B3A55]" : "bg-white"}`}
+            >
+              <Grid className="size-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setViewMode("list")}
+              className={`h-8 w-8 p-0 rounded-lg border-[#E4E1DA] ${viewMode === "list" ? "bg-[#2B3A55]/10 border-[#2B3A55]/30 text-[#2B3A55]" : "bg-white"}`}
+            >
+              <List className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* DRIVE QUICK ACCESS SECTION (only if search is empty) */}
+        {!search && selectedCategory === "all" && recentFiles.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B6862]">Baru Diunggah (Quick Access)</h3>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {recentFiles.map((file) => (
+                <Card
+                  key={file.id}
+                  className="border border-[#E4E1DA] bg-[#FAF9F6] hover:border-[#2B3A55]/40 hover:shadow-sm transition-all rounded-xl p-3 flex flex-col justify-between h-28 cursor-pointer group"
+                  onClick={() => window.open(file.file_url, "_blank")}
+                >
+                  <div className="flex items-start justify-between">
+                    {getCategoryIcon(file.category)}
+                    <span className="text-[9px] font-mono text-[#6B6862] bg-[#E4E1DA]/40 px-2 py-0.5 rounded-full">
+                      {formatBytes(file.file_size)}
+                    </span>
                   </div>
-                  <Input
-                    id="file_url"
-                    placeholder="https://example.com/file.pdf"
-                    required
-                    value={fileUrl}
-                    onChange={(e) => setFileUrl(e.target.value)}
-                    disabled={submitting}
-                    className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg"
-                  />
-                </Field>
+                  <div className="space-y-0.5">
+                    <div className="text-[11px] font-bold text-[#1C1B1A] truncate group-hover:text-blue-600 transition-colors" title={file.title}>
+                      {file.title}
+                    </div>
+                    <div className="text-[9px] text-[#6B6862] font-mono">
+                      {new Date(file.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Field>
-                    <FieldLabel htmlFor="file_size" className="text-xs font-semibold text-[#1C1B1A]">Ukuran (Bytes)</FieldLabel>
-                    <Input
-                      id="file_size"
-                      placeholder="1024"
-                      value={fileSize}
-                      onChange={(e) => setFileSize(e.target.value)}
-                      disabled={submitting}
-                      className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg font-mono"
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="file_type" className="text-xs font-semibold text-[#1C1B1A]">Tipe (MIME)</FieldLabel>
-                    <Input
-                      id="file_type"
-                      placeholder="application/pdf"
-                      value={fileType}
-                      onChange={(e) => setFileType(e.target.value)}
-                      disabled={submitting}
-                      className="border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg font-mono"
-                    />
-                  </Field>
-                </div>
-              </FieldGroup>
+        {/* DRIVE MAIN WORKSPACE GRID/LIST */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B6862]">
+            {selectedCategory === "all" ? "Semua Berkas" : `Kategori: ${selectedCategory}`}
+          </h3>
 
-              <Button
-                type="submit"
-                disabled={submitting || !title || !fileUrl}
-                className="bg-[#2B3A55] text-[#FAF9F6] hover:bg-[#2B3A55]/95 w-full h-9 text-xs font-semibold rounded-lg shadow-none border-none mt-2"
-              >
-                {submitting ? "Menyimpan..." : "Simpan Berkas"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </section>
+          {loading ? (
+            <div className="text-center py-20 text-xs font-mono text-[#6B6862]">Memuat penyimpanan Drive...</div>
+          ) : filteredFiles.length === 0 ? (
+            <div className="text-center py-20 text-xs text-[#6B6862] border border-dashed border-[#E4E1DA] rounded-xl bg-[#FAF9F6]/50">
+              Tidak ada file yang tersimpan. Gunakan "+ Upload" untuk menyimpan dokumen.
+            </div>
+          ) : viewMode === "grid" ? (
+            /* DRIVE GRID VIEW */
+            <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
+              {filteredFiles.map((file) => (
+                <Card
+                  key={file.id}
+                  className="border border-[#E4E1DA] bg-[#FAF9F6] hover:border-[#2B3A55]/40 hover:shadow-sm transition-all rounded-xl overflow-hidden flex flex-col justify-between h-36"
+                >
+                  {/* File preview icon area */}
+                  <div className="flex-1 bg-[#E4E1DA]/20 flex items-center justify-center relative group">
+                    {getCategoryIcon(file.category)}
+                    {/* Hover actions */}
+                    <div className="absolute inset-0 bg-[#1C1B1A]/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-all">
+                      <a
+                        href={file.file_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-1.5 bg-white rounded-full text-blue-600 hover:bg-stone-100 transition-colors"
+                        title="Buka Berkas"
+                      >
+                        <ExternalLink className="size-4" />
+                      </a>
+                      <button
+                        onClick={() => handleCopyLink(file.file_url, file.id)}
+                        className="p-1.5 bg-white rounded-full text-emerald-600 hover:bg-stone-100 transition-colors"
+                        title="Salin Link"
+                      >
+                        <Copy className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(file.id)}
+                        className="p-1.5 bg-white rounded-full text-red-600 hover:bg-stone-100 transition-colors"
+                        title="Hapus"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
+                  </div>
+                  {/* File info footer */}
+                  <div className="p-2.5 border-t border-[#E4E1DA] space-y-0.5 bg-white">
+                    <div className="text-[11px] font-bold text-[#1C1B1A] truncate" title={file.title}>
+                      {file.title}
+                    </div>
+                    <div className="text-[9px] font-mono text-[#6B6862] flex justify-between items-center">
+                      <span>{formatBytes(file.file_size)}</span>
+                      {copiedId === file.id && <span className="text-emerald-600 font-semibold">Link Copied!</span>}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            /* DRIVE LIST VIEW (TABLE) */
+            <div className="overflow-hidden border border-[#E4E1DA] bg-[#FAF9F6] rounded-xl">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-[#E4E1DA] text-[#6B6862] font-mono bg-[#E4E1DA]/20">
+                    <th className="p-3 font-medium">Nama File</th>
+                    <th className="p-3 font-medium">Kategori</th>
+                    <th className="p-3 font-medium">Ukuran</th>
+                    <th className="p-3 font-medium">Diunggah</th>
+                    <th className="p-3 font-medium text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredFiles.map((file) => (
+                    <tr key={file.id} className="border-b border-[#E4E1DA]/50 last:border-none hover:bg-stone-50 transition-colors">
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          {getCategoryMiniIcon(file.category)}
+                          <span className="font-semibold text-[#1C1B1A] truncate max-w-xs sm:max-w-md block" title={file.title}>
+                            {file.title}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <span className="capitalize text-[10px] font-mono px-2 py-0.5 rounded bg-stone-100 text-[#6B6862] border border-[#E4E1DA]/50">
+                          {file.category}
+                        </span>
+                      </td>
+                      <td className="p-3 font-mono text-[#6B6862]">
+                        {formatBytes(file.file_size)}
+                      </td>
+                      <td className="p-3 text-[#6B6862] font-mono">
+                        {new Date(file.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                      </td>
+                      <td className="p-3 text-right space-x-1">
+                        <a
+                          href={file.file_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex h-7 px-2 bg-[#FAF9F6] border border-[#E4E1DA] hover:bg-stone-100 rounded-lg items-center gap-1 text-[10px] font-semibold transition-colors"
+                        >
+                          <ExternalLink className="size-3" /> Buka
+                        </a>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleCopyLink(file.file_url, file.id)}
+                          className="h-7 px-2 border-[#E4E1DA] bg-[#FAF9F6] text-[10px] rounded-lg"
+                        >
+                          {copiedId === file.id ? "Link Copied!" : "Salin Link"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleDelete(file.id)}
+                          className="h-7 px-2 bg-[#B23A2E] text-[#FAF9F6] hover:bg-[#B23A2E]/90 rounded-lg border-none"
+                        >
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   )
 }

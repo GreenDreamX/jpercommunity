@@ -54,6 +54,8 @@ export function MemberManagement({ token }: MemberManagementProps) {
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [angkatanFilter, setAngkatanFilter] = useState("all")
+  const [limit, setLimit] = useState(30)
+  const [currentPage, setCurrentPage] = useState(1)
   
   // Edit mode states
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -171,6 +173,11 @@ export function MemberManagement({ token }: MemberManagementProps) {
     return matchesSearch && matchesRole && matchesAngkatan
   })
 
+  const totalItems = filteredMembers.length
+  const totalPages = Math.ceil(totalItems / limit)
+  const paginatedMembers = filteredMembers.slice((currentPage - 1) * limit, currentPage * limit)
+  const startIndex = (currentPage - 1) * limit
+
   return (
     <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-lg text-[#1C1B1A]">
       <CardHeader className="pb-3 border-b border-[#E4E1DA] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -186,13 +193,19 @@ export function MemberManagement({ token }: MemberManagementProps) {
             <Input
               placeholder="Cari nama / email..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setCurrentPage(1)
+              }}
               className="pl-8 border-[#E4E1DA] bg-[#FAF9F6] text-[11px] h-8 w-full sm:w-42 rounded-lg"
             />
           </div>
           <select
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={(e) => {
+              setRoleFilter(e.target.value)
+              setCurrentPage(1)
+            }}
             className="border border-[#E4E1DA] bg-[#FAF9F6] text-[11px] h-8 px-2 rounded-lg text-[#1C1B1A]"
           >
             <option value="all">Semua Peran</option>
@@ -202,13 +215,28 @@ export function MemberManagement({ token }: MemberManagementProps) {
           </select>
           <select
             value={angkatanFilter}
-            onChange={(e) => setAngkatanFilter(e.target.value)}
+            onChange={(e) => {
+              setAngkatanFilter(e.target.value)
+              setCurrentPage(1)
+            }}
             className="border border-[#E4E1DA] bg-[#FAF9F6] text-[11px] h-8 px-2 rounded-lg text-[#1C1B1A]"
           >
             <option value="all">Semua Angkatan</option>
             {uniqueCohorts.map(cohort => (
               <option key={cohort} value={cohort}>Angkatan {cohort}</option>
             ))}
+          </select>
+          <select
+            value={limit}
+            onChange={(e) => {
+              setLimit(Number(e.target.value))
+              setCurrentPage(1)
+            }}
+            className="border border-[#E4E1DA] bg-[#FAF9F6] text-[11px] h-8 px-2 rounded-lg text-[#1C1B1A] font-semibold focus:outline-none"
+          >
+            <option value={30}>30 baris</option>
+            <option value={50}>50 baris</option>
+            <option value={100}>100 baris</option>
           </select>
         </div>
       </CardHeader>
@@ -226,7 +254,8 @@ export function MemberManagement({ token }: MemberManagementProps) {
             Tidak ada anggota yang cocok dengan filter pencarian.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-[#E4E1DA] text-[#6B6862] font-mono">
@@ -238,7 +267,7 @@ export function MemberManagement({ token }: MemberManagementProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredMembers.map((member) => {
+                {paginatedMembers.map((member) => {
                   const isEditing = editingId === member.id
                   const academic = member.student_academic_info?.[0]
                   
@@ -377,6 +406,36 @@ export function MemberManagement({ token }: MemberManagementProps) {
               </tbody>
             </table>
           </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-[#E4E1DA] mt-4 text-[11px]">
+            <div className="text-[#6B6862]">
+              Menampilkan {startIndex + 1} - {Math.min(startIndex + limit, totalItems)} dari {totalItems} anggota
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+              >
+                Sebelumnya
+              </Button>
+              <span className="font-mono text-[10px] text-[#1C1B1A]">
+                Halaman {currentPage} dari {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                className="border-[#E4E1DA] text-[10px] h-7 rounded-md font-semibold"
+              >
+                Berikutnya
+              </Button>
+            </div>
+          </div>
+          </>
         )}
       </CardContent>
     </Card>

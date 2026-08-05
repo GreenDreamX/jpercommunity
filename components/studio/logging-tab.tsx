@@ -28,6 +28,7 @@ export function LoggingTab({ token }: LoggingTabProps) {
   
   const [search, setSearch] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("SEMUA")
+  const [limit, setLimit] = useState(30)
 
   const categories = ["SEMUA", "ABSENSI", "NILAI", "MEMBER", "PROFIL", "SISTEM"]
 
@@ -35,7 +36,7 @@ export function LoggingTab({ token }: LoggingTabProps) {
     setLoading(true)
     setError(null)
     try {
-      let url = `/api/studio/logs?category=${selectedCategory}`
+      let url = `/api/studio/logs?category=${selectedCategory}&limit=${limit}`
       if (search.trim()) {
         url += `&search=${encodeURIComponent(search.trim())}`
       }
@@ -56,14 +57,14 @@ export function LoggingTab({ token }: LoggingTabProps) {
     } finally {
       setLoading(false)
     }
-  }, [token, selectedCategory, search])
+  }, [token, selectedCategory, search, limit])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       void fetchLogs()
     }, 0)
     return () => clearTimeout(timer)
-  }, [fetchLogs])
+  }, [fetchLogs, limit])
 
   const getCategoryBadgeClass = (category: string) => {
     switch (category) {
@@ -110,14 +111,25 @@ export function LoggingTab({ token }: LoggingTabProps) {
       <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-lg">
         <CardContent className="p-4 space-y-4">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 size-4 text-[#6B6862]" />
-              <Input
-                placeholder="Cari berdasarkan nama pelaku, detail aksi, atau kata kunci..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-white border-[#E4E1DA] text-xs h-9 rounded-lg"
-              />
+            <div className="relative flex-1 flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-2.5 size-4 text-[#6B6862]" />
+                <Input
+                  placeholder="Cari berdasarkan nama pelaku, detail aksi, atau kata kunci..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 bg-white border-[#E4E1DA] text-xs h-9 rounded-lg"
+                />
+              </div>
+              <select
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+                className="border border-[#E4E1DA] bg-white text-xs h-9 px-2 rounded-lg text-[#1C1B1A] font-semibold focus:outline-none"
+              >
+                <option value={30}>30 log</option>
+                <option value={50}>50 log</option>
+                <option value={100}>100 log</option>
+              </select>
             </div>
 
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">

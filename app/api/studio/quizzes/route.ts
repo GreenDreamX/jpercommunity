@@ -95,6 +95,12 @@ export async function POST(request: Request) {
       closed_at,
       max_attempts,
       min_score,
+      time_limit_minutes,
+      jumlah_soal_ditampilkan,
+      randomize_questions,
+      randomize_options,
+      allow_review,
+      show_correct_answers,
     } = body
 
     if (!course_week_id || !title) {
@@ -117,6 +123,12 @@ export async function POST(request: Request) {
           closed_at: closed_at || null,
           max_attempts: max_attempts !== undefined ? parseInt(String(max_attempts)) : 1,
           min_score: min_score !== undefined ? parseInt(String(min_score)) : 70,
+          time_limit_minutes: time_limit_minutes !== undefined ? parseInt(String(time_limit_minutes)) : 0,
+          jumlah_soal_ditampilkan: jumlah_soal_ditampilkan !== undefined ? parseInt(String(jumlah_soal_ditampilkan)) : 0,
+          randomize_questions: randomize_questions === true,
+          randomize_options: randomize_options === true,
+          allow_review: allow_review !== false,
+          show_correct_answers: show_correct_answers !== false,
         }],
       },
     )
@@ -137,6 +149,7 @@ export async function POST(request: Request) {
         options: q.options,
         answer: q.answer,
         order_index: idx,
+        type: q.type || "multiple_choice",
       }))
 
       const questionsResponse = await supabaseRestRequest(
@@ -188,6 +201,12 @@ export async function PATCH(request: Request) {
       closed_at,
       max_attempts,
       min_score,
+      time_limit_minutes,
+      jumlah_soal_ditampilkan,
+      randomize_questions,
+      randomize_options,
+      allow_review,
+      show_correct_answers,
     } = body
 
     const updateBody: Record<string, string | boolean | number | null> = {}
@@ -198,6 +217,12 @@ export async function PATCH(request: Request) {
     if (closed_at !== undefined) updateBody.closed_at = closed_at || null
     if (max_attempts !== undefined) updateBody.max_attempts = parseInt(String(max_attempts))
     if (min_score !== undefined) updateBody.min_score = parseInt(String(min_score))
+    if (time_limit_minutes !== undefined) updateBody.time_limit_minutes = parseInt(String(time_limit_minutes))
+    if (jumlah_soal_ditampilkan !== undefined) updateBody.jumlah_soal_ditampilkan = parseInt(String(jumlah_soal_ditampilkan))
+    if (randomize_questions !== undefined) updateBody.randomize_questions = randomize_questions === true
+    if (randomize_options !== undefined) updateBody.randomize_options = randomize_options === true
+    if (allow_review !== undefined) updateBody.allow_review = allow_review === true
+    if (show_correct_answers !== undefined) updateBody.show_correct_answers = show_correct_answers === true
 
     if (Object.keys(updateBody).length > 0) {
       const quizResponse = await supabaseRestRequest(
@@ -233,6 +258,7 @@ export async function PATCH(request: Request) {
           options: q.options,
           answer: q.answer,
           order_index: idx,
+          type: q.type || "multiple_choice",
         }))
 
         const questionsResponse = await supabaseRestRequest(

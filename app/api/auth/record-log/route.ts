@@ -6,6 +6,7 @@ type LogPayload = {
   action: "LOGIN" | "LOGOUT" | "CHANGE_PASSWORD" | "UPDATE_PROFILE" | string
   details?: string
   category?: "ABSENSI" | "NILAI" | "MEMBER" | "PROFIL" | "SILABUS" | "SISTEM" | "UMUM"
+  actorName?: string
 }
 
 export async function POST(request: Request) {
@@ -14,10 +15,7 @@ export async function POST(request: Request) {
     return Response.json({ message: env.message }, { status: 500 })
   }
 
-  const verified = await verifyFirebaseIdToken(request.headers.get("authorization"))
-  if (!verified.ok) {
-    return Response.json({ message: verified.message }, { status: verified.status })
-  }
+  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "Unknown IP"
 
   let body: LogPayload
   try {
@@ -29,6 +27,27 @@ export async function POST(request: Request) {
   const { action, details, category } = body
   if (!action) {
     return Response.json({ message: "Parameter action wajib disertakan." }, { status: 400 })
+  }
+
+  // Skip Firebase Auth check for LOGIN_FAILED as user is not logged in yet
+  if (action === "LOGIN_FAILED") {
+    const actorName = body.actorName || "Anonymous"
+    const det = `${details || `Percobaan login gagal untuk email: ${actorName}.`} (IP: ${ip})`
+    void logActivity({
+      actorId: null,
+      actorName,
+      actorRole: "student",
+      action: "LOGIN_FAILED",
+      details: det,
+      category: "MEMBER",
+    })
+    return Response.json({ ok: true })
+  }
+
+  // Normal authenticated logging
+  const verified = await verifyFirebaseIdToken(request.headers.get("authorization"))
+  if (!verified.ok) {
+    return Response.json({ message: verified.message }, { status: verified.status })
   }
 
   // Fetch actor profile from Supabase
@@ -61,6 +80,9 @@ export async function POST(request: Request) {
     cat = "PROFIL"
     det = det || `Pengguna ${actorName} berhasil memperbarui kata sandi (password).`
   }
+
+  // Always append IP to the details
+  det = `${det} (IP: ${ip})`
 
   void logActivity({
     actorId,

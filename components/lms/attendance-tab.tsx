@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 type AttendanceRecord = {
   id: string
   scanned_at: string
+  status: string
   attendance_sessions: {
     opened_at: string
     materi_diajarkan: string | null
@@ -342,6 +343,29 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
               {records.map((record) => {
                 const week = record.attendance_sessions?.course_weeks
                 const session = record.attendance_sessions
+                const status = record.status || "hadir"
+
+                let stampText = "出席" // hadir
+                let stampColor = "border-[#B23A2E] text-[#B23A2E]"
+                let label = "Hadir"
+                if (status === "izin") {
+                  stampText = "公欠"
+                  stampColor = "border-[#0284c7] text-[#0284c7]"
+                  label = "Izin"
+                } else if (status === "sakit") {
+                  stampText = "病欠"
+                  stampColor = "border-[#d97706] text-[#d97706]"
+                  label = "Sakit"
+                } else if (status === "alpa") {
+                  stampText = "欠席"
+                  stampColor = "border-red-500 text-red-500"
+                  label = "Alpa"
+                } else if (status === "dispen") {
+                  stampText = "公欠"
+                  stampColor = "border-purple-600 text-purple-600"
+                  label = "Dispen"
+                }
+
                 return (
                   <tr key={record.id} className="border-b border-[#E4E1DA] bg-[#FAF9F6]/20 last:border-none">
                     <td className="p-3.5 text-[#1C1B1A] font-semibold">
@@ -357,10 +381,22 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
                       })}
                     </td>
                     <td className="p-3.5 text-right flex justify-end items-center h-12">
-                      {/* Hanko stamp: thin circular red border with HADIR inside, slightly tilted */}
-                      <div className="relative flex items-center justify-center w-11 h-11 border border-dashed border-[#B23A2E]/25 rounded-full">
-                        <div className="absolute transform rotate-[-12deg] flex items-center justify-center w-9 h-9 border border-[#B23A2E] rounded-full text-[9px] font-bold text-[#B23A2E] tracking-tight bg-white/40">
-                          出席
+                      <div className="flex items-center gap-2">
+                        {/* Status Label (Indonesian) */}
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                          status === "hadir" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                          status === "izin" ? "bg-sky-50 text-sky-700 border-sky-200" :
+                          status === "sakit" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                          status === "alpa" ? "bg-red-50 text-red-700 border-red-200" :
+                          "bg-purple-50 text-purple-700 border-purple-200"
+                        }`}>
+                          {label.toUpperCase()}
+                        </span>
+                        {/* Japanese Hanko stamp */}
+                        <div className="relative flex items-center justify-center w-11 h-11 border border-dashed border-stone-200 rounded-full">
+                          <div className={`absolute transform rotate-[-12deg] flex items-center justify-center w-9 h-9 border ${stampColor} rounded-full text-[9px] font-bold tracking-tight bg-white/40`}>
+                            {stampText}
+                          </div>
                         </div>
                       </div>
                     </td>
