@@ -118,7 +118,7 @@ export async function GET(
   type RawModule = {
     id: string
     course_week_id: string
-    type: "file" | "video" | "notes" | "quiz" | "assignment"
+    type: "file" | "video" | "notes" | "quiz" | "assignment" | "flashcard" | "audio" | "grammar" | "external_link" | "live_session"
     title: string
     content: Record<string, unknown>
     is_locked: boolean

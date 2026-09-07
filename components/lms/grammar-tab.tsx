@@ -103,6 +103,8 @@ export function GrammarTab({ firebaseToken }: GrammarTabProps) {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel()
 
+      window.dispatchEvent(new CustomEvent("jper-quest-action", { detail: { action: "grammar_learned", count: 1 } }))
+
       const cleanedText = text.replace(/～/g, "").replace(/\.\.\./g, "").trim()
       const utterance = new SpeechSynthesisUtterance(cleanedText)
       utterance.lang = "ja-JP"
@@ -153,7 +155,7 @@ export function GrammarTab({ firebaseToken }: GrammarTabProps) {
         <div>
           <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
             <Bookmark className="size-5 text-[#B23A2E]" />
-            Tata Bahasa / Grammar (DB Supabase)
+            Tata Bahasa / Bunpou JPER
           </h2>
           <p className="text-xs text-[#6B6862]">Kumpulan pola kalimat & tata bahasa Jepang dasar-menengah dengan rumus, intonasi pitch, audio TTS, & contoh kalimat.</p>
         </div>
@@ -205,7 +207,7 @@ export function GrammarTab({ firebaseToken }: GrammarTabProps) {
         {loading ? (
           <div className="flex items-center justify-center py-12 text-xs font-mono text-[#6B6862] gap-2">
             <RefreshCw className="size-4 animate-spin text-[#B23A2E]" />
-            Memuat data tata bahasa dari Supabase...
+            Memuat data tata bahasa...
           </div>
         ) : error ? (
           <div className="rounded-lg border border-[#B23A2E]/30 bg-[#B23A2E]/5 p-4 text-xs text-[#B23A2E]">

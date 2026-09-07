@@ -146,7 +146,7 @@ export function ParallaxShowcase() {
                   <BadgeCheck className="size-4 text-primary" />
                 </div>
                 <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-foreground transition-all duration-200 hover:-translate-y-0.5">
-                  <span className="font-medium text-destructive">Aksen merah</span> hanya dipakai pada status penting dan elemen tanda resmi.
+                  <span className="font-medium text-destructive">Sistem Presensi Realtime:</span> Riwayat absensi & sertifikat tercatat otomatis.
                 </div>
               </CardContent>
             </Card>
@@ -156,16 +156,16 @@ export function ParallaxShowcase() {
               style={{ transform: `translate3d(0, ${progress * -14}px, 0)` }}
             >
               <CardHeader className="border-b border-border/70 pb-4">
-                <CardDescription>Basis data</CardDescription>
+                <CardDescription>Portal Pembelajaran</CardDescription>
                 <CardTitle className="text-xl tracking-[-0.03em]">
-                  Data profil, akademik, dan relasi dipisah dengan jelas.
+                  Manajemen Belajar Terpadu untuk Siswa & Pengurus.
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 p-5">
                 {[
-                  ["Firebase Auth", "session"],
-                  ["Supabase", "profiles"],
-                  ["Studio", "role: admin"],
+                  ["Absensi Digital", "QR Code Sesi"],
+                  ["Modul & Materi", "PDF + Audio TTS"],
+                  ["Arcade & Mini Games", "EXP & Leveling"],
                 ].map(([label, value], index) => (
                   <button
                     type="button"
@@ -174,11 +174,11 @@ export function ParallaxShowcase() {
                     className="flex w-full items-center justify-between text-sm text-stone transition-colors duration-200 hover:text-foreground"
                   >
                     <span>{label}</span>
-                    <span className="font-mono text-foreground">{value}</span>
+                    <span className="font-mono text-xs font-semibold text-primary">{value}</span>
                   </button>
                 ))}
-                <div className="pt-2 text-sm leading-6 text-foreground">
-                  Struktur ini memudahkan audit, RLS, dan pengembangan fitur setelah landing page.
+                <div className="pt-2 text-sm leading-6 text-stone">
+                  Seluruh riwayat kehadiran, progres tugas, dan kuis tersimpan rapi untuk setiap anggota ekstrakurikuler.
                 </div>
               </CardContent>
             </Card>
@@ -193,8 +193,8 @@ export function ParallaxShowcase() {
                     <Users className="size-4 text-primary" />
                   </div>
                   <div>
-                    <div className="font-medium text-foreground">Siap untuk angkatan baru</div>
-                    <div className="text-sm text-stone">Register dinamis berdasarkan tahun masuk.</div>
+                    <div className="font-medium text-foreground">Terbuka Untuk Semua Angkatan</div>
+                    <div className="text-sm text-stone">Siswa aktif SMKN 1 Majalaya & Alumni.</div>
                   </div>
                 </div>
                 <div className="rounded-full border border-destructive/20 bg-destructive/5 px-3 py-1 font-mono text-xs text-destructive transition-all duration-200 hover:-translate-y-0.5">

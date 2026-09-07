@@ -141,4 +141,31 @@
 }
 .rotate-y-180 {
   transform: rotateY(180deg);
+}
+
+/* Hide Scrollbar Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Printable Document Rules (@media print) */
+@media print {
+  aside, nav, button:not(.print-keep), .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt !important;
+  }
+  main, section, div {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-color: #ccc !important;
+  }
 }

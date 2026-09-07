@@ -111,7 +111,7 @@ export default function RegisterPage() {
     }
   }
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     setErrorMessage(null)
     if (!form.namaLengkap.trim()) {
       setErrorMessage("Nama lengkap wajib diisi.")
@@ -172,15 +172,24 @@ export default function RegisterPage() {
       }
     }
 
-    // Generate the JPER SSO email based on their first name only
-    const namePart = form.namaLengkap.trim().toLowerCase().split(" ")[0]?.replace(/[^a-z0-9]/g, "") || "member"
-    const generatedEmail = `${namePart}@shokunin.jper.my.id`
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`/api/auth/generate-email?name=${encodeURIComponent(form.namaLengkap)}`)
+      if (!response.ok) {
+        throw new Error("Gagal menghasilkan email SSO.")
+      }
+      const data = await response.json()
 
-    setForm((prev) => ({
-      ...prev,
-      email: generatedEmail,
-    }))
-    setStep(2)
+      setForm((prev) => ({
+        ...prev,
+        email: data.email,
+      }))
+      setStep(2)
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Terjadi kesalahan saat membuat email SSO.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const formPayload = useMemo(() => {
@@ -279,7 +288,7 @@ export default function RegisterPage() {
           | null
         setErrorMessage(
           errorPayload?.message ??
-            "Akun Firebase berhasil dibuat, tetapi sinkronisasi profile gagal.",
+            "Akun berhasil dibuat, tetapi sinkronisasi profil gagal.",
         )
         setIsSubmitting(false)
         return

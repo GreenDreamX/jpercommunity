@@ -1,16 +1,22 @@
 "use client"
 
 import React, { useState } from "react"
-import { LayoutGrid, BookOpen, QrCode, ClipboardList, LogOut, ArrowLeft, Languages, Bookmark, User, AlertTriangle } from "lucide-react"
+import { LayoutGrid, BookOpen, QrCode, ClipboardList, LogOut, ArrowLeft, Languages, Bookmark, User, AlertTriangle, Trophy, Gamepad2 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants, Button } from "@/components/ui/button"
 import { useIdleTimeout } from "@/hooks/use-idle-timeout"
+import { motion } from "framer-motion"
 
 interface SidebarItem {
   label: string
   value: string
   icon: React.ReactNode
+}
+
+interface SidebarSection {
+  title: string
+  items: SidebarItem[]
 }
 
 interface LmsLayoutProps {
@@ -27,15 +33,27 @@ interface LmsLayoutProps {
 export function LmsLayout({ children, activeTab, setActiveTab, studentName, angkatan, studentEmail, avatarUrl, studentRole }: LmsLayoutProps) {
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
-  const menuItems: SidebarItem[] = [
-    { label: "Beranda Overview", value: "dashboard", icon: <LayoutGrid className="size-4" /> },
-    { label: "Kelas Saya", value: "courses", icon: <BookOpen className="size-4" /> },
-    { label: "Profil & Pengaturan", value: "profile", icon: <User className="size-4" /> },
-    { label: "Kamus & Kosakata", value: "dictionary", icon: <BookOpen className="size-4" /> },
-    { label: "Tata Bahasa (Grammar)", value: "grammar", icon: <Bookmark className="size-4" /> },
-    { label: "Kehadiran Mandiri", value: "attendance", icon: <QrCode className="size-4" /> },
-    { label: "Transkrip Nilai", value: "grades", icon: <ClipboardList className="size-4" /> },
-    { label: "Flash Cards Kana", value: "flashcards", icon: <Languages className="size-4" /> },
+  const sections: SidebarSection[] = [
+    {
+      title: "Pembelajaran Utama",
+      items: [
+        { label: "Beranda Overview", value: "dashboard", icon: <LayoutGrid className="size-4 text-sky-500" /> },
+        { label: "Kelas Saya", value: "courses", icon: <BookOpen className="size-4 text-emerald-500" /> },
+        { label: "Kamus dan Kosakata", value: "dictionary", icon: <BookOpen className="size-4 text-cyan-500" /> },
+        { label: "Tata Bahasa", value: "grammar", icon: <Bookmark className="size-4 text-purple-500" /> },
+        { label: "Flash Cards Kana", value: "flashcards", icon: <Languages className="size-4 text-orange-500" /> },
+        { label: "Kehadiran Mandiri", value: "attendance", icon: <QrCode className="size-4 text-rose-500" /> },
+        { label: "Transkrip Nilai", value: "grades", icon: <ClipboardList className="size-4 text-teal-500" /> },
+      ]
+    },
+    {
+      title: "Gamifikasi & Fitur Ekstra",
+      items: [
+        { label: "Arcade Game", value: "arcade", icon: <Gamepad2 className="size-4 text-amber-500" /> },
+        { label: "Papan Peringkat", value: "leaderboard", icon: <Trophy className="size-4 text-yellow-500" /> },
+        { label: "Profil dan Pengaturan", value: "profile", icon: <User className="size-4 text-indigo-500" /> },
+      ]
+    }
   ]
 
   const confirmLogout = () => {
@@ -51,7 +69,7 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
   return (
     <div className="min-h-svh bg-[#FAF9F6] text-[#1C1B1A] flex flex-col md:flex-row">
       {/* SIDEBAR NAVIGATION */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-6 flex flex-col gap-6 shrink-0 md:h-screen md:sticky md:top-0">
+      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-6 flex flex-col gap-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto">
         <div className="flex items-center justify-between md:justify-start gap-2">
           <div className="flex items-center gap-2.5">
             <img src="/image/J-PER.png" alt="JPER Community Logo" className="size-7 object-contain" />
@@ -67,22 +85,33 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
           </Link>
         </div>
 
-        {/* Sidebar Menu Items */}
-        <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-1.5 pb-2 md:pb-0 scrollbar-none">
-          {menuItems.map((item) => (
-            <button
-              key={item.value}
-              onClick={() => setActiveTab?.(item.value)}
-              className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
-                activeTab === item.value
-                  ? "bg-[#B23A2E]/10 text-[#B23A2E] font-semibold border-l-2 border-[#B23A2E] rounded-l-none"
-                  : "text-[#6B6862] hover:bg-[#E4E1DA]/20 hover:text-[#1C1B1A]"
-              )}
-            >
-              {item.icon}
-              {item.label}
-            </button>
+        {/* Sidebar Menu Sections */}
+        <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-4 pb-2 md:pb-0 scrollbar-none">
+          {sections.map((sec) => (
+            <div key={sec.title} className="space-y-1 w-full shrink-0 md:shrink">
+              <div className="hidden md:block text-[9px] font-bold text-[#6B6862]/60 uppercase tracking-widest px-3 py-1 font-mono">
+                {sec.title}
+              </div>
+              <div className="flex flex-row md:flex-col gap-1">
+                {sec.items.map((item) => (
+                  <motion.button
+                    key={item.value}
+                    whileHover={{ x: 2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setActiveTab?.(item.value)}
+                    className={cn(
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap w-full text-left",
+                      activeTab === item.value
+                        ? "bg-[#B23A2E]/10 text-[#B23A2E] font-semibold border-l-2 border-[#B23A2E] rounded-l-none"
+                        : "text-[#6B6862] hover:bg-[#E4E1DA]/20 hover:text-[#1C1B1A]"
+                    )}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 

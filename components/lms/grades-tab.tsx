@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
 import { Award, AlertCircle, TrendingUp } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -84,20 +85,20 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
       {/* Mini Stats Bar */}
       {!loading && grades.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-lg border border-[#E4E1DA] bg-[#FAF9F6] p-4 flex flex-col gap-1">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="rounded-lg border border-[#E4E1DA] bg-[#FAF9F6] p-4 flex flex-col gap-1">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[#6B6862]">Rata-rata Nilai</div>
             <div className="text-3xl font-bold font-mono text-[#2B3A55]">{averageScore ?? "-"}</div>
             <div className="text-[10px] text-[#6B6862] flex items-center gap-1 mt-1">
               <TrendingUp className="size-3 text-green-600" />
               Dari {validScores.length} penilaian
             </div>
-          </div>
-          <div className="rounded-lg border border-[#E4E1DA] bg-[#FAF9F6] p-4 flex flex-col gap-1">
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.05 }} className="rounded-lg border border-[#E4E1DA] bg-[#FAF9F6] p-4 flex flex-col gap-1">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[#6B6862]">Kelulusan Pertemuan</div>
             <div className="text-3xl font-bold font-mono text-[#B23A2E]">{passedCount} <span className="text-sm font-normal text-[#6B6862]">/ {grades.length}</span></div>
             <div className="text-[10px] text-[#6B6862] mt-1">Nilai kelulusan minimum: 70</div>
-          </div>
-          <div className="rounded-lg border border-[#E4E1DA] bg-[#FAF9F6] p-4 flex flex-col gap-1">
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.1 }} className="rounded-lg border border-[#E4E1DA] bg-[#FAF9F6] p-4 flex flex-col gap-1">
             <div className="text-[10px] font-mono uppercase tracking-wider text-[#6B6862]">Sertifikat & Badge</div>
             <div className="text-xl font-bold text-[#1C1B1A] flex items-center gap-1.5 h-full">
               {passedCount === grades.length && grades.length > 0 ? (
@@ -110,7 +111,7 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
                 </span>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
@@ -137,7 +138,7 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
               </tr>
             </thead>
             <tbody>
-              {grades.map((grade) => {
+              {grades.map((grade, index) => {
                 const week = grade.course_weeks
                 const course = week?.courses
                 const tugasNum = grade.nilai_tugas !== null && grade.nilai_tugas !== undefined ? Number(grade.nilai_tugas) : 0
@@ -146,7 +147,13 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
                 const isPassed = kumpulanNum >= 70
 
                 return (
-                  <tr key={grade.id} className="border-b border-[#E4E1DA] bg-[#FAF9F6]/20 last:border-none">
+                  <motion.tr
+                    key={grade.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15, delay: index * 0.03 }}
+                    className="border-b border-[#E4E1DA] bg-[#FAF9F6]/20 last:border-none hover:bg-[#FAF9F6]/80 transition-colors"
+                  >
                     <td className="p-3.5">
                       <div className="font-semibold text-[#1C1B1A]">
                         Pertemuan {week?.week_number ?? "-"}: {week?.title ?? "-"}
@@ -178,7 +185,7 @@ export function GradesTab({ firebaseToken }: GradesTabProps) {
                         </div>
                       )}
                     </td>
-                  </tr>
+                  </motion.tr>
                 )
               })}
             </tbody>

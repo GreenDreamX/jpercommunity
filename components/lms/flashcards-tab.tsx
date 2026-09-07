@@ -110,9 +110,16 @@ const KATAKANA_DATA: KanaItem[] = [
   { kana: "ン", romaji: "n", word: "パン (Roti)", type: "n" },
 ]
 
-export function FlashcardsTab() {
+import { awardStudentXp } from "@/lib/lms/award-xp"
+
+interface FlashcardsTabProps {
+  token?: string
+}
+
+export function FlashcardsTab({ token }: FlashcardsTabProps) {
   const [kanaType, setKanaType] = useState<"hiragana" | "katakana">("hiragana")
   const [mode, setMode] = useState<"study" | "quiz">("study")
+  const [xpToast, setXpToast] = useState<string | null>(null)
   
   // Study Mode States
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -188,6 +195,9 @@ export function FlashcardsTab() {
 
   const handleNextStudy = () => {
     setIsFlipped(false)
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("jper-quest-action", { detail: { action: "flashcard_studied", count: 1 } }))
+    }
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % activeList.length)
     }, 150)
@@ -218,18 +228,32 @@ export function FlashcardsTab() {
     setIsAnswerChecked(true)
   }
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (quizCurrentIndex + 1 < quizQuestions.length) {
       setQuizCurrentIndex((prev) => prev + 1)
       setSelectedAnswer(null)
       setIsAnswerChecked(false)
     } else {
       setIsQuizFinished(true)
+      if (token) {
+        const res = await awardStudentXp(token, "flashcard", 15)
+        if (res?.ok) {
+          setXpToast(`🎉 Selamat! Anda mendapatkan +${res.addedXp} XP dari latihan Flashcard!`)
+          setTimeout(() => setXpToast(null), 4000)
+        }
+      }
     }
   }
 
   return (
     <div className="space-y-6">
+      {xpToast && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 font-bold flex items-center gap-2 animate-in fade-in duration-200 shadow-sm">
+          <Sparkles className="size-4 text-amber-600 shrink-0" />
+          <span>{xpToast}</span>
+        </div>
+      )}
+
       {/* MODE & TYPE TABS */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E4E1DA] pb-4">
         <div className="flex items-center gap-2">

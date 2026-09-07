@@ -21,6 +21,18 @@ import {
   Clock,
   Award,
   Layers,
+  Headphones,
+  Sparkles,
+  ExternalLink,
+  Radio,
+  Play,
+  Pause,
+  RotateCcw,
+  Shuffle,
+  Volume2,
+  Check,
+  Calendar,
+  Link2,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -28,7 +40,6 @@ import { useFirebaseUser } from "@/hooks/use-firebase-user"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 type ModuleSubmission = {
   id: string
@@ -60,10 +71,22 @@ type Quiz = {
   jumlah_soal_ditampilkan?: number
 }
 
+type ModuleType =
+  | "file"
+  | "video"
+  | "notes"
+  | "quiz"
+  | "assignment"
+  | "flashcard"
+  | "audio"
+  | "grammar"
+  | "external_link"
+  | "live_session"
+
 type WeekModule = {
   id: string
   course_week_id: string
-  type: "file" | "video" | "notes" | "quiz" | "assignment"
+  type: ModuleType
   title: string
   content: Record<string, any>
   is_locked: boolean
@@ -128,6 +151,407 @@ function getYoutubeEmbedUrl(url: string | null) {
   return videoId ? `https://www.youtube.com/embed/${videoId}` : null
 }
 
+// ─── Subcomponent: 3D Interactive Flashcard Viewer ───────────
+
+function FlashcardViewer({ cards, deckTitle }: { cards: Array<{ word: string; kana?: string; romaji?: string; meaning: string; example?: string }>; deckTitle?: string }) {
+  const [deck, setDeck] = useState(cards || [])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isFlipped, setIsFlipped] = useState(false)
+
+  useEffect(() => {
+    setDeck(cards || [])
+    setCurrentIndex(0)
+    setIsFlipped(false)
+  }, [cards])
+
+  if (!deck || deck.length === 0) {
+    return <p className="text-xs text-[#6B6862] italic">Belum ada kartu flashcard pada set ini.</p>
+  }
+
+  const currentCard = deck[currentIndex]
+
+  const handleNext = () => {
+    setIsFlipped(false)
+    setCurrentIndex((prev) => (prev + 1) % deck.length)
+  }
+
+  const handlePrev = () => {
+    setIsFlipped(false)
+    setCurrentIndex((prev) => (prev - 1 + deck.length) % deck.length)
+  }
+
+  const handleShuffle = () => {
+    setIsFlipped(false)
+    const shuffled = [...deck].sort(() => Math.random() - 0.5)
+    setDeck(shuffled)
+    setCurrentIndex(0)
+  }
+
+  return (
+    <div className="space-y-4 bg-[#F5F3EE] p-5 rounded-xl border border-[#E4E1DA]">
+      {/* Header Bar */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="text-xs font-bold text-[#1C1B1A]">{deckTitle || "Flashcard Kosakata"}</h4>
+          <p className="text-[10px] text-[#6B6862] font-mono">Kartu {currentIndex + 1} dari {deck.length}</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleShuffle}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2B3A55] hover:underline bg-white px-2.5 py-1 rounded-lg border border-[#E4E1DA]"
+        >
+          <Shuffle className="size-3" /> Acak Dek
+        </button>
+      </div>
+
+      {/* 3D Flip Card */}
+      <div
+        onClick={() => setIsFlipped((v) => !v)}
+        className="w-full min-h-[220px] p-6 rounded-xl border-2 border-[#2B3A55]/20 bg-white cursor-pointer select-none shadow-sm transition-all hover:border-[#2B3A55] hover:shadow-md flex flex-col justify-between items-center text-center relative overflow-hidden"
+      >
+        <span className="text-[9px] font-mono uppercase tracking-wider text-[#6B6862] bg-[#F5F3EE] px-2 py-0.5 rounded-full border border-[#E4E1DA]">
+          {isFlipped ? "Sisi Belakang (Arti & Contoh)" : "Sisi Depan (Klik/Tap untuk Membalik)"}
+        </span>
+
+        {!isFlipped ? (
+          <div className="my-auto space-y-2">
+            <div className="text-3xl font-extrabold text-[#1C1B1A] tracking-wide">{currentCard.word}</div>
+            {currentCard.kana && (
+              <div className="text-sm font-semibold text-[#2B3A55] font-mono">{currentCard.kana}</div>
+            )}
+            {currentCard.romaji && (
+              <div className="text-xs text-[#6B6862] font-mono italic">[{currentCard.romaji}]</div>
+            )}
+          </div>
+        ) : (
+          <div className="my-auto space-y-3">
+            <div className="text-lg font-bold text-[#2B3A55]">{currentCard.meaning}</div>
+            {currentCard.example && (
+              <div className="text-xs text-[#1C1B1A] bg-[#FAF9F6] p-2.5 rounded-lg border border-[#E4E1DA] font-mono">
+                &quot;{currentCard.example}&quot;
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="text-[10px] text-[#6B6862]/80 italic">
+          💡 Klik di mana saja pada kartu untuk melihat {isFlipped ? "sisi depan" : "arti"}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={handlePrev}
+          className="flex-1 py-2 rounded-lg border border-[#E4E1DA] bg-white text-xs font-semibold text-[#1C1B1A] hover:bg-[#E4E1DA]/40 transition-colors"
+        >
+          ◄ Sebelumnya
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsFlipped((v) => !v)}
+          className="px-4 py-2 rounded-lg bg-[#2B3A55] text-white text-xs font-bold hover:bg-[#2B3A55]/90 transition-colors"
+        >
+          🔄 Balik Kartu
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          className="flex-1 py-2 rounded-lg border border-[#E4E1DA] bg-white text-xs font-semibold text-[#1C1B1A] hover:bg-[#E4E1DA]/40 transition-colors"
+        >
+          Selanjutnya ►
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Subcomponent: Choukai Audio Player ──────────────────────
+
+function AudioChoukaiPlayer({ audioUrl, transcript, translation }: { audioUrl: string; transcript?: string; translation?: string }) {
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [playbackRate, setPlaybackRate] = useState(1.0)
+  const [showTranscript, setShowTranscript] = useState(false)
+
+  const togglePlay = () => {
+    if (!audioRef.current) return
+    if (isPlaying) {
+      audioRef.current.pause()
+    } else {
+      void audioRef.current.play()
+    }
+    setIsPlaying(!isPlaying)
+  }
+
+  const handleRateChange = (rate: number) => {
+    setPlaybackRate(rate)
+    if (audioRef.current) audioRef.current.playbackRate = rate
+  }
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60)
+    const s = Math.floor(secs % 60)
+    return `${m}:${s.toString().padStart(2, "0")}`
+  }
+
+  return (
+    <div className="space-y-4 bg-[#F5F3EE] p-5 rounded-xl border border-[#E4E1DA]">
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+        onEnded={() => setIsPlaying(false)}
+      />
+
+      {/* Main Audio Player Card */}
+      <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-[#E4E1DA] shadow-xs">
+        <button
+          type="button"
+          onClick={togglePlay}
+          className="w-12 h-12 rounded-full bg-[#2B3A55] text-white flex items-center justify-center hover:bg-[#2B3A55]/90 transition-transform active:scale-95 shadow-md flex-shrink-0"
+        >
+          {isPlaying ? <Pause className="size-5" /> : <Play className="size-5 ml-0.5" />}
+        </button>
+
+        <div className="flex-1 space-y-1 min-w-0">
+          <div className="flex items-center justify-between text-xs font-mono text-[#6B6862]">
+            <span className="font-semibold text-[#1C1B1A] flex items-center gap-1">
+              <Headphones className="size-3.5 text-[#2B3A55]" /> Audio Choukai
+            </span>
+            <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+          </div>
+
+          <input
+            type="range"
+            min={0}
+            max={duration || 100}
+            value={currentTime}
+            onChange={(e) => {
+              const val = Number(e.target.value)
+              setCurrentTime(val)
+              if (audioRef.current) audioRef.current.currentTime = val
+            }}
+            className="w-full h-1.5 bg-[#E4E1DA] rounded-lg appearance-none cursor-pointer accent-[#2B3A55]"
+          />
+        </div>
+
+        {/* Speed Selector */}
+        <div className="flex items-center gap-1">
+          {[0.8, 1.0, 1.25, 1.5].map((rate) => (
+            <button
+              key={rate}
+              type="button"
+              onClick={() => handleRateChange(rate)}
+              className={`px-2 py-1 rounded text-[10px] font-mono font-bold transition-colors ${
+                playbackRate === rate ? "bg-[#2B3A55] text-white" : "bg-[#F5F3EE] text-[#6B6862] hover:text-[#1C1B1A]"
+              }`}
+            >
+              {rate}x
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Transcript Accordion */}
+      {(transcript || translation) && (
+        <div className="border border-[#E4E1DA] rounded-xl overflow-hidden bg-white">
+          <button
+            type="button"
+            onClick={() => setShowTranscript((v) => !v)}
+            className="w-full px-4 py-2.5 bg-[#FAF9F6] flex items-center justify-between text-xs font-bold text-[#1C1B1A] hover:bg-[#F5F3EE] transition-colors"
+          >
+            <span className="flex items-center gap-1.5">
+              📜 Transkrip & Terjemahan Percakapan
+            </span>
+            {showTranscript ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+          </button>
+          {showTranscript && (
+            <div className="p-4 space-y-4 border-t border-[#E4E1DA] text-xs leading-relaxed">
+              {transcript && (
+                <div className="space-y-1">
+                  <div className="text-[10px] font-mono font-bold text-[#2B3A55] uppercase">Jepang / Kana</div>
+                  <div className="p-3 bg-[#FAF9F6] rounded-lg border border-[#E4E1DA] font-mono text-[#1C1B1A] whitespace-pre-wrap">
+                    {transcript}
+                  </div>
+                </div>
+              )}
+              {translation && (
+                <div className="space-y-1">
+                  <div className="text-[10px] font-mono font-bold text-[#6B6862] uppercase">Terjemahan Indonesia</div>
+                  <div className="p-3 bg-[#FAF9F6] rounded-lg border border-[#E4E1DA] text-[#1C1B1A] whitespace-pre-wrap">
+                    {translation}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Subcomponent: Bunpou Grammar Card ───────────────────────
+
+function GrammarCard({
+  pattern,
+  jlptLevel,
+  meaning,
+  formula,
+  examples,
+}: {
+  pattern: string
+  jlptLevel?: string
+  meaning: string
+  formula?: string
+  examples?: Array<{ japanese: string; romaji?: string; meaning: string }>
+}) {
+  return (
+    <div className="space-y-4 bg-white p-5 rounded-xl border border-[#E4E1DA] shadow-xs">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[#E4E1DA] pb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="size-5 text-[#2B3A55]" />
+          <h4 className="text-base font-extrabold text-[#1C1B1A]">{pattern}</h4>
+        </div>
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2B3A55] text-white">
+          {jlptLevel || "JLPT N5"}
+        </span>
+      </div>
+
+      {/* Formula & Meaning */}
+      <div className="space-y-2">
+        <div className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E4E1DA] space-y-1">
+          <div className="text-[10px] font-mono font-bold text-[#6B6862] uppercase">Makna / Meaning</div>
+          <div className="text-xs font-bold text-[#1C1B1A]">{meaning}</div>
+        </div>
+
+        {formula && (
+          <div className="p-3 rounded-lg bg-[#2B3A55]/5 border border-[#2B3A55]/20 space-y-1">
+            <div className="text-[10px] font-mono font-bold text-[#2B3A55] uppercase">Rumus Pembentukan (Formula)</div>
+            <div className="text-xs font-mono font-bold text-[#2B3A55]">{formula}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Example Sentences */}
+      {examples && examples.length > 0 && (
+        <div className="space-y-2 pt-2 border-t border-[#E4E1DA]">
+          <div className="text-xs font-bold text-[#1C1B1A]">Contoh Kalimat (例文)</div>
+          <div className="space-y-2">
+            {examples.map((ex, idx) => (
+              <div key={idx} className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E4E1DA] space-y-1 text-xs">
+                <div className="font-bold text-[#1C1B1A]">{ex.japanese}</div>
+                {ex.romaji && <div className="text-[11px] font-mono text-[#6B6862]">{ex.romaji}</div>}
+                <div className="text-[11px] text-[#2B3A55] font-semibold">&quot;{ex.meaning}&quot;</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Subcomponent: Live Session Card ─────────────────────────
+
+function LiveSessionCard({
+  platform,
+  meetingUrl,
+  startTime,
+  endTime,
+  passcode,
+  notes,
+  recordingUrl,
+}: {
+  platform: string
+  meetingUrl: string
+  startTime: string
+  endTime?: string
+  passcode?: string
+  notes?: string
+  recordingUrl?: string
+}) {
+  const start = new Date(startTime)
+  const now = new Date()
+  const isFinished = endTime ? new Date(endTime) < now : false
+  const isLiveNow = now >= start && !isFinished
+
+  return (
+    <div className="space-y-4 bg-white p-5 rounded-xl border border-[#E4E1DA] shadow-xs">
+      <div className="flex items-center justify-between border-b border-[#E4E1DA] pb-3">
+        <div className="flex items-center gap-2">
+          <Radio className={`size-5 ${isLiveNow ? "text-red-600 animate-pulse" : "text-[#2B3A55]"}`} />
+          <h4 className="text-sm font-bold text-[#1C1B1A]">Sesi Tatap Muka Daring ({platform})</h4>
+        </div>
+        {isLiveNow ? (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-red-600 text-white animate-pulse">
+            🔴 LIVE SEKARANG
+          </span>
+        ) : isFinished ? (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-stone-200 text-stone-700">
+            Selesai
+          </span>
+        ) : (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-blue-800">
+            Terjadwal
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E4E1DA]">
+          <div className="text-[10px] font-mono text-[#6B6862] font-semibold">Waktu Mulai</div>
+          <div className="font-bold text-[#1C1B1A] mt-0.5">
+            {start.toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" })}
+          </div>
+        </div>
+        {passcode && (
+          <div className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E4E1DA]">
+            <div className="text-[10px] font-mono text-[#6B6862] font-semibold">Passcode / Room Code</div>
+            <div className="font-mono font-bold text-[#2B3A55] mt-0.5">{passcode}</div>
+          </div>
+        )}
+      </div>
+
+      {notes && (
+        <div className="text-xs text-[#6B6862] bg-[#F5F3EE] p-3 rounded-lg border border-[#E4E1DA]">
+          📌 {notes}
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex items-center gap-3 pt-2">
+        {meetingUrl && !isFinished && (
+          <a
+            href={meetingUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-[#2B3A55] text-white text-xs font-bold hover:bg-[#2B3A55]/90 transition-colors shadow-sm"
+          >
+            <Radio className="size-4" /> Gabung Sesi Live ({platform})
+          </a>
+        )}
+        {recordingUrl && (
+          <a
+            href={recordingUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl border border-[#E4E1DA] bg-[#FAF9F6] text-xs font-semibold text-[#1C1B1A] hover:bg-[#E4E1DA]/40 transition-colors"
+          >
+            <Video className="size-4 text-red-600" /> Lihat Rekaman Sesi
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Module Renderer Component for LMS ─────────────────────────
 
 function LMSModuleCard({
@@ -139,12 +563,10 @@ function LMSModuleCard({
   token: string
   onRefresh: () => void
 }) {
-  // File upload state for assignments
   const [uploading, setUploading] = useState(false)
   const [uploadMsg, setUploadMsg] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Quiz state
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(false)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -153,7 +575,6 @@ function LMSModuleCard({
   const [retaking, setRetaking] = useState(false)
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null)
 
-  // Quiz Review States
   const [showReview, setShowReview] = useState(false)
   const [reviewQuestions, setReviewQuestions] = useState<any[]>([])
   const [reviewSelectedAnswers, setReviewSelectedAnswers] = useState<Record<string, string>>({})
@@ -244,7 +665,6 @@ function LMSModuleCard({
     }
   }, [module.type, quiz, module.user_answer, retaking, fetchQuestions])
 
-  // Timer countdown if quiz has time limit
   useEffect(() => {
     if (module.type === "quiz" && quiz?.time_limit_minutes && quiz.time_limit_minutes > 0 && !module.user_answer && quizQuestions.length > 0) {
       setTimerSeconds(quiz.time_limit_minutes * 60)
@@ -254,43 +674,26 @@ function LMSModuleCard({
   useEffect(() => {
     if (timerSeconds === null || timerSeconds <= 0) return
     const interval = setInterval(() => {
-      setTimerSeconds((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(interval)
-          return 0
-        }
-        return prev - 1
-      })
+      setTimerSeconds((prev) => (prev !== null && prev > 0 ? prev - 1 : 0))
     }, 1000)
     return () => clearInterval(interval)
   }, [timerSeconds])
 
-  // Student file upload submission handler
   const handleStudentUpload = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadMsg({ type: "error", text: "Ukuran file melebihi batas maksimum 5 MB." })
-      return
-    }
     setUploading(true)
     setUploadMsg(null)
     try {
-      // 1. Upload to Vercel Blob via API
       const form = new FormData()
       form.append("file", file)
       form.append("folder", "submissions")
-
-      const uploadRes = await fetch("/api/lms/upload", {
+      const uploadRes = await fetch("/api/studio/upload", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       })
-      if (!uploadRes.ok) {
-        const errData = await uploadRes.json() as { message?: string }
-        throw new Error(errData.message || "Gagal upload file.")
-      }
+      if (!uploadRes.ok) throw new Error("Gagal mengunggah file.")
       const blobData = await uploadRes.json() as { url: string; name: string; size: number }
 
-      // 2. Submit record to module_submissions
       const subRes = await fetch(`/api/lms/modules/${module.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -312,7 +715,6 @@ function LMSModuleCard({
     }
   }
 
-  // Quiz submission
   const handleQuizSubmit = useCallback(async () => {
     if (!quiz) return
     setSubmittingQuiz(true)
@@ -334,7 +736,6 @@ function LMSModuleCard({
     }
   }, [quiz, token, answers, onRefresh])
 
-  // Auto submit quiz when timer runs out
   useEffect(() => {
     if (timerSeconds === 0 && !module.user_answer && !submittingQuiz) {
       void handleQuizSubmit()
@@ -363,6 +764,11 @@ function LMSModuleCard({
           {module.type === "notes" && <Edit3 className="size-5 text-emerald-600" />}
           {module.type === "quiz" && <HelpCircle className="size-5 text-amber-600" />}
           {module.type === "assignment" && <Upload className="size-5 text-purple-600" />}
+          {module.type === "flashcard" && <Layers className="size-5 text-indigo-600" />}
+          {module.type === "audio" && <Headphones className="size-5 text-cyan-600" />}
+          {module.type === "grammar" && <Sparkles className="size-5 text-[#2B3A55]" />}
+          {module.type === "external_link" && <ExternalLink className="size-5 text-teal-600" />}
+          {module.type === "live_session" && <Radio className="size-5 text-rose-600" />}
           <h3 className="text-sm font-bold text-[#1C1B1A]">{module.title}</h3>
         </div>
         <span className="text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded-full bg-[#E4E1DA]/40 text-[#2B3A55]">
@@ -444,12 +850,11 @@ function LMSModuleCard({
           )}
 
           {module.content?.due_at && (
-            <div className="text-[11px] font-mono text-[#B23A2E] flex items-center gap-1.5">
+            <div className="text-[11px] font-mono text-[#B23A2E] flex items-center gap-1.5 font-medium">
               <CalendarClock className="size-3.5" /> Batas Pengumpulan: {new Date(module.content.due_at).toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" })}
             </div>
           )}
 
-          {/* Submission status or upload form */}
           {module.submission ? (
             <div className="rounded-lg bg-green-50 border border-green-200 p-4 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-green-800">
@@ -508,7 +913,6 @@ function LMSModuleCard({
           {!quiz ? (
             <p className="text-xs text-[#6B6862] italic">Belum ada kuis yang ditautkan ke modul ini.</p>
           ) : module.user_answer && !retaking ? (
-            // Quiz completed view with Hanko Stamp
             <div className="rounded-lg border border-[#E4E1DA] p-5 bg-white space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -517,7 +921,6 @@ function LMSModuleCard({
                     Diselesaikan pada: {new Date(module.user_answer.submitted_at).toLocaleString("id-ID")}
                   </p>
                 </div>
-                {/* Hanko stamp or Pending status */}
                 {module.user_answer.score === null ? (
                   <span className="text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
                     Menunggu Koreksi
@@ -588,7 +991,7 @@ function LMSModuleCard({
                       {reviewQuestions.map((q, idx) => {
                         const qType = q.type || "multiple_choice"
                         const studentChoice = reviewSelectedAnswers[q.id]
-                        
+
                         let isCorrect = false
                         let studentChoiceList: string[] = []
                         let correctList: string[] = []
@@ -599,7 +1002,7 @@ function LMSModuleCard({
                             studentChoiceList = typeof studentChoice === "string" && studentChoice.startsWith("[")
                               ? JSON.parse(studentChoice) as string[]
                               : (studentChoice ? [studentChoice] : [])
-                            
+
                             const cSorted = [...correctList].map(x => x.trim().toLowerCase()).sort()
                             const sSorted = [...studentChoiceList].map(x => x.trim().toLowerCase()).sort()
                             isCorrect = JSON.stringify(cSorted) === JSON.stringify(sSorted)
@@ -609,7 +1012,7 @@ function LMSModuleCard({
                         } else {
                           isCorrect = studentChoice?.trim().toLowerCase() === q.answer.trim().toLowerCase()
                         }
-                        
+
                         return (
                           <div key={q.id} className="p-3.5 rounded-lg border border-[#E4E1DA]/80 bg-[#FAF9F6]/40 space-y-2 text-xs">
                             <div className="flex items-start gap-2">
@@ -637,7 +1040,7 @@ function LMSModuleCard({
                                   const isOptionCorrect = qType === "multiple_select"
                                     ? correctList.includes(opt)
                                     : opt.trim().toLowerCase() === q.answer.trim().toLowerCase()
-                                  
+
                                   let optClass = "p-2 rounded border border-[#E4E1DA] text-stone-700 bg-white"
                                   if (quiz.show_correct_answers !== false) {
                                     if (isOptionCorrect) {
@@ -683,9 +1086,7 @@ function LMSModuleCard({
               )}
             </div>
           ) : (
-            // Quiz taking form
             <div className="space-y-4">
-              {/* Quiz details header & Timer */}
               <div className="flex items-center justify-between p-3 rounded-lg bg-[#2B3A55]/5 border border-[#2B3A55]/20">
                 <div className="text-xs text-[#2B3A55] font-semibold flex items-center gap-1.5">
                   <Award className="size-4" /> Batas Kelulusan: {quiz.min_score ?? 70} / 100
@@ -706,7 +1107,7 @@ function LMSModuleCard({
                 <div className="space-y-4">
                   {quizQuestions.map((q, idx) => {
                     const qType = q.type || "multiple_choice"
-                    
+
                     return (
                       <div key={q.id} className="p-4 rounded-lg border border-[#E4E1DA] bg-white space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
@@ -736,7 +1137,7 @@ function LMSModuleCard({
                               const isSelected = qType === "multiple_select"
                                 ? isOptionSelected(q.id, opt)
                                 : answers[q.id] === opt
-                              
+
                               return (
                                 <button
                                   key={opt}
@@ -789,6 +1190,91 @@ function LMSModuleCard({
           )}
         </div>
       )}
+
+      {/* 6. FLASHCARD MODULE */}
+      {module.type === "flashcard" && (
+        <FlashcardViewer
+          cards={module.content?.cards || []}
+          deckTitle={module.content?.deck_title || module.title}
+        />
+      )}
+
+      {/* 7. AUDIO MODULE */}
+      {module.type === "audio" && (
+        <AudioChoukaiPlayer
+          audioUrl={module.content?.audio_url || ""}
+          transcript={module.content?.transcript}
+          translation={module.content?.translation}
+        />
+      )}
+
+      {/* 8. GRAMMAR MODULE */}
+      {module.type === "grammar" && (
+        <GrammarCard
+          pattern={module.content?.pattern || module.title}
+          jlptLevel={module.content?.jlpt_level}
+          meaning={module.content?.meaning || ""}
+          formula={module.content?.formula}
+          examples={module.content?.examples}
+        />
+      )}
+
+      {/* 9. EXTERNAL LINK / EMBED MODULE */}
+      {module.type === "external_link" && (
+        <div className="space-y-4 bg-white p-5 rounded-xl border border-[#E4E1DA] shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ExternalLink className="size-5 text-teal-600" />
+              <h4 className="text-sm font-bold text-[#1C1B1A]">
+                {module.title || "Tautan / Embed Eksternal"}
+              </h4>
+            </div>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-50 text-teal-700 border border-teal-200">
+              {module.content?.platform || "External Link"}
+            </span>
+          </div>
+
+          {module.content?.is_embed && module.content?.url ? (
+            <div className="aspect-video w-full rounded-xl overflow-hidden border border-[#E4E1DA]">
+              <iframe
+                src={module.content.url}
+                className="w-full h-full border-0"
+                title={module.title}
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#E4E1DA] flex items-center justify-between flex-wrap gap-3">
+              <span className="text-xs text-[#6B6862] font-mono truncate max-w-md">
+                {module.content?.url || "Tautan Eksternal"}
+              </span>
+              {module.content?.url && (
+                <a
+                  href={module.content.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[#2B3A55] text-white text-xs font-semibold hover:bg-[#2B3A55]/90 transition-colors shadow-xs"
+                >
+                  <ExternalLink className="size-3.5" /> {module.content?.button_text || "Buka Resource Eksternal"}
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 10. LIVE SESSION MODULE */}
+      {module.type === "live_session" && (
+        <LiveSessionCard
+          platform={module.content?.platform || "Google Meet"}
+          meetingUrl={module.content?.meeting_url || ""}
+          startTime={module.content?.start_time || new Date().toISOString()}
+          endTime={module.content?.end_time}
+          passcode={module.content?.passcode}
+          notes={module.content?.notes}
+          recordingUrl={module.content?.recording_url}
+        />
+      )}
     </div>
   )
 }
@@ -808,7 +1294,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Active open week accordion state (supports multi-open or active selection)
   const [openWeekId, setOpenWeekId] = useState<string | null>(null)
 
   const fetchCourseData = useCallback(async (firebaseToken: string) => {
@@ -879,7 +1364,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <main className="min-h-svh bg-[#FAF9F6] text-[#1C1B1A] pb-16">
-      {/* Navigation Bar */}
+      {/* Top Header Navigation */}
       <div className="border-b border-[#E4E1DA] bg-[#FAF9F6] px-6 py-4 md:px-8 lg:px-10">
         <div className="mx-auto flex w-full max-w-5xl items-center gap-4">
           <Link
@@ -894,253 +1379,103 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
           <div>
             <h1 className="text-lg font-bold tracking-tight text-[#1C1B1A]">{course.title}</h1>
             <p className="text-[11px] text-[#6B6862] flex items-center gap-1.5 mt-0.5">
-              <Layers className="size-3 text-[#2B3A55]" /> LMS JPER Community • {weeks.length} Pertemuan Sesi
+              <Layers className="size-3 text-[#2B3A55]" /> LMS JPER Community • {weeks.length} Pertemuan Silabus
             </p>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-8 lg:px-10 space-y-6">
-        {/* Course Banner Card */}
+        {/* Banner Section */}
         {course.image_url && (
-          <div className="rounded-xl overflow-hidden border border-[#E4E1DA] aspect-[21/6] w-full">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={course.image_url} alt={course.title} className="w-full h-full object-cover" />
-          </div>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={course.image_url} alt={course.title} className="w-full h-44 object-cover rounded-xl border border-[#E4E1DA]" />
         )}
 
         {course.description && (
-          <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-xl p-5">
-            <p className="text-xs text-[#6B6862] leading-relaxed">{course.description}</p>
-          </Card>
+          <div className="p-4 rounded-xl bg-white border border-[#E4E1DA] text-xs text-[#6B6862] leading-relaxed">
+            {course.description}
+          </div>
         )}
 
-        {/* Modular Accordion / Sidebar Sesi Pertemuan */}
+        {/* Weeks Accordion / List */}
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-[#1C1B1A] flex items-center gap-2">
-            <Layers className="size-4 text-[#2B3A55]" /> Silabus & Modul Pembelajaran
+            <Layers className="size-4 text-[#2B3A55]" /> Silabus Materi Per Pertemuan
           </h2>
 
           {weeks.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-[#E4E1DA] rounded-xl text-xs text-[#6B6862] italic bg-[#FAF9F6]">
-              Belum ada materi atau pertemuan yang dirilis untuk kelas ini.
+            <div className="text-center py-12 border border-dashed border-[#E4E1DA] rounded-xl bg-white text-xs text-[#6B6862]">
+              Belum ada pertemuan yang dipublikasikan untuk kelas ini.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6 items-start">
-              {/* Left Column / Sidebar (desktop only) */}
-              <div className="hidden md:flex flex-col gap-2 sticky top-6 max-h-[calc(100vh-140px)] overflow-y-auto pr-1">
-                {weeks.map((week) => {
-                  const isActive = openWeekId === week.id
-                  return (
-                    <button
-                      key={week.id}
-                      disabled={week.is_locked}
-                      onClick={() => setOpenWeekId(week.id)}
-                      className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg border text-left transition-all w-full select-none",
-                        week.is_locked
-                          ? "opacity-50 bg-[#E4E1DA]/25 border-[#E4E1DA] cursor-not-allowed"
-                          : isActive
-                          ? "border-[#2B3A55] bg-[#2B3A55]/5 text-[#2B3A55] font-semibold shadow-xs"
-                          : "border-[#E4E1DA] hover:border-[#2B3A55]/40 text-[#1C1B1A] bg-[#FAF9F6]"
-                      )}
-                    >
-                      <div className={cn(
-                        "flex items-center justify-center w-7 h-7 rounded-md text-xs font-bold font-mono shrink-0 transition-colors",
-                        isActive ? "bg-[#2B3A55] text-white" : "bg-[#2B3A55]/10 text-[#2B3A55]"
-                      )}>
-                        {week.week_number}
+            weeks.map((w) => {
+              const isOpen = openWeekId === w.id
+              return (
+                <div key={w.id} className="border border-[#E4E1DA] rounded-xl overflow-hidden bg-white shadow-xs">
+                  {/* Week Accordion Bar */}
+                  <div
+                    onClick={() => setOpenWeekId(isOpen ? null : w.id)}
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#FAF9F6] transition-colors select-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#2B3A55] text-white font-mono text-xs font-bold shadow-xs">
+                        {w.week_number}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold truncate">{week.title}</div>
-                        <div className="text-[9px] text-[#6B6862] font-mono mt-0.5">
-                          {week.is_locked ? "Terkunci" : `${week.modules?.length ?? 0} modul`}
-                        </div>
-                      </div>
-                      {week.is_locked && <Lock className="size-3 text-red-600 shrink-0" />}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Right Column / Content (desktop only) */}
-              <div className="hidden md:block space-y-4">
-                {(() => {
-                  const activeWeek = weeks.find((w) => w.id === openWeekId)
-                  if (!activeWeek) {
-                    return (
-                      <div className="text-center py-12 border border-dashed border-[#E4E1DA] rounded-xl text-xs text-[#6B6862] italic bg-[#FAF9F6]">
-                        Pilih pertemuan dari sidebar di kiri untuk melihat modul.
-                      </div>
-                    )
-                  }
-                  const moduleCount = activeWeek.modules?.length ?? 0
-                  return (
-                    <div className="space-y-4">
-                      <div className="border border-[#E4E1DA] bg-[#F5F3EE] p-4 rounded-xl flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] font-mono uppercase font-bold text-[#2B3A55] bg-[#2B3A55]/10 px-2 py-0.5 rounded-full">
-                            Pertemuan {activeWeek.week_number}
-                          </span>
-                          <h2 className="text-sm font-bold text-[#1C1B1A] mt-1.5">{activeWeek.title}</h2>
-                        </div>
-                        <span className="text-xs text-[#6B6862] font-mono">{moduleCount} modul aktif</span>
-                      </div>
-
-                      <div className="space-y-4">
-                        {activeWeek.modules && activeWeek.modules.length > 0 ? (
-                          activeWeek.modules.map((m) => (
-                            <LMSModuleCard
-                              key={m.id}
-                              module={m}
-                              token={token!}
-                              onRefresh={() => void fetchCourseData(token!)}
-                            />
-                          ))
-                        ) : (
-                          // Fallback view for legacy non-modular weeks if any
-                          <div className="space-y-4">
-                            {activeWeek.pdf_url && (
-                              <div className="p-4 rounded-xl border border-[#E4E1DA] bg-white space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-[#1C1B1A]">📄 Dokumen PDF Materi</span>
-                                  <a href={activeWeek.pdf_url} target="_blank" rel="noreferrer" className="text-xs underline text-[#2B3A55]">
-                                    Unduh File
-                                  </a>
-                                </div>
-                                <iframe src={activeWeek.pdf_url} className="w-full h-[400px] rounded border border-[#E4E1DA]" title="Materi PDF" />
-                              </div>
-                            )}
-
-                            {activeWeek.youtube_url && getYoutubeEmbedUrl(activeWeek.youtube_url) && (
-                              <div className="p-4 rounded-xl border border-[#E4E1DA] bg-white space-y-2">
-                                <span className="text-xs font-bold text-[#1C1B1A]">🎬 Video Penjelasan</span>
-                                <div className="aspect-video w-full rounded overflow-hidden">
-                                  <iframe src={getYoutubeEmbedUrl(activeWeek.youtube_url)!} className="w-full h-full" allowFullScreen title="Video" />
-                                </div>
-                              </div>
-                            )}
-
-                            {activeWeek.notes_markdown && (
-                              <div className="p-4 rounded-xl border border-[#E4E1DA] bg-white space-y-2 text-xs">
-                                <span className="font-bold text-[#1C1B1A]">📝 Rangkuman Catatan</span>
-                                <div className="prose prose-sm"><ReactMarkdown>{activeWeek.notes_markdown}</ReactMarkdown></div>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                      <div>
+                        <h3 className="text-xs font-bold text-[#1C1B1A]">{w.title}</h3>
+                        <p className="text-[10px] text-[#6B6862] font-mono mt-0.5">
+                          Pertemuan Ke-{w.week_number} • {w.modules?.length ?? 0} Modul Konten
+                        </p>
                       </div>
                     </div>
-                  )
-                })()}
-              </div>
 
-              {/* Mobile View / Accordions stack */}
-              <div className="md:hidden space-y-4 w-full">
-                {weeks.map((week) => {
-                  const isOpen = openWeekId === week.id
-                  const moduleCount = week.modules?.length ?? 0
-
-                  return (
-                    <div
-                      key={week.id}
-                      className={cn(
-                        "border rounded-xl overflow-hidden transition-all bg-[#FAF9F6]",
-                        week.is_locked
-                          ? "opacity-60 border-[#E4E1DA]"
-                          : isOpen
-                          ? "border-[#2B3A55] shadow-sm"
-                          : "border-[#E4E1DA] hover:border-[#2B3A55]/40"
+                    <div className="flex items-center gap-2">
+                      {w.is_locked && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 flex items-center gap-1 font-semibold">
+                          <Lock className="size-3" /> Terkunci
+                        </span>
                       )}
-                    >
-                      {/* Accordion Week Header Bar */}
-                      <div
-                        onClick={() => {
-                          if (!week.is_locked) setOpenWeekId(isOpen ? null : week.id)
-                        }}
-                        className={cn(
-                          "flex items-center justify-between p-4 cursor-pointer select-none transition-colors",
-                          isOpen ? "bg-[#F5F3EE]" : "hover:bg-[#F5F3EE]",
-                          week.is_locked && "cursor-not-allowed bg-[#E4E1DA]/20"
-                        )}
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#2B3A55]/10 text-xs font-bold font-mono text-[#2B3A55] shrink-0">
-                            {week.week_number}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-bold text-[#1C1B1A] truncate">{week.title}</div>
-                            <div className="text-[10px] text-[#6B6862] font-mono mt-0.5">
-                              {week.is_locked ? "Terkunci" : `${moduleCount} modul aktif`}
-                            </div>
-                          </div>
-                        </div>
+                      {isOpen ? <ChevronUp className="size-4 text-[#6B6862]" /> : <ChevronDown className="size-4 text-[#6B6862]" />}
+                    </div>
+                  </div>
 
-                        <div className="flex items-center gap-2">
-                          {week.is_locked ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
-                              <Lock className="size-3" /> Terkunci
-                            </span>
-                          ) : (
-                            <div className="text-[#6B6862]">
-                              {isOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-                            </div>
-                          )}
+                  {/* Week Content Drawer */}
+                  {isOpen && (
+                    <div className="p-4 bg-[#FAF9F6] border-t border-[#E4E1DA] space-y-4">
+                      {w.is_locked ? (
+                        <div className="p-4 rounded-xl bg-red-50/60 border border-red-200 text-xs text-red-800 space-y-1">
+                          <div className="font-bold flex items-center gap-1.5">
+                            <Lock className="size-4 text-red-600" /> Sesi Pertemuan Ini Dikunci
+                          </div>
+                          <p className="text-[11px] text-[#6B6862]">
+                            Sesi ini dikunci oleh pembina. Silakan selesaikan pertemuan sebelumnya atau hubungi pengurus.
+                          </p>
                         </div>
-                      </div>
-
-                      {/* Accordion Content Body: List of Modules */}
-                      {isOpen && !week.is_locked && (
-                        <div className="p-5 border-t border-[#E4E1DA] bg-[#F7F6F2] space-y-4">
-                          {week.modules && week.modules.length > 0 ? (
-                            week.modules.map((m) => (
+                      ) : (
+                        <div className="space-y-4">
+                          {/* Render week modules */}
+                          {w.modules && w.modules.length > 0 ? (
+                            w.modules.map((m) => (
                               <LMSModuleCard
                                 key={m.id}
                                 module={m}
-                                token={token!}
-                                onRefresh={() => void fetchCourseData(token!)}
+                                token={token || ""}
+                                onRefresh={() => { if (token) void fetchCourseData(token) }}
                               />
                             ))
                           ) : (
-                            // Fallback view for legacy non-modular weeks if any
-                            <div className="space-y-4">
-                              {week.pdf_url && (
-                                <div className="p-4 rounded-xl border border-[#E4E1DA] bg-white space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-[#1C1B1A]">📄 Dokumen PDF Materi</span>
-                                    <a href={week.pdf_url} target="_blank" rel="noreferrer" className="text-xs underline text-[#2B3A55]">
-                                      Unduh File
-                                    </a>
-                                  </div>
-                                  <iframe src={week.pdf_url} className="w-full h-[400px] rounded border border-[#E4E1DA]" title="Materi PDF" />
-                                </div>
-                              )}
-
-                              {week.youtube_url && getYoutubeEmbedUrl(week.youtube_url) && (
-                                <div className="p-4 rounded-xl border border-[#E4E1DA] bg-white space-y-2">
-                                  <span className="text-xs font-bold text-[#1C1B1A]">🎬 Video Penjelasan</span>
-                                  <div className="aspect-video w-full rounded overflow-hidden">
-                                    <iframe src={getYoutubeEmbedUrl(week.youtube_url)!} className="w-full h-full" allowFullScreen title="Video" />
-                                  </div>
-                                </div>
-                              )}
-
-                              {week.notes_markdown && (
-                                <div className="p-4 rounded-xl border border-[#E4E1DA] bg-white space-y-2 text-xs">
-                                  <span className="font-bold text-[#1C1B1A]">📝 Rangkuman Catatan</span>
-                                  <div className="prose prose-sm"><ReactMarkdown>{week.notes_markdown}</ReactMarkdown></div>
-                                </div>
-                              )}
+                            <div className="text-center py-6 text-xs text-[#6B6862] italic font-mono">
+                              Belum ada modul di pertemuan ini.
                             </div>
                           )}
                         </div>
                       )}
                     </div>
-                  )
-                })}
-              </div>
-            </div>
+                  )}
+                </div>
+              )
+            })
           )}
         </div>
       </div>

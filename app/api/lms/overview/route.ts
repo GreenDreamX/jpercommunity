@@ -40,6 +40,35 @@ export async function GET(request: Request) {
     )
   }
 
+  // Daily Login Streak calculation (updates last_login_date and streak_count in Supabase)
+  const todayStr = new Date().toISOString().split("T")[0]
+  const lastLogin = profile.last_login_date ? String(profile.last_login_date).split("T")[0] : null
+
+  if (lastLogin !== todayStr) {
+    let newStreak = 1
+    if (lastLogin) {
+      const todayDate = new Date(todayStr)
+      const lastDate = new Date(lastLogin)
+      const diffTime = Math.abs(todayDate.getTime() - lastDate.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      if (diffDays === 1) {
+        newStreak = (profile.streak_count || 0) + 1
+      }
+    }
+
+    profile.streak_count = newStreak
+    profile.last_login_date = todayStr
+
+    void supabaseRestRequest(
+      `profiles?id=eq.${encodeURIComponent(profile.id)}`,
+      env,
+      {
+        method: "PATCH",
+        body: { streak_count: newStreak, last_login_date: todayStr },
+      },
+    )
+  }
+
   const [courses, assignments, grades, attendance, quizzes, quizAnswers] = await Promise.all([
     safeArrayRequest<{ id: string; title: string; description: string | null }>(
       "courses?select=id,title,description&is_hidden=eq.false&limit=6",

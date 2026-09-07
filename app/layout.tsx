@@ -52,6 +52,10 @@ export const metadata = {
   },
 }
 
+import { OfflineBanner } from "@/components/offline-banner"
+import { CookieBanner } from "@/components/cookie-banner"
+import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -70,7 +74,12 @@ export default function RootLayout({
       )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <OfflineBanner />
+          <CookieBanner />
+          <KeyboardShortcutsDialog />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

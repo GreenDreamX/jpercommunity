@@ -81,7 +81,7 @@ export function DialogContent({ children, className }: { children: React.ReactNo
         onClick={() => setOpen(false)}
       />
       {/* Dialog box */}
-      <div className={cn("relative z-50 w-full max-w-lg border border-[#E4E1DA] bg-[#FAF9F6] p-6 shadow-none rounded-lg focus:outline-none max-h-[90svh] overflow-y-auto", className)}>
+      <div className={cn("relative z-50 w-full max-w-lg border border-[#E4E1DA] bg-[#FAF9F6] p-6 shadow-none rounded-lg focus:outline-none max-h-[90svh] overflow-y-auto no-scrollbar", className)}>
         {children}
         <button
           onClick={() => setOpen(false)}

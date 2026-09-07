@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react"
-import { Search, UserCheck, Trash2, Edit3, Save, X } from "lucide-react"
+import { Search, UserCheck, Trash2, Edit3, Save, X, KeyRound } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -157,6 +157,40 @@ export function MemberManagement({ token }: MemberManagementProps) {
       }
 
       setMembers((prev) => prev.filter((m) => m.id !== id))
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Terjadi kesalahan.")
+    }
+  }
+
+  // Handle Admin Reset Password
+  const handleResetPassword = async (member: Member) => {
+    const newPassword = prompt(`Masukkan password baru untuk ${member.nama_lengkap} (${member.email}):`)
+    if (!newPassword) return
+
+    if (newPassword.length < 6) {
+      alert("Password minimal 6 karakter.")
+      return
+    }
+
+    try {
+      const res = await fetch("/api/studio/members/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          memberId: member.id,
+          newPassword,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.message || "Gagal mereset password.")
+      }
+
+      alert(data.message || "Password berhasil diperbarui.")
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Terjadi kesalahan.")
     }
@@ -382,6 +416,14 @@ export function MemberManagement({ token }: MemberManagementProps) {
                           </div>
                         ) : (
                           <div className="flex justify-end gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleResetPassword(member)}
+                              className="h-7 px-2 border-[#E4E1DA] bg-[#FAF9F6] rounded-md text-[10px]"
+                            >
+                              <KeyRound className="size-3 mr-1 text-[#2B3A55]" /> Sandi
+                            </Button>
                             <Button
                               size="sm"
                               variant="outline"

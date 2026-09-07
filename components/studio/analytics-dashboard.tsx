@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from "react"
 import { Users, BookOpen, Calendar, Award, AlertTriangle, RefreshCw, BarChart2, TrendingUp } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { HealthWidget } from "@/components/studio/health-widget"
 
 type ActivityLog = {
   id: string
@@ -123,6 +124,9 @@ export function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           Refresh Data
         </Button>
       </div>
+
+      {/* System Health Widget */}
+      <HealthWidget />
 
       {/* Overview Stat Cards Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -325,7 +329,7 @@ export function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
                 <thead>
                   <tr className="border-b border-[#E4E1DA] text-[#6B6862] font-mono">
                     <th className="py-2 font-medium">Nama Siswa</th>
-                    <th className="py-2 font-medium">Email SSO</th>
+                    <th className="py-2 font-medium">Email Siswa</th>
                     <th className="py-2 font-medium">Cohort</th>
                     <th className="py-2 font-medium">Kehadiran</th>
                     <th className="py-2 font-medium">Rata Kuis</th>

@@ -41,6 +41,11 @@ type ModuleContent =
   | { markdown: string }                                        // notes
   | { quiz_id: string }                                         // quiz
   | { description: string; due_at: string | null; max_size_mb: number } // assignment
+  | { deck_title?: string; cards: Array<{ word: string; kana?: string; romaji?: string; meaning: string; example?: string }> } // flashcard
+  | { audio_url: string; filename?: string; duration_seconds?: number; transcript?: string; translation?: string } // audio
+  | { pattern: string; jlpt_level?: string; meaning: string; formula?: string; examples?: Array<{ japanese: string; romaji?: string; meaning: string }> } // grammar
+  | { url: string; platform?: string; button_text?: string; is_embed?: boolean; embed_height?: number } // external_link
+  | { platform: string; meeting_url: string; start_time: string; end_time?: string; passcode?: string; notes?: string; recording_url?: string } // live_session
 
 /**
  * GET /api/studio/modules?course_week_id=xxx
@@ -82,7 +87,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as {
       course_week_id: string
-      type: "file" | "video" | "notes" | "quiz" | "assignment"
+      type: "file" | "video" | "notes" | "quiz" | "assignment" | "flashcard" | "audio" | "grammar" | "external_link" | "live_session"
       title: string
       content: ModuleContent
       is_locked?: boolean
@@ -96,7 +101,10 @@ export async function POST(request: Request) {
       return Response.json({ message: "course_week_id, type, dan content wajib diisi." }, { status: 400 })
     }
 
-    const validTypes = ["file", "video", "notes", "quiz", "assignment"]
+    const validTypes = [
+      "file", "video", "notes", "quiz", "assignment",
+      "flashcard", "audio", "grammar", "external_link", "live_session"
+    ]
     if (!validTypes.includes(type)) {
       return Response.json({ message: `Tipe modul tidak valid: ${type}` }, { status: 400 })
     }

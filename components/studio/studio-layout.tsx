@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { motion } from "framer-motion"
 import { LayoutGrid, BookOpen, Users, Edit3, FolderOpen, QrCode, ClipboardList, LogOut, ArrowLeft, AlertTriangle, Activity, Bookmark, Wallet, HelpCircle, Inbox, Settings, FileText } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -52,6 +53,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
     {
       title: "Konten & Database",
       items: [
+        { label: "Formulir & Evaluasi", value: "forms", icon: <FileText className="size-4 text-emerald-600" /> },
         { label: "Kamus & Kosakata", value: "dictionary", icon: <BookOpen className="size-4 text-orange-500" /> },
         { label: "Tata Bahasa (Grammar)", value: "grammar", icon: <Bookmark className="size-4 text-cyan-500" /> },
         { label: "Arsip File Bank", value: "file_bank", icon: <FolderOpen className="size-4 text-amber-600" /> },
@@ -116,8 +118,10 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
               </div>
               <div className="flex flex-col gap-0.5">
                 {sec.items.map((item) => (
-                  <button
+                  <motion.button
                     key={item.value}
+                    whileHover={{ x: 2 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => setActiveTab?.(item.value)}
                     className={cn(
                       "flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all w-full text-left",
@@ -128,7 +132,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
                   >
                     {item.icon}
                     <span>{item.label}</span>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>

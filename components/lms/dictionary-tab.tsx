@@ -21,6 +21,8 @@ type DictionaryItem = {
   frequency: number | null
 }
 
+import { awardStudentXp } from "@/lib/lms/award-xp"
+
 interface DictionaryTabProps {
   firebaseToken: string
 }
@@ -33,6 +35,7 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [bookmarks, setBookmarks] = useState<string[]>([])
   const [playingId, setPlayingId] = useState<string | null>(null)
+  const [xpToast, setXpToast] = useState<string | null>(null)
 
   // Load bookmarks from local storage
   useEffect(() => {
@@ -46,9 +49,10 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
     }
   }, [])
 
-  // Toggle bookmark
-  const toggleBookmark = (id: string) => {
+  // Toggle bookmark & award XP
+  const toggleBookmark = async (id: string) => {
     let updated: string[] = []
+    const isAdding = !bookmarks.includes(id)
     if (bookmarks.includes(id)) {
       updated = bookmarks.filter((bId) => bId !== id)
     } else {
@@ -56,6 +60,14 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
     }
     setBookmarks(updated)
     localStorage.setItem("jper_dictionary_bookmarks", JSON.stringify(updated))
+
+    if (isAdding && firebaseToken) {
+      const res = await awardStudentXp(firebaseToken, "dictionary", 10)
+      if (res?.ok) {
+        setXpToast(`🎉 Selamat! Anda mendapatkan +${res.addedXp} XP dari belajar kosakata kamus!`)
+        setTimeout(() => setXpToast(null), 3500)
+      }
+    }
   }
 
   // Fetch dictionary data from DB
@@ -104,6 +116,8 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel()
 
+      window.dispatchEvent(new CustomEvent("jper-quest-action", { detail: { action: "dictionary_searched", count: 1 } }))
+
       const cleanedText = text.replace(/～/g, "").trim()
       const utterance = new SpeechSynthesisUtterance(cleanedText)
       utterance.lang = "ja-JP"
@@ -151,12 +165,19 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
 
   return (
     <div className="space-y-6">
+      {xpToast && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 font-bold flex items-center gap-2 animate-in fade-in duration-200 shadow-sm">
+          <Sparkles className="size-4 text-amber-600 shrink-0" />
+          <span>{xpToast}</span>
+        </div>
+      )}
+
       {/* Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
             <BookOpen className="size-5 text-[#B23A2E]" />
-            Kamus & Kosakata (DB Supabase)
+            Kamus & Kosakata JPER
           </h2>
           <p className="text-xs text-[#6B6862]">Kamus kosakata Jepang lengkap dengan notasi Pitch Accent (NHK), suara TTS kata, & contoh kalimat berikut arti.</p>
         </div>
@@ -208,7 +229,7 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
         {loading ? (
           <div className="flex items-center justify-center py-12 text-xs font-mono text-[#6B6862] gap-2">
             <RefreshCw className="size-4 animate-spin text-[#B23A2E]" />
-            Memuat data kamus dari Supabase...
+            Memuat data kamus...
           </div>
         ) : error ? (
           <div className="rounded-lg border border-[#B23A2E]/30 bg-[#B23A2E]/5 p-4 text-xs text-[#B23A2E]">

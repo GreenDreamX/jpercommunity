@@ -7,6 +7,8 @@ import { BadgeCheck, LayoutGrid } from "lucide-react"
 import { useFirebaseUser } from "@/hooks/use-firebase-user"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+import { AnimatePresence, motion } from "framer-motion"
+
 // Import Components
 import { StudioLayout } from "@/components/studio/studio-layout"
 import { MemberManagement } from "@/components/studio/member-management"
@@ -24,6 +26,7 @@ import { QuizManagement } from "@/components/studio/quiz-management"
 import { SubmissionsTab } from "@/components/studio/submissions-tab"
 import { RaporTab } from "@/components/studio/rapor-tab"
 import { SettingsTab } from "@/components/studio/settings-tab"
+import { FormManagement } from "@/components/studio/form-management"
 
 const STUDIO_ROLES = ["admin", "pembina", "ketua_komunitas", "ketua_angkatan", "bendahara"]
 
@@ -157,6 +160,8 @@ export default function StudioPage() {
         return <QuizManagement token={token} />
       case "members":
         return <MemberManagement token={token} />
+      case "forms":
+        return <FormManagement token={token} />
       case "dictionary":
         return <DictionaryManagement token={token} />
       case "grammar":
@@ -191,7 +196,17 @@ export default function StudioPage() {
       avatarUrl={overview?.profile.avatar_url || undefined}
       userRole={overview?.profile.role}
     >
-      {renderContent()}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+        >
+          {renderContent()}
+        </motion.div>
+      </AnimatePresence>
     </StudioLayout>
   )
 }

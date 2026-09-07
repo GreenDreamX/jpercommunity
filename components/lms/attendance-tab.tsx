@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react"
 import { QrCode, ClipboardCheck, AlertCircle, Check, Camera, RefreshCw } from "lucide-react"
 import { Html5Qrcode } from "html5-qrcode"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -340,7 +341,7 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
               </tr>
             </thead>
             <tbody>
-              {records.map((record) => {
+              {records.map((record, index) => {
                 const week = record.attendance_sessions?.course_weeks
                 const session = record.attendance_sessions
                 const status = record.status || "hadir"
@@ -367,7 +368,13 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
                 }
 
                 return (
-                  <tr key={record.id} className="border-b border-[#E4E1DA] bg-[#FAF9F6]/20 last:border-none">
+                  <motion.tr
+                    key={record.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15, delay: index * 0.03 }}
+                    className="border-b border-[#E4E1DA] bg-[#FAF9F6]/20 last:border-none hover:bg-[#FAF9F6]/80 transition-colors"
+                  >
                     <td className="p-3.5 text-[#1C1B1A] font-semibold">
                       Pertemuan {week?.week_number ?? "-"}
                     </td>
@@ -400,7 +407,7 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
                         </div>
                       </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 )
               })}
             </tbody>

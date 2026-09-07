@@ -1,6 +1,7 @@
 import { verifyFirebaseIdToken } from "@/lib/server/firebase-auth"
 import { getSupabaseServerEnv, supabaseRestRequest } from "@/lib/server/supabase-rest"
 import { logActivity } from "@/lib/server/activity-logger"
+import { checkRateLimit } from "@/lib/server/rate-limiter"
 
 type LogPayload = {
   action: "LOGIN" | "LOGOUT" | "CHANGE_PASSWORD" | "UPDATE_PROFILE" | string
@@ -32,6 +33,18 @@ export async function POST(request: Request) {
   // Skip Firebase Auth check for LOGIN_FAILED as user is not logged in yet
   if (action === "LOGIN_FAILED") {
     const actorName = body.actorName || "Anonymous"
+
+    // Apply rate limit on failed logins (max 5 failed logs per minute per IP + email)
+    const rateLimitKey = `login_failed:${ip}:${actorName}`
+    const rateCheck = checkRateLimit(rateLimitKey, 5, 60 * 1000)
+
+    if (!rateCheck.allowed) {
+      return Response.json(
+        { message: `Rate limit log percobaan login tercapai. Silakan tunggu ${rateCheck.reset} detik.` },
+        { status: 429 },
+      )
+    }
+
     const det = `${details || `Percobaan login gagal untuk email: ${actorName}.`} (IP: ${ip})`
     void logActivity({
       actorId: null,

@@ -14,6 +14,7 @@ import {
 
 import { ParallaxShowcase } from "@/components/marketing/parallax-showcase"
 import { SiteHeader } from "@/components/marketing/site-header"
+import { StickyMobileCta } from "@/components/marketing/sticky-mobile-cta"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
@@ -388,14 +389,17 @@ export function LandingPage() {
               <div>
                 <div className="text-xs uppercase tracking-[0.24em] text-stone">Navigasi</div>
                 <div className="mt-3 flex flex-col gap-2 text-sm">
-                  <a className="text-foreground transition-colors hover:text-primary" href="/login">Login</a>
-                  <a className="text-foreground transition-colors hover:text-primary" href="/register">Daftar</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="/login">Login Member</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="/register">Daftar Ekskul</a>
                   <a className="text-foreground transition-colors hover:text-primary" href="/direktori">Direktori Anggota</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="/faq">FAQ & Panduan</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="/privacy">Kebijakan Privasi</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="/terms">Syarat & Ketentuan</a>
                 </div>
               </div>
 
               <div>
-                <div className="text-xs uppercase tracking-[0.24em] text-stone">Sosial</div>
+                <div className="text-xs uppercase tracking-[0.24em] text-stone">Sosial & Komunitas</div>
                 <div className="mt-3 flex flex-col gap-2 text-sm">
                   {socials.map((social) => (
                     <a key={social.label} className="text-foreground transition-colors hover:text-primary" href={social.href} target="_blank" rel="noreferrer">
@@ -406,17 +410,18 @@ export function LandingPage() {
               </div>
 
               <div>
-                <div className="text-xs uppercase tracking-[0.24em] text-stone">Kontak</div>
+                <div className="text-xs uppercase tracking-[0.24em] text-stone">Kontak Resmi</div>
                 <div className="mt-3 flex flex-col gap-2 text-sm text-foreground">
-                  <a className="transition-colors hover:text-primary" href="mailto:jper.community@gmail.com">jper.community@gmail.com</a>
-                  <a className="transition-colors hover:text-primary" href="https://wa.me/6280000000000">WhatsApp pembina</a>
+                  <a className="transition-colors hover:text-primary" href="mailto:petugasromusha@gmail.com">petugasromusha@gmail.com</a>
+                  <a className="transition-colors hover:text-primary" href="https://wa.me/6283850967918" target="_blank" rel="noreferrer">+62 838-5096-7918 (WhatsApp)</a>
+                  <span className="text-xs text-stone mt-1">SMKN 1 Majalaya, Kab. Bandung</span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="mt-8 flex flex-col gap-3 border-t border-border pt-5 text-sm text-stone md:flex-row md:items-center md:justify-between">
-            <div>© JPER Community</div>
+            <div>© 2026 JPER Community — Ekstrakurikuler Bahasa Jepang SMKN 1 Majalaya</div>
             <div className="inline-flex items-center gap-2">
               <span className="size-2 rounded-full bg-destructive" />
               Penerimaan anggota baru terbuka setiap tahun ajaran.
@@ -424,6 +429,7 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
+      <StickyMobileCta />
     </main>
   )
 }
