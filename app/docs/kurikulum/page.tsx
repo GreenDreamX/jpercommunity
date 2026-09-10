@@ -47,10 +47,6 @@ export default function KurikulumDocsPage() {
 
         {/* Title */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-900">
-            <BookOpen className="size-3.5 text-blue-600" />
-            Silabus Pembelajaran Resmi
-          </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-[#1C1B1A]">
             Kurikulum Pembelajaran Bahasa Jepang
           </h1>
@@ -94,7 +90,7 @@ export default function KurikulumDocsPage() {
 
         {/* Footer */}
         <div className="pt-4 border-t border-[#E4E1DA] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6B6862]">
-          <div>&copy; 2026 JPER Community — Ekstrakurikuler Bahasa Jepang SMKN 1 Majalaya.</div>
+          <div>&copy; 2026 JPER Community</div>
           <a href="https://lms.jper.my.id" className="font-semibold text-[#B23A2E] hover:underline">
             Akses LMS Pembelajaran →
           </a>

@@ -26,15 +26,11 @@ export default function PrivacyDocsPage() {
 
         {/* Title */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-900">
-            <ShieldCheck className="size-3.5 text-emerald-600" />
-            Perlindungan Data Pribadi (UU PDP Compliant)
-          </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-[#1C1B1A]">
             Kebijakan Privasi &amp; Data Anggota (Privacy Policy)
           </h1>
           <p className="text-xs font-mono text-[#6B6862]">
-            Terakhir Diperbarui: 1 September 2026 — SMKN 1 Majalaya
+            Terakhir Diperbarui: 1 September 2026
           </p>
         </div>
 

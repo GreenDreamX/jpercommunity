@@ -75,7 +75,7 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
-            <Trophy className="size-6 text-[#2B3A55]" /> Papan Peringkat & Podium Juara (順位表)
+            <Trophy className="size-6 text-[#2B3A55]" /> Papan Peringkat & Podium Juara (BETA Test)
           </h2>
           <p className="text-xs text-[#6B6862] mt-0.5">
             Kompetisi positif anggota JPER Community berdasarkan akumulasi Poin XP & Streak Belajar Harian.

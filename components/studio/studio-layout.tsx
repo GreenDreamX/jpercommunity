@@ -75,7 +75,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
       localStorage.removeItem("jper_mock_session")
     }
     document.cookie = "jper_session=; path=/; max-age=0; SameSite=Lax"
-    window.location.href = "/studio/login"
+    window.location.href = window.location.hostname.includes("studio.") ? "https://studio.jper.my.id/login" : "/studio/login"
   }
 
   useIdleTimeout(confirmLogout, 10 * 60 * 1000)
@@ -93,7 +93,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
   return (
     <div className="min-h-svh bg-[#FAF9F6] text-[#1C1B1A] flex flex-col md:flex-row">
       {/* SIDEBAR NAVIGATION */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-5 flex flex-col shrink-0 md:h-screen md:sticky md:top-0">
+      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-5 flex flex-col shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto no-scrollbar">
         <div className="flex items-center justify-between md:justify-start gap-2.5 mb-5 shrink-0">
           <div className="flex items-center gap-2.5">
             <img src="/image/J-PER.png" alt="JPER Community Logo" className="size-7 object-contain" />
@@ -110,7 +110,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
         </div>
 
         {/* Sidebar Menu Items */}
-        <nav className="flex-1 overflow-y-auto space-y-4 pr-1 scrollbar-thin scrollbar-thumb-stone-200">
+        <nav className="flex-1 overflow-y-auto space-y-4 pr-1 no-scrollbar">
           {sections.map((sec) => (
             <div key={sec.title} className="space-y-1">
               <div className="text-[9px] font-bold text-[#6B6862]/60 uppercase tracking-widest px-3 py-1 font-mono">
@@ -180,7 +180,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
       </aside>
 
       {/* MAIN CONTAINER */}
-      <main className="flex-1 p-6 md:p-8 lg:p-10 overflow-y-auto">
+      <main className="flex-1 p-6 md:p-8 lg:p-10 overflow-y-auto no-scrollbar">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* Main workspace injection */}
           {children}

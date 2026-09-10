@@ -38,7 +38,7 @@ export function CookieBanner() {
               <div className="font-bold text-[#1C1B1A]">Persetujuan Cookie Sesi</div>
               <p className="text-[11px] text-[#6B6862] leading-relaxed">
                 Kami menggunakan cookie esensial (`jper_session`) untuk memverifikasi login &amp; keanggotaan Anda di portal LMS. Baca{" "}
-                <Link href="/privacy" className="text-[#B23A2E] underline font-medium">
+                <Link href="https://docs.jper.my.id/privacy" className="text-[#B23A2E] underline font-medium">
                   Kebijakan Privasi
                 </Link>.
               </p>

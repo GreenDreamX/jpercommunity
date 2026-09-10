@@ -32,7 +32,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 1. DETERMINE SUBDOMAIN
+  // 1. DETERMINE SUBDOMAIN & ENVIRONMENT
   let subdomain = ""
   if (hostname.startsWith("lms.")) subdomain = "lms"
   else if (hostname.startsWith("studio.")) subdomain = "studio"
@@ -42,7 +42,39 @@ export function proxy(request: NextRequest) {
 
   const isLocalhost = hostname.includes("localhost") || hostname.includes("127.0.0.1")
 
-  // 2. AUTH GUARD CHECK
+  // 2. CROSS-SUBDOMAIN PATH REDIRECTS (Handles cross-subdomain links & client router navigation)
+  if (!isLocalhost) {
+    // If requesting /lms on any subdomain other than lms.jper.my.id
+    if (subdomain !== "lms" && (path === "/lms" || path.startsWith("/lms/"))) {
+      const targetPath = path.replace(/^\/lms/, "") || ""
+      return NextResponse.redirect(`https://lms.jper.my.id${targetPath}`, 307)
+    }
+
+    // If requesting /studio on any subdomain other than studio.jper.my.id
+    if (subdomain !== "studio" && (path === "/studio" || path.startsWith("/studio/"))) {
+      const targetPath = path.replace(/^\/studio/, "") || ""
+      return NextResponse.redirect(`https://studio.jper.my.id${targetPath}`, 307)
+    }
+
+    // If requesting /login from subdomains (e.g. studio.jper.my.id/login)
+    if (subdomain !== "" && subdomain !== "studio" && path === "/login") {
+      return NextResponse.redirect(`https://jper.my.id/login`, 307)
+    }
+
+    // If requesting /register or /forms on any subdomain other than forms.jper.my.id
+    if (subdomain !== "forms" && (path === "/register" || path.startsWith("/forms"))) {
+      const targetPath = path === "/register" ? "/register" : path.replace(/^\/forms/, "") || ""
+      return NextResponse.redirect(`https://forms.jper.my.id${targetPath}`, 307)
+    }
+
+    // If requesting /docs, /privacy, or /terms on any subdomain other than docs.jper.my.id
+    if (subdomain !== "docs" && (path === "/privacy" || path === "/terms" || path.startsWith("/docs"))) {
+      const targetPath = path.startsWith("/docs") ? path.replace(/^\/docs/, "") : path
+      return NextResponse.redirect(`https://docs.jper.my.id${targetPath}`, 307)
+    }
+  }
+
+  // 3. AUTH GUARD CHECK
   const sessionCookie =
     request.cookies.get("jper_session")?.value ??
     request.cookies.get("__session")?.value
@@ -52,18 +84,18 @@ export function proxy(request: NextRequest) {
   const isStudioLogin = PUBLIC_STUDIO_LOGIN.test(path)
 
   if (isAccessingLms && !sessionCookie) {
-    const loginUrl = new URL("/login", request.url)
+    const loginUrl = isLocalhost ? new URL("/login", request.url) : new URL("https://jper.my.id/login")
     loginUrl.searchParams.set("from", path)
     return NextResponse.redirect(loginUrl)
   }
 
   if (isAccessingStudio && !isStudioLogin && !sessionCookie) {
-    const loginUrl = new URL("/studio/login", request.url)
+    const loginUrl = isLocalhost ? new URL("/studio/login", request.url) : new URL("https://studio.jper.my.id/login")
     loginUrl.searchParams.set("from", path)
     return NextResponse.redirect(loginUrl)
   }
 
-  // 3. SUBDOMAIN REWRITES
+  // 4. SUBDOMAIN REWRITES (For internal routing within the matching subdomain)
   if (subdomain === "lms") {
     if (!path.startsWith("/lms")) {
       const targetUrl = new URL(`/lms${path === "/" ? "" : path}`, request.url)
@@ -73,6 +105,9 @@ export function proxy(request: NextRequest) {
   }
 
   if (subdomain === "studio") {
+    if (path === "/login") {
+      return NextResponse.rewrite(new URL("/studio/login", request.url))
+    }
     if (!path.startsWith("/studio")) {
       const targetUrl = new URL(`/studio${path === "/" ? "" : path}`, request.url)
       return NextResponse.rewrite(targetUrl)
@@ -116,7 +151,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 4. PRODUCTION MAIN DOMAIN LEGACY PATH REDIRECTS (Only on production jper.my.id)
+  // 5. PRODUCTION MAIN DOMAIN LEGACY PATH REDIRECTS (Only on production jper.my.id)
   if (!subdomain && !isLocalhost) {
     if (path.startsWith("/lms")) {
       const targetPath = path.replace(/^\/lms/, "") || ""

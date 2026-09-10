@@ -34,10 +34,6 @@ export default function DocsIndexPage() {
 
         {/* Title & Badge */}
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#B23A2E]/30 bg-[#B23A2E]/5 px-3 py-1 text-xs font-bold text-[#B23A2E]">
-            <Sparkles className="size-3.5" />
-            Dokumentasi &amp; Regulasi Ekskul
-          </div>
           <h1 className="font-heading text-3xl md:text-5xl font-extrabold tracking-tight text-[#1C1B1A]">
             Pusat Dokumentasi &amp; Legalitas Resmi
           </h1>
@@ -57,7 +53,7 @@ export default function DocsIndexPage() {
                 </div>
                 <div>
                   <div className="text-xs font-mono font-bold text-emerald-800 uppercase tracking-wider">
-                    UU PDP Compliant
+                    Perlindungan Data Pribadi
                   </div>
                   <h2 className="text-xl font-bold text-[#1C1B1A] group-hover:text-[#B23A2E] transition-colors mt-0.5">
                     Kebijakan Privasi (Privacy Policy)
@@ -82,7 +78,7 @@ export default function DocsIndexPage() {
                 </div>
                 <div>
                   <div className="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider">
-                    Aturan Komunitas
+                    Standar Akademik
                   </div>
                   <h2 className="text-xl font-bold text-[#1C1B1A] group-hover:text-[#B23A2E] transition-colors mt-0.5">
                     Syarat &amp; Ketentuan (Terms of Service)
@@ -148,6 +144,30 @@ export default function DocsIndexPage() {
             </div>
           </div>
         </div>
+
+         <Link href="/adart" className="group block">
+            <div className="h-full bg-white border border-[#E4E1DA] p-6 rounded-2xl shadow-xs group-hover:border-[#B23A2E] transition-all flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="size-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-700">
+                  <Scale className="size-6 stroke-[2]" />
+                </div>
+                <div>
+                  <div className="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider">
+                    Aturan Komunitas
+                  </div>
+                  <h2 className="text-xl font-bold text-[#1C1B1A] group-hover:text-[#B23A2E] transition-colors mt-0.5">
+                    Anggaran dasar &amp; Anggaran rumah tangga (AD&amp;ART)
+                  </h2>
+                </div>
+                <p className="text-xs text-[#6B6862] leading-relaxed">
+                  Aturan dasar yang menjadi pondasi atau konstitusi JPER Community dalam membuat aturan komunitas.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-[#E4E1DA]/60 text-xs font-bold text-[#B23A2E] flex items-center gap-1">
+                Baca Anggaran dasar &amp; Anggaran rumah tangga →
+              </div>
+            </div>
+          </Link>
 
         {/* Footer */}
         <div className="pt-6 border-t border-[#E4E1DA] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6B6862]">

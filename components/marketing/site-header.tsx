@@ -106,7 +106,7 @@ export function SiteHeader({ className }: SiteHeaderProps) {
 
         {session ? (
           <a
-            href={session.role === "admin" ? "/studio" : "/lms"}
+            href={session.role === "admin" ? "https://studio.jper.my.id" : "https://lms.jper.my.id"}
             className="flex items-center gap-3 rounded-full border border-border bg-background px-2.5 py-1.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 animate-fade-in"
             aria-label="Ke Dashboard"
           >

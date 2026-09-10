@@ -232,7 +232,11 @@ export function LoginForm({
         localStorage.removeItem("jper_mock_session")
       }
       setSessionCookie()
-      router.push(mode === "studio" ? "/studio" : "/lms")
+      if (typeof window !== "undefined" && !window.location.hostname.includes("localhost")) {
+        window.location.href = mode === "studio" ? "https://studio.jper.my.id" : "https://lms.jper.my.id"
+      } else {
+        router.push(mode === "studio" ? "/studio" : "/lms")
+      }
     } catch (error) {
       const errorMsg = getAuthErrorMessage(error)
       const nextCount = failedCount + 1

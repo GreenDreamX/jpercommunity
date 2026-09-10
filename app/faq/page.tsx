@@ -49,10 +49,6 @@ export default function FaqPage() {
 
         {/* Title */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-900">
-            <HelpCircle className="size-3.5 text-sky-600" />
-            Pusat Bantuan &amp; Informasi
-          </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-[#1C1B1A]">
             Pertanyaan Umum (FAQ) &amp; Panduan Anggota
           </h1>
@@ -82,8 +78,8 @@ export default function FaqPage() {
         {/* Call to Action */}
         <div className="bg-[#2B3A55] text-white p-6 md:p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
-            <div className="text-base font-bold flex items-center justify-center md:justify-start gap-2">
-              <Sparkles className="size-4 text-amber-400" /> Siap Memulai Perjalanan Belajar?
+            <div className="text-base font-bold flex">
+              <div className="" /> Siap Memulai Perjalanan Belajar?
             </div>
             <p className="text-xs text-slate-300">
               Daftarkan diri Anda sekarang dan bergabunglah dengan anggota JPER Community lainnya.
@@ -99,7 +95,7 @@ export default function FaqPage() {
 
         {/* Footer */}
         <div className="pt-4 border-t border-[#E4E1DA] flex items-center justify-between text-xs text-[#6B6862]">
-          <div>&copy; 2026 JPER Community — SMKN 1 Majalaya.</div>
+          <div>&copy; 2026 JPER Community</div>
         </div>
       </div>
     </main>

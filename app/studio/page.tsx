@@ -109,16 +109,28 @@ export default function StudioPage() {
           setErrorMessage(payload?.message ?? "Gagal memuat data Studio.")
           setLoading(false)
           if (response.status === 403) {
-            router.replace("/lms")
+            if (typeof window !== "undefined" && window.location.hostname.includes("studio.")) {
+              window.location.href = "https://lms.jper.my.id"
+            } else {
+              router.replace("/lms")
+            }
           } else if (response.status === 401) {
-            router.replace("/studio/login")
+            if (typeof window !== "undefined" && window.location.hostname.includes("studio.")) {
+              window.location.href = "https://studio.jper.my.id/login"
+            } else {
+              router.replace("/studio/login")
+            }
           }
           return
         }
 
         const payload = (await response.json()) as StudioOverview & { ok: boolean }
         if (!STUDIO_ROLES.includes(payload.profile.role)) {
-          router.replace("/lms")
+          if (typeof window !== "undefined" && window.location.hostname.includes("studio.")) {
+            window.location.href = "https://lms.jper.my.id"
+          } else {
+            router.replace("/lms")
+          }
           return
         }
         setOverview(payload)

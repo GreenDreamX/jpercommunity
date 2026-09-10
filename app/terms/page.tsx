@@ -26,15 +26,11 @@ export default function TermsPage() {
 
         {/* Title */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900">
-            <Scale className="size-3.5 text-amber-600" />
-            Dokumen Resmi Organisasi
-          </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-[#1C1B1A]">
             Syarat & Ketentuan Layanan (Terms of Service)
           </h1>
           <p className="text-xs font-mono text-[#6B6862]">
-            Berlaku Efektif sejak 1 September 2026 — SMKN 1 Majalaya
+            Berlaku Efektif sejak 1 September 2026
           </p>
         </div>
 
@@ -90,7 +86,7 @@ export default function TermsPage() {
 
         {/* Footer */}
         <div className="pt-4 border-t border-[#E4E1DA] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6B6862]">
-          <div>&copy; 2026 JPER Community — Ekstrakurikuler Bahasa Jepang SMKN 1 Majalaya.</div>
+          <div>&copy; 2026 JPER Community</div>
           <Link href="/privacy" className="font-semibold text-[#B23A2E] hover:underline">
             Lihat Kebijakan Privasi (Privacy Policy) →
           </Link>

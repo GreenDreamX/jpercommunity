@@ -26,10 +26,6 @@ export default function TermsDocsPage() {
 
         {/* Title */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900">
-            <Scale className="size-3.5 text-amber-600" />
-            Dokumen Resmi Organisasi
-          </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-[#1C1B1A]">
             Syarat &amp; Ketentuan Layanan (Terms of Service)
           </h1>

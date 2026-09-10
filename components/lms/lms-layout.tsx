@@ -69,7 +69,7 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
   return (
     <div className="min-h-svh bg-[#FAF9F6] text-[#1C1B1A] flex flex-col md:flex-row">
       {/* SIDEBAR NAVIGATION */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-6 flex flex-col gap-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto">
+      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-6 flex flex-col gap-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto no-scrollbar">
         <div className="flex items-center justify-between md:justify-start gap-2">
           <div className="flex items-center gap-2.5">
             <img src="/image/J-PER.png" alt="JPER Community Logo" className="size-7 object-contain" />
@@ -86,7 +86,7 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
         </div>
 
         {/* Sidebar Menu Sections */}
-        <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-4 pb-2 md:pb-0 scrollbar-none">
+        <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-4 pb-2 md:pb-0 no-scrollbar">
           {sections.map((sec) => (
             <div key={sec.title} className="space-y-1 w-full shrink-0 md:shrink">
               <div className="hidden md:block text-[9px] font-bold text-[#6B6862]/60 uppercase tracking-widest px-3 py-1 font-mono">
@@ -170,7 +170,7 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
       </aside>
 
       {/* MAIN CONTAINER */}
-      <main className="flex-1 p-6 md:p-8 lg:p-10 overflow-y-auto">
+      <main className="flex-1 p-6 md:p-8 lg:p-10 overflow-y-auto no-scrollbar">
         <div className="mx-auto max-w-6xl space-y-6">
           {children}
         </div>

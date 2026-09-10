@@ -29,12 +29,12 @@ export default function NotFound() {
 
         {/* Navigation Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <Link
-            href="/lms"
+          <a
+            href="https://lms.jper.my.id"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#2B3A55] text-white hover:bg-[#2B3A55]/95 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-xs"
           >
             <BookOpen className="size-4" /> Masuk ke LMS Member
-          </Link>
+          </a>
           <Link
             href="/"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-[#E4E1DA] bg-white text-[#1C1B1A] hover:bg-[#FAF9F6] text-xs font-semibold px-4 py-2.5 rounded-xl transition-all"

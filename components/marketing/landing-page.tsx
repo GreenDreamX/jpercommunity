@@ -113,7 +113,7 @@ export function LandingPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <a
-                  href="/register"
+                  href="https://forms.jper.my.id/register"
                   className={cn(buttonVariants({ size: "lg" }), "rounded-lg px-5")}
                 >
                   Daftar Sekarang
@@ -334,7 +334,7 @@ export function LandingPage() {
                   </p>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <a
-                      href="/register"
+                      href="https://forms.jper.my.id/register"
                       className={cn(buttonVariants({ size: "lg" }), "rounded-lg px-6")}
                     >
                       Daftar Sekarang
@@ -390,11 +390,11 @@ export function LandingPage() {
                 <div className="text-xs uppercase tracking-[0.24em] text-stone">Navigasi</div>
                 <div className="mt-3 flex flex-col gap-2 text-sm">
                   <a className="text-foreground transition-colors hover:text-primary" href="/login">Login Member</a>
-                  <a className="text-foreground transition-colors hover:text-primary" href="/register">Daftar Ekskul</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="https://forms.jper.my.id/register">Daftar Ekskul</a>
                   <a className="text-foreground transition-colors hover:text-primary" href="/direktori">Direktori Anggota</a>
                   <a className="text-foreground transition-colors hover:text-primary" href="/faq">FAQ & Panduan</a>
-                  <a className="text-foreground transition-colors hover:text-primary" href="/privacy">Kebijakan Privasi</a>
-                  <a className="text-foreground transition-colors hover:text-primary" href="/terms">Syarat & Ketentuan</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="https://docs.jper.my.id/privacy">Kebijakan Privasi</a>
+                  <a className="text-foreground transition-colors hover:text-primary" href="https://docs.jper.my.id/terms">Syarat & Ketentuan</a>
                 </div>
               </div>
 
