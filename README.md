@@ -1,4 +1,4 @@
-# ⛩️ JPER Community — Platform Ekstrakurikuler Bahasa Jepang
+# ⛩️ JPER Community Platform Ekstrakurikuler Bahasa Jepang
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16%20App%20Router-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-emerald?style=flat-square&logo=supabase)](https://supabase.com/)
@@ -6,7 +6,7 @@
 [![Vercel Deployment](https://img.shields.io/badge/Hosting-Vercel-black?style=flat-square&logo=vercel)](https://vercel.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**JPER Community** adalah platform digital terpadu untuk manajemen kegiatan ekstrakurikuler, portal belajar (*LMS*), pusat formulir dinamis, generator shortlink resmi, serta panel admin pengurus (*Studio Management*) **Ekstrakurikuler Bahasa Jepang SMKN 1 Majalaya**.
+**JPER Community** adalah platform digital terpadu untuk manajemen kegiatan ekstrakurikuler, portal belajar (*LMS*), pusat formulir dinamis, generator shortlink resmi, serta panel admin pengurus (*Studio Management*) **Ekstrakurikuler Bahasa Jepang**.
 
 > **Domain Utama:** [`jper.my.id`](https://jper.my.id)
 
@@ -103,13 +103,13 @@ Buat file `.env.local` di root proyek dan isi kredensial berikut:
 
 ```env
 # Supabase Configuration
-SUPABASE_URL=https://ufehqkmxqcqcmwkftqqf.supabase.co
-SUPABASE_SECRET_KEY=sb_secret_your_service_role_key
-SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
-SUPABASE_JWKS_URL=https://ufehqkmxqcqcmwkftqqf.supabase.co/auth/v1/keys
+SUPABASE_URL=
+SUPABASE_SECRET_KEY=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_JWKS_URL=
 
-NEXT_PUBLIC_SUPABASE_URL=https://ufehqkmxqcqcmwkftqqf.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_your_key
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 # Firebase Authentication Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
@@ -146,5 +146,5 @@ Buka `http://localhost:3000` di browser Anda.
 
 ## 📜 Lisensi & Atribusi
 
-Diprakarsai dan dikembangkan untuk **JPER Community — Ekstrakurikuler Bahasa Jepang SMKN 1 Majalaya**.  
-Hak Cipta &copy; 2026 JPER Community. All rights reserved.
+Diprakarsai dan dikembangkan untuk **JPER Community**.  
+Hak Cipta &copy; 2026 JPER Community and Udeezz. All rights reserved.
