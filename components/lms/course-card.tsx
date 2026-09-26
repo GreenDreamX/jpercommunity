@@ -5,7 +5,6 @@ import { motion } from "framer-motion"
 import { Lock, BookOpen, ChevronRight, Layers } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
 
 type CourseCardProps = {
   id: string
@@ -21,13 +20,13 @@ export function CourseCard({ id, title, description, imageUrl, isLocked, weekCou
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.15 }}
       className="h-full"
     >
-      <Card className="group h-full overflow-hidden border border-[#E4E1DA] bg-[#FAF9F6] shadow-none transition-all duration-300 hover:border-[#2B3A55]/50 hover:shadow-md rounded-xl flex flex-col justify-between">
+      <Card className="group h-full overflow-hidden border-2 border-black bg-white shadow-[5px_5px_0px_#111] transition-all duration-200 hover:shadow-[7px_7px_0px_#E60012] rounded-none flex flex-col justify-between">
         <div>
-          <div className="relative aspect-video w-full bg-[#E4E1DA]/30 overflow-hidden">
+          <div className="relative aspect-video w-full bg-zinc-100 border-b-2 border-black overflow-hidden">
             {imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -39,62 +38,57 @@ export function CourseCard({ id, title, description, imageUrl, isLocked, weekCou
                 )}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#2B3A55]/10 to-[#2B3A55]/5 text-[#2B3A55]/40 transition-transform duration-500 group-hover:scale-105">
-                <BookOpen className="size-10 stroke-[1.5]" />
+              <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-black transition-transform duration-500 group-hover:scale-105">
+                <BookOpen className="size-10 stroke-[2] text-black" />
               </div>
             )}
 
-            {/* Locked Badge Overlay */}
+            {/* Locked vs Week Count Badge */}
             {isLocked ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-[#1C1B1A]/40 backdrop-blur-[2px]">
-                <div className="flex items-center gap-1.5 rounded-full bg-[#FAF9F6] px-3 py-1 text-xs font-semibold text-[#1C1B1A] border border-[#E4E1DA] shadow-sm">
-                  <Lock className="size-3.5 text-[#B23A2E]" />
-                  Terkunci
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
+                <div className="flex items-center gap-1.5 border-2 border-black bg-[#E60012] text-white px-3 py-1 text-xs font-black uppercase tracking-wider -skew-x-6 shadow-[3px_3px_0px_#FFC700]">
+                  <Lock className="size-3.5 text-white skew-x-6" />
+                  TERKUNCI
                 </div>
               </div>
             ) : (
               <div className="absolute top-3 right-3">
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#FAF9F6]/90 backdrop-blur-sm border border-[#E4E1DA] px-2.5 py-0.5 text-[10px] font-mono font-semibold text-[#2B3A55] shadow-xs">
-                  <Layers className="size-3 text-[#2B3A55]" />
-                  {weekCount ? `${weekCount} Pertemuan` : "Ekskul Sesi"}
+                <span className="inline-flex items-center gap-1.5 border border-black bg-black text-[#FFC700] px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-widest -skew-x-6 shadow-[2px_2px_0px_#E60012]">
+                  <Layers className="size-3 text-[#FFC700] skew-x-6" />
+                  {weekCount ? `${weekCount} PERTEMUAN` : "EKUSKUL SESI"}
                 </span>
               </div>
             )}
           </div>
 
-          <CardHeader className="p-4 pb-1">
-            <CardTitle className="text-base font-bold tracking-tight text-[#1C1B1A] line-clamp-1 group-hover:text-[#2B3A55] transition-colors">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="font-heading text-lg font-black uppercase tracking-tight text-black line-clamp-1 group-hover:text-[#E60012] transition-colors">
               {title}
             </CardTitle>
           </CardHeader>
 
           <CardContent className="px-4 pb-3 pt-0">
-            <p className="text-xs text-[#6B6862] line-clamp-2 leading-relaxed h-8">
-              {description ?? "Materi ekskul Bahasa Jepang JPER Community."}
+            <p className="text-xs font-medium text-zinc-700 line-clamp-2 leading-relaxed h-8">
+              {description ?? "Materi pembelajaran ekskul Bahasa Jepang JPER Community."}
             </p>
           </CardContent>
         </div>
 
-        <CardFooter className="p-4 pt-3 border-t border-[#E4E1DA]/60 flex justify-end">
+        <CardFooter className="p-4 pt-3 border-t-2 border-black bg-[#FAF9F5] flex justify-end">
           {isLocked ? (
             <button
               disabled
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "w-full cursor-not-allowed opacity-50 bg-[#E4E1DA]/50 text-[#6B6862] border-[#E4E1DA]"
-              )}
+              className="w-full border-2 border-black bg-zinc-200 text-zinc-600 font-black uppercase tracking-wider text-xs py-2.5 cursor-not-allowed opacity-80"
             >
-              Akses Dibatasi
+              AKSES DIBATASI
             </button>
           ) : (
             <Link
               href={`/lms/course/${id}`}
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "w-full bg-[#2B3A55] text-[#FAF9F6] hover:bg-[#2B3A55]/95 transition-all font-semibold shadow-none border-none flex items-center justify-center gap-1 rounded-lg"
-              )}
+              className="w-full flex items-center justify-center gap-1.5 border-2 border-black bg-[#E60012] text-white py-2.5 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#FFC700] hover:bg-[#FFC700] hover:text-black hover:shadow-[4px_4px_0px_#111] transition-all duration-150 active:translate-x-1 active:translate-y-1 active:shadow-none"
             >
-              Buka Pelajaran <ChevronRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+              <span>BUKA KELAS</span>
+              <ChevronRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           )}
         </CardFooter>

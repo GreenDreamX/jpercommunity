@@ -98,114 +98,121 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
       const data = await res.json()
       setItems(data.items ?? [])
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan saat memuat data.")
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.")
     } finally {
       setLoading(false)
     }
   }, [firebaseToken, activeCategory, searchQuery])
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const handler = setTimeout(() => {
       void fetchDictionary()
     }, 300)
-    return () => clearTimeout(timer)
+    return () => clearTimeout(handler)
   }, [fetchDictionary])
 
-  // TTS Pronunciation using SpeechSynthesis API
+  // Browser Web Speech API Audio TTS
   const playAudio = (text: string, id: string) => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel()
-
-      window.dispatchEvent(new CustomEvent("jper-quest-action", { detail: { action: "dictionary_searched", count: 1 } }))
-
-      const cleanedText = text.replace(/～/g, "").trim()
-      const utterance = new SpeechSynthesisUtterance(cleanedText)
-      utterance.lang = "ja-JP"
-      utterance.rate = 0.85
-
-      const voices = window.speechSynthesis.getVoices()
-      const jaVoice = voices.find((v) => v.lang.toLowerCase().includes("ja"))
-      if (jaVoice) {
-        utterance.voice = jaVoice
-      }
-
-      setPlayingId(id)
-      utterance.onend = () => setPlayingId(null)
-      utterance.onerror = () => setPlayingId(null)
-
-      window.speechSynthesis.speak(utterance)
-    } else {
-      alert("Fitur suara (TTS) tidak didukung oleh browser Anda.")
+    if (!("speechSynthesis" in window)) {
+      alert("Browser Anda tidak mendukung fitur Text-to-Speech.")
+      return
     }
+
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = "ja-JP"
+    utterance.rate = 0.9
+
+    setPlayingId(id)
+
+    utterance.onend = () => setPlayingId(null)
+    utterance.onerror = () => setPlayingId(null)
+
+    window.speechSynthesis.speak(utterance)
   }
 
-  // Filter items for saved tab
+  // Filter local for bookmarks tab
   const displayedItems = activeCategory === "saved"
     ? items.filter((item) => bookmarks.includes(item.id))
     : items
 
-  const categories = [
-    { id: "all", label: "Semua Kata" },
-    { id: "N5", label: "JLPT N5" },
-    { id: "N4", label: "JLPT N4" },
-    { id: "N3", label: "JLPT N3" },
-    { id: "N2", label: "JLPT N2" },
-    { id: "N1", label: "JLPT N1" },
-    { id: "saved", label: "Disimpan" }
-  ]
-
-  // Pitch Accent badge helper
-  const getPitchStyle = (pitchStr: string | null) => {
-    if (!pitchStr) return { bg: "bg-stone-100 text-stone-700 border-stone-200", label: "Pitch N/A" }
-    if (pitchStr.includes("［0］")) return { bg: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20", label: pitchStr }
-    if (pitchStr.includes("［1］")) return { bg: "bg-amber-500/10 text-amber-800 border-amber-500/20", label: pitchStr }
-    if (pitchStr.includes("［2］") || pitchStr.includes("［3］")) return { bg: "bg-sky-500/10 text-sky-700 border-sky-500/20", label: pitchStr }
-    return { bg: "bg-[#2B3A55]/10 text-[#2B3A55] border-[#2B3A55]/20", label: pitchStr }
+  // Pitch Accent badge label helper
+  const getPitchStyle = (pitch: string | null) => {
+    switch (pitch?.toLowerCase()) {
+      case "heiban":
+      case "0":
+        return { label: "Heiban (平板 - 0)", bg: "bg-blue-600 text-white border-black" }
+      case "atamadaka":
+      case "1":
+        return { label: "Atamadaka (頭高 - 1)", bg: "bg-[#E60012] text-white border-black" }
+      case "nakadaka":
+        return { label: "Nakadaka (中高)", bg: "bg-[#FFC700] text-black border-black" }
+      case "odaka":
+        return { label: "Odaka (尾高)", bg: "bg-purple-600 text-white border-black" }
+      default:
+        return { label: pitch || "Standard Pitch", bg: "bg-zinc-800 text-white border-black" }
+    }
   }
 
+  const categories = [
+    { id: "all", label: "Semua Kata" },
+    { id: "saved", label: "Kosakata Tersimpan" },
+    { id: "n5", label: "JLPT N5" },
+    { id: "n4", label: "JLPT N4" },
+    { id: "n3", label: "JLPT N3" },
+    { id: "ekskul", label: "Kosakata Ekskul" },
+  ]
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-black">
+      {/* Toast Notification */}
       {xpToast && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 font-bold flex items-center gap-2 animate-in fade-in duration-200 shadow-sm">
-          <Sparkles className="size-4 text-amber-600 shrink-0" />
-          <span>{xpToast}</span>
+        <div className="border-2 border-black bg-[#FFC700] p-4 text-xs font-black text-black flex items-center justify-between shadow-[4px_4px_0px_#111] animate-bounce">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-[#E60012] shrink-0" />
+            <span>{xpToast}</span>
+          </div>
+          <span className="text-[10px] font-mono font-black uppercase bg-black text-white px-2 py-0.5 -skew-x-6 border border-black">
+            XP ADDED
+          </span>
         </div>
       )}
 
-      {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Main Container Card */}
+      <Card className="border-2 border-black bg-white shadow-[6px_6px_0px_#111] rounded-none p-5 space-y-6">
+        {/* Header Title */}
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
-            <BookOpen className="size-5 text-[#B23A2E]" />
-            Kamus & Kosakata JPER
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-block bg-[#E60012] text-white px-2 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider -skew-x-6 border border-black shadow-[2px_2px_0px_#FFC700]">
+              辞書 • JAPANESE DICTIONARY
+            </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black flex items-center gap-2">
+            Kamus Bahasa Jepang & Pitch Accent
           </h2>
-          <p className="text-xs text-[#6B6862]">Kamus kosakata Jepang lengkap dengan notasi Pitch Accent (NHK), suara TTS kata, & contoh kalimat berikut arti.</p>
+          <p className="text-xs font-semibold text-zinc-600 mt-1">
+            Kamus kosakata interaktif lengkap dengan contoh kalimat, visual pitch accent, dan audio pengucapan asli.
+          </p>
         </div>
-        <div className="flex items-center gap-1.5 bg-[#2B3A55]/5 border border-[#2B3A55]/10 px-3 py-1.5 rounded-lg text-[#2B3A55] text-xs font-semibold shrink-0">
-          <Sparkles className="size-3.5 animate-pulse text-amber-500" />
-          <span>TTS Kata & Sentences + Pitch</span>
-        </div>
-      </div>
 
-      {/* Control Panel: Categories & Search */}
-      <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-none rounded-lg p-4 space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#E4E1DA] pb-3">
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap gap-1.5">
+        {/* Filter & Search Bar */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-y-2 border-black py-4 bg-[#FAF9F5] -mx-5 px-5">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider -skew-x-6 border-2 border-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   activeCategory === cat.id
-                    ? "bg-[#2B3A55] text-white shadow-sm"
-                    : "text-[#6B6862] hover:bg-[#E4E1DA]/40"
+                    ? "bg-[#E60012] text-white shadow-[2px_2px_0px_#111]"
+                    : "bg-white text-black hover:bg-[#FFC700]"
                 }`}
               >
-                {cat.id === "saved" && <Star className={`size-3.5 ${activeCategory === "saved" ? "fill-amber-400 text-amber-400" : ""}`} />}
+                {cat.id === "saved" && <Star className={`size-3.5 ${activeCategory === "saved" ? "fill-[#FFC700] text-black" : ""}`} />}
                 {cat.label}
                 {cat.id === "saved" && bookmarks.length > 0 && (
-                  <span className="text-[9px] bg-amber-500/20 text-amber-900 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-bold">
+                  <span className="text-[9px] font-mono font-black bg-black text-[#FFC700] px-1.5 py-0.2 border border-black">
                     {bookmarks.length}
                   </span>
                 )}
@@ -214,34 +221,34 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
           </div>
 
           {/* Search bar */}
-          <div className="relative w-full lg:w-72">
-            <Search className="absolute left-3 top-2.5 size-4 text-[#6B6862]" />
+          <div className="relative w-full lg:w-80">
+            <Search className="absolute left-3 top-2.5 size-4 text-black" />
             <Input
-              placeholder="Cari kata (Kanji, Hiragana, Romaji, Arti)..."
+              placeholder="Cari Kanji, Hiragana, Romaji, Arti..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 border-[#E4E1DA] bg-[#FAF9F6] text-xs h-9 rounded-lg focus-visible:ring-[#2B3A55]"
+              className="pl-9 border-2 border-black bg-white text-xs h-10 font-bold text-black shadow-[2px_2px_0px_#111] focus:ring-0 focus:border-[#E60012]"
             />
           </div>
         </div>
 
         {/* Loading state */}
         {loading ? (
-          <div className="flex items-center justify-center py-12 text-xs font-mono text-[#6B6862] gap-2">
-            <RefreshCw className="size-4 animate-spin text-[#B23A2E]" />
+          <div className="flex items-center justify-center py-16 text-xs font-mono font-black text-zinc-600 gap-2">
+            <RefreshCw className="size-5 animate-spin text-[#E60012]" />
             Memuat data kamus...
           </div>
         ) : error ? (
-          <div className="rounded-lg border border-[#B23A2E]/30 bg-[#B23A2E]/5 p-4 text-xs text-[#B23A2E]">
+          <div className="border-2 border-black bg-[#E60012] p-4 text-xs font-black text-white shadow-[4px_4px_0px_#111]">
             {error}
           </div>
         ) : displayedItems.length === 0 ? (
-          <div className="text-center py-12 text-xs text-[#6B6862] italic space-y-1">
-            <div>Tidak ada kosakata yang ditemukan.</div>
-            <div className="text-[11px] text-[#6B6862]/80">Coba ubah filter atau kata kunci pencarian Anda.</div>
+          <div className="text-center py-16 text-xs font-bold text-zinc-500 italic space-y-1 border-2 border-black border-dashed p-6">
+            <p className="font-black text-black text-sm uppercase">Kosakata Tidak Ditemukan</p>
+            <p className="text-xs text-zinc-600">Coba ubah filter atau kata kunci pencarian Anda.</p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {displayedItems.map((item) => {
               const isBookmarked = bookmarks.includes(item.id)
               const pitchStyle = getPitchStyle(item.pitch)
@@ -251,90 +258,85 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
               return (
                 <Card 
                   key={item.id} 
-                  className="border border-[#E4E1DA] bg-[#FAF9F6]/60 shadow-none rounded-lg hover:border-[#2B3A55]/30 transition-all flex flex-col justify-between overflow-hidden relative group"
+                  className="border-2 border-black bg-white shadow-[4px_4px_0px_#111] rounded-none flex flex-col justify-between overflow-hidden relative group hover:shadow-[6px_6px_0px_#E60012] transition-all"
                 >
                   {/* Header badges */}
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                    {/* Category pill */}
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                     {item.category && (
-                      <span className="text-[9px] font-mono font-bold bg-[#2B3A55]/10 text-[#2B3A55] border border-[#2B3A55]/20 px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-[9px] font-mono font-black uppercase bg-black text-[#FFC700] border border-black px-2 py-0.5 -skew-x-6">
                         {item.category}
                       </span>
                     )}
 
-                    {/* Bookmark button */}
                     <button
                       type="button"
                       onClick={() => toggleBookmark(item.id)}
-                      className="text-[#6B6862] hover:text-amber-500 transition-colors p-1"
+                      className="p-1 border border-black bg-white hover:bg-[#FFC700] transition-colors shadow-[1px_1px_0px_#111]"
                       title={isBookmarked ? "Hapus Bookmark" : "Simpan Kata"}
                     >
                       {isBookmarked ? (
-                        <Star className="size-4 fill-amber-400 text-amber-400" />
+                        <Star className="size-4 fill-[#FFC700] text-black" />
                       ) : (
-                        <Bookmark className="size-4" />
+                        <Bookmark className="size-4 text-black" />
                       )}
                     </button>
                   </div>
 
-                  <CardHeader className="pb-2 pr-24">
+                  <CardHeader className="pb-3 pr-24 border-b-2 border-black/10">
                     {/* Part of Speech */}
-                    <CardDescription className="text-[9px] font-mono uppercase tracking-wider text-[#6B6862]">
+                    <CardDescription className="text-[10px] font-mono font-black uppercase tracking-wider text-[#E60012]">
                       {item.pos || "Kata Benda"}
                     </CardDescription>
 
                     {/* Kanji Term & Reading */}
                     <div className="mt-1 space-y-0.5">
-                      <CardTitle className="text-2xl font-bold text-[#1C1B1A] tracking-tight flex items-baseline gap-2">
-                        <span className="font-sans">{item.term}</span>
+                      <CardTitle className="text-2xl font-black text-black tracking-tight flex items-baseline gap-2">
+                        <span>{item.term}</span>
                         {item.reading && item.reading !== item.term && (
-                          <span className="text-xs font-mono font-normal text-[#6B6862]">
+                          <span className="text-xs font-mono font-bold text-zinc-600">
                             ({item.reading})
                           </span>
                         )}
                       </CardTitle>
 
-                      {/* Romaji */}
                       {item.romaji && (
-                        <div className="text-[11px] font-mono text-[#2B3A55]/80 font-medium">
+                        <div className="text-xs font-mono font-bold text-zinc-700">
                           {item.romaji}
                         </div>
                       )}
                     </div>
 
                     {/* Pitch Accent Badge & Word TTS Button */}
-                    <div className="flex flex-wrap items-center gap-2 pt-2">
-                      {/* Pitch Accent visual badge */}
-                      <span className={`text-[10px] font-mono font-bold border px-2 py-0.5 rounded-md flex items-center gap-1 ${pitchStyle.bg}`}>
+                    <div className="flex flex-wrap items-center gap-2 pt-3">
+                      <span className={`text-[10px] font-mono font-black border border-black px-2 py-0.5 -skew-x-6 flex items-center gap-1 shadow-[1px_1px_0px_#111] ${pitchStyle.bg}`}>
                         <Layers className="size-3" />
                         {pitchStyle.label}
                       </span>
 
-                      {/* Word TTS button */}
                       <button
                         type="button"
                         onClick={() => playAudio(item.term, `word-${item.id}`)}
-                        className={`h-6 px-2 text-[10px] font-semibold rounded-md border transition-colors flex items-center gap-1 ${
+                        className={`h-7 px-2.5 text-[10px] font-mono font-black uppercase border border-black transition-colors flex items-center gap-1.5 shadow-[1px_1px_0px_#111] ${
                           isPlayingWord
-                            ? "bg-[#B23A2E] text-white border-[#B23A2E] animate-pulse"
-                            : "bg-[#FAF9F6] border-[#E4E1DA] hover:border-[#2B3A55]/40 text-[#2B3A55]"
+                            ? "bg-[#E60012] text-white animate-pulse"
+                            : "bg-[#FFC700] text-black hover:bg-black hover:text-[#FFC700]"
                         }`}
-                        title="Dengarkan pengucapan kata"
+                        title="Dengarkan audio kata"
                       >
-                        <Volume2 className="size-3" />
-                        {isPlayingWord ? "Memutar..." : "Audio Kata"}
+                        <Volume2 className="size-3.5" />
+                        {isPlayingWord ? "Playing..." : "Audio"}
                       </button>
                     </div>
                   </CardHeader>
 
-                  <CardContent className="pt-2 pb-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <CardContent className="pt-3 pb-4 space-y-3 flex-1 flex flex-col justify-between">
                     {/* Meaning / Indonesian Definition */}
-                    <div className="space-y-1.5 border-t border-[#E4E1DA]/60 pt-2.5">
-                      <div className="text-xs font-bold text-[#1C1B1A]">
+                    <div className="space-y-1">
+                      <div className="text-xs font-black text-black">
                         {item.meaning}
                       </div>
                       {item.meaning_id && item.meaning_id !== item.meaning && (
-                        <p className="text-[11px] text-[#6B6862] leading-relaxed">
+                        <p className="text-[11px] font-semibold text-zinc-600 leading-relaxed">
                           {item.meaning_id}
                         </p>
                       )}
@@ -342,30 +344,26 @@ export function DictionaryTab({ firebaseToken }: DictionaryTabProps) {
 
                     {/* Example Sentence Block */}
                     {item.example_ja && (
-                      <div className="rounded-lg border border-[#2B3A55]/15 bg-[#2B3A55]/5 p-3 space-y-2 mt-2">
+                      <div className="border-2 border-black bg-[#FAF9F5] p-3 space-y-2 mt-2 shadow-[2px_2px_0px_#111]">
                         <div className="flex items-start justify-between gap-2">
                           <div className="space-y-1 flex-1">
-                            {/* Japanese example sentence */}
-                            <div className="text-xs font-medium text-[#1C1B1A] font-sans leading-relaxed">
+                            <div className="text-xs font-bold text-black font-sans leading-relaxed">
                               例: {item.example_ja}
                             </div>
-
-                            {/* Indonesian translation */}
                             {item.example_id && (
-                              <div className="text-[10px] text-[#6B6862] italic font-sans leading-normal">
+                              <div className="text-[10px] text-zinc-700 italic font-semibold leading-normal">
                                 Arti: {item.example_id}
                               </div>
                             )}
                           </div>
 
-                          {/* Sentence TTS button */}
                           <button
                             type="button"
                             onClick={() => playAudio(item.example_ja!, `sent-${item.id}`)}
-                            className={`p-1.5 rounded-md border shrink-0 transition-colors ${
+                            className={`p-1.5 border border-black shrink-0 transition-colors shadow-[1px_1px_0px_#111] ${
                               isPlayingSentence
-                                ? "bg-[#B23A2E] text-white border-[#B23A2E] animate-pulse"
-                                : "bg-[#FAF9F6] border-[#E4E1DA] hover:bg-[#2B3A55]/10 text-[#2B3A55]"
+                                ? "bg-[#E60012] text-white animate-pulse"
+                                : "bg-white text-black hover:bg-[#FFC700]"
                             }`}
                             title="Dengarkan pengucapan kalimat"
                           >

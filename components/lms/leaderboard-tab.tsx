@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react"
 import { motion } from "framer-motion"
-import { Trophy, Award, Flame, Star, Crown, Medal, User, Loader2, Sparkles, Filter } from "lucide-react"
+import { Trophy, Award, Flame, Star, Crown, User, Loader2, Filter } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 type LeaderboardMember = {
@@ -22,10 +22,10 @@ interface LeaderboardTabProps {
 }
 
 function getLevelTitle(xp: number) {
-  if (xp >= 1000) return { title: "師範 (Shihan)", label: "Grandmaster Scholar", badgeColor: "bg-purple-100 text-purple-800 border-purple-200" }
-  if (xp >= 500) return { title: "達人 (Tatsujin)", label: "Master Scholar", badgeColor: "bg-indigo-100 text-indigo-800 border-indigo-200" }
-  if (xp >= 200) return { title: "学徒 (Gakuto)", label: "Dedicated Apprentice", badgeColor: "bg-blue-100 text-blue-800 border-blue-200" }
-  return { title: "初心者 (Shoshinsha)", label: "Novice Learner", badgeColor: "bg-slate-100 text-slate-700 border-slate-200" }
+  if (xp >= 1000) return { title: "師範 (Shihan)", label: "Grandmaster Scholar", badgeClass: "bg-purple-600 text-white border-black" }
+  if (xp >= 500) return { title: "達人 (Tatsujin)", label: "Master Scholar", badgeClass: "bg-indigo-600 text-white border-black" }
+  if (xp >= 200) return { title: "学徒 (Gakuto)", label: "Dedicated Apprentice", badgeClass: "bg-[#E60012] text-white border-black" }
+  return { title: "初心者 (Shoshinsha)", label: "Novice Learner", badgeClass: "bg-zinc-800 text-[#FFC700] border-black" }
 }
 
 export function LeaderboardTab({ token }: LeaderboardTabProps) {
@@ -70,26 +70,31 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
   const rank3 = podium[2]
 
   return (
-    <div className="space-y-6 text-[#1C1B1A]">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 text-black">
+      {/* HEADER BAR */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-2 border-black bg-white p-5 shadow-[4px_4px_0px_#111]">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
-            <Trophy className="size-6 text-[#2B3A55]" /> Papan Peringkat & Podium Juara (BETA Test)
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-block bg-black text-[#FFC700] px-2 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider -skew-x-6 border border-black shadow-[2px_2px_0px_#E60012]">
+              順位表 • LEADERBOARD
+            </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black flex items-center gap-2">
+            Papan Peringkat & Podium Juara
           </h2>
-          <p className="text-xs text-[#6B6862] mt-0.5">
-            Kompetisi positif anggota JPER Community berdasarkan akumulasi Poin XP & Streak Belajar Harian.
+          <p className="text-xs font-semibold text-zinc-600 mt-1">
+            Kompetisi positif anggota JPER Community berdasarkan Poin XP & Streak Belajar.
           </p>
         </div>
 
         {/* Filter Angkatan */}
-        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-[#E4E1DA] shadow-xs">
-          <Filter className="size-3.5 text-[#6B6862]" />
-          <span className="text-xs font-semibold text-[#6B6862]">Angkatan:</span>
+        <div className="flex items-center gap-2 bg-zinc-50 p-2 border-2 border-black shadow-[3px_3px_0px_#111]">
+          <Filter className="size-4 text-black" />
+          <span className="text-xs font-black uppercase text-black">Angkatan:</span>
           <select
             value={angkatanFilter}
             onChange={(e) => setAngkatanFilter(e.target.value)}
-            className="bg-transparent text-xs font-bold text-[#2B3A55] focus:outline-none cursor-pointer"
+            className="bg-white text-xs font-black text-black border border-black px-2 py-1 focus:outline-none cursor-pointer"
           >
             <option value="all">Semua Angkatan</option>
             <option value="2026">Angkatan 2026</option>
@@ -100,17 +105,17 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
         </div>
       </div>
 
-      {/* My Rank Summary Card */}
+      {/* MY RANK SUMMARY CARD */}
       {myMember && (
-        <div className="p-4 rounded-xl bg-gradient-to-r from-[#2B3A55] to-[#1C1B1A] text-white flex items-center justify-between flex-wrap gap-4 shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="size-12 rounded-full border-2 border-white/30 bg-white/10 flex items-center justify-center font-mono font-extrabold text-lg text-white">
+        <div className="p-5 border-2 border-black bg-black text-white flex items-center justify-between flex-wrap gap-4 shadow-[6px_6px_0px_#E60012]">
+          <div className="flex items-center gap-4">
+            <div className="size-14 border-2 border-black bg-[#FFC700] text-black flex items-center justify-center font-mono font-black text-xl shadow-[3px_3px_0px_#fff]">
               #{myMember.rank}
             </div>
             <div>
-              <div className="text-[10px] font-mono text-white/60 uppercase">Peringkat Anda Saat Ini</div>
-              <div className="text-sm font-bold text-white">{myMember.nama_lengkap}</div>
-              <div className="text-[10px] font-mono text-amber-300 font-semibold mt-0.5">
+              <span className="text-[10px] font-mono font-black uppercase text-[#FFC700]">PERINGKAT ANDA SAAT INI</span>
+              <div className="text-base font-black uppercase text-white">{myMember.nama_lengkap}</div>
+              <div className="text-xs font-mono font-bold text-zinc-300 mt-0.5">
                 {getLevelTitle(myMember.xp).title} • {getLevelTitle(myMember.xp).label}
               </div>
             </div>
@@ -118,15 +123,15 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
 
           <div className="flex items-center gap-6 text-right">
             <div>
-              <div className="text-[10px] font-mono text-white/60 uppercase">Total XP</div>
-              <div className="text-base font-mono font-bold text-amber-300 flex items-center justify-end gap-1">
-                <Star className="size-4 fill-amber-300 text-amber-300" /> {myMember.xp} XP
+              <div className="text-[10px] font-mono font-black uppercase text-zinc-400">TOTAL XP</div>
+              <div className="text-lg font-mono font-black text-[#FFC700] flex items-center justify-end gap-1">
+                <Star className="size-4 fill-[#FFC700] text-[#FFC700]" /> {myMember.xp} XP
               </div>
             </div>
             <div>
-              <div className="text-[10px] font-mono text-white/60 uppercase">Streak Harian</div>
-              <div className="text-base font-mono font-bold text-orange-400 flex items-center justify-end gap-1">
-                <Flame className="size-4 fill-orange-400 text-orange-400" /> {myMember.streak_count} Hari
+              <div className="text-[10px] font-mono font-black uppercase text-zinc-400">STREAK HARIAN</div>
+              <div className="text-lg font-mono font-black text-[#E60012] flex items-center justify-end gap-1">
+                <Flame className="size-4 fill-[#E60012] text-[#E60012]" /> {myMember.streak_count} Hari
               </div>
             </div>
           </div>
@@ -134,49 +139,46 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-xs font-mono text-[#6B6862]">
-          <Loader2 className="size-6 animate-spin mx-auto mb-2 text-[#2B3A55]" />
+        <div className="border-2 border-black bg-white p-12 text-center text-xs font-mono font-black text-zinc-600 shadow-[4px_4px_0px_#111]">
+          <Loader2 className="size-6 animate-spin mx-auto mb-2 text-[#E60012]" />
           Memuat papan peringkat...
         </div>
       ) : (
         <>
           {/* PODIUM 1, 2, 3 VISUAL CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end pt-4">
             {/* RANK 2 (PERAK) */}
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: 0.1 }} className="order-2 md:order-1">
               {rank2 ? (
-                <div className="border-2 border-slate-300 rounded-xl bg-white p-5 text-center space-y-3 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-slate-200 text-slate-700 text-[10px] font-mono font-bold px-2 py-1 rounded-bl-lg">
-                    RANK 2
+                <div className="border-2 border-black bg-white p-5 text-center space-y-3 shadow-[6px_6px_0px_#111] relative">
+                  <div className="absolute top-0 right-0 bg-zinc-300 text-black border-l-2 border-b-2 border-black text-[10px] font-mono font-black px-2.5 py-1">
+                    RANK 2 • 🥈
                   </div>
-                  <div className="relative inline-block">
-                    <div className="size-16 rounded-full overflow-hidden border-2 border-slate-300 mx-auto bg-slate-100 flex items-center justify-center">
+                  <div className="relative inline-block mt-2">
+                    <div className="size-20 border-2 border-black mx-auto bg-zinc-100 flex items-center justify-center shadow-[3px_3px_0px_#111] overflow-hidden">
                       {rank2.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={rank2.avatar_url} alt={rank2.nama_lengkap} className="size-full object-cover" />
                       ) : (
-                        <User className="size-8 text-slate-400" />
+                        <User className="size-10 text-zinc-400" />
                       )}
-                    </div>
-                    <div className="absolute -bottom-2 right-0 size-7 rounded-full bg-slate-200 border border-slate-400 flex items-center justify-center font-bold text-slate-800 text-xs shadow-xs">
-                      🥈
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-[#1C1B1A] truncate">{rank2.nama_lengkap}</h3>
-                    <p className="text-[10px] font-mono text-[#6B6862] mt-0.5">Angkatan {rank2.angkatan || "-"}</p>
+                    <h3 className="text-sm font-black uppercase text-black truncate">{rank2.nama_lengkap}</h3>
+                    <p className="text-[10px] font-mono font-bold text-zinc-500 mt-0.5">Angkatan {rank2.angkatan || "-"}</p>
                   </div>
-                  <div className="pt-2 border-t border-[#E4E1DA] flex justify-center gap-3 text-xs font-mono">
-                    <span className="font-bold text-[#2B3A55] flex items-center gap-1">
-                      <Star className="size-3.5 fill-amber-400 text-amber-400" /> {rank2.xp} XP
+                  <div className="pt-3 border-t-2 border-black flex justify-center gap-4 text-xs font-mono font-black">
+                    <span className="text-black flex items-center gap-1">
+                      <Star className="size-4 fill-[#FFC700] text-black" /> {rank2.xp} XP
                     </span>
-                    <span className="font-bold text-orange-600 flex items-center gap-1">
-                      <Flame className="size-3.5 fill-orange-500 text-orange-500" /> {rank2.streak_count}d
+                    <span className="text-[#E60012] flex items-center gap-1">
+                      <Flame className="size-4 fill-[#E60012] text-[#E60012]" /> {rank2.streak_count}d
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="border border-dashed border-[#E4E1DA] rounded-xl p-8 text-center text-xs text-[#6B6862]">
+                <div className="border-2 border-black border-dashed bg-white p-8 text-center text-xs font-bold text-zinc-400">
                   Belum Ada Juara 2
                 </div>
               )}
@@ -185,41 +187,38 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
             {/* RANK 1 (EMAS - MAIN PODIUM) */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="order-1 md:order-2">
               {rank1 ? (
-                <div className="border-2 border-amber-400 bg-gradient-to-b from-amber-50/60 to-white rounded-xl p-6 text-center space-y-3 shadow-lg transform md:-translate-y-2 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-amber-400 text-amber-950 text-[10px] font-mono font-extrabold px-3 py-1 rounded-bl-lg flex items-center gap-1">
-                    <Crown className="size-3" /> JUARA 1
+                <div className="border-2 border-black bg-[#FFC700] p-6 text-center space-y-3 shadow-[8px_8px_0px_#111] transform md:-translate-y-4 relative">
+                  <div className="absolute top-0 right-0 bg-black text-[#FFC700] border-l-2 border-b-2 border-black text-[10px] font-mono font-black px-3 py-1 flex items-center gap-1">
+                    <Crown className="size-3.5 fill-[#FFC700]" /> JUARA 1
                   </div>
-                  <div className="relative inline-block mt-2">
-                    <div className="size-20 rounded-full overflow-hidden border-4 border-amber-400 mx-auto bg-amber-100 flex items-center justify-center shadow-md">
+                  <div className="relative inline-block mt-3">
+                    <div className="size-24 border-2 border-black mx-auto bg-white flex items-center justify-center shadow-[4px_4px_0px_#111] overflow-hidden">
                       {rank1.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={rank1.avatar_url} alt={rank1.nama_lengkap} className="size-full object-cover" />
                       ) : (
-                        <User className="size-10 text-amber-600" />
+                        <User className="size-12 text-black" />
                       )}
-                    </div>
-                    <div className="absolute -bottom-2 right-0 size-8 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center font-bold text-amber-950 text-sm shadow-md">
-                      🥇
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-sm font-extrabold text-[#1C1B1A] truncate">{rank1.nama_lengkap}</h3>
-                    <p className="text-[11px] font-mono text-amber-800 font-semibold mt-0.5">Angkatan {rank1.angkatan || "-"}</p>
-                    <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    <h3 className="text-base font-black uppercase text-black truncate">{rank1.nama_lengkap}</h3>
+                    <p className="text-xs font-mono font-black text-black mt-0.5">Angkatan {rank1.angkatan || "-"}</p>
+                    <span className="inline-block mt-2 px-3 py-0.5 text-[10px] font-mono font-black uppercase bg-black text-white border border-black -skew-x-6">
                       {getLevelTitle(rank1.xp).title}
                     </span>
                   </div>
-                  <div className="pt-3 border-t border-amber-200/80 flex justify-center gap-4 text-xs font-mono">
-                    <span className="font-extrabold text-[#2B3A55] flex items-center gap-1">
-                      <Star className="size-4 fill-amber-400 text-amber-400" /> {rank1.xp} XP
+                  <div className="pt-3 border-t-2 border-black flex justify-center gap-4 text-xs font-mono font-black">
+                    <span className="text-black flex items-center gap-1">
+                      <Star className="size-4 fill-black text-black" /> {rank1.xp} XP
                     </span>
-                    <span className="font-extrabold text-orange-600 flex items-center gap-1">
-                      <Flame className="size-4 fill-orange-500 text-orange-500" /> {rank1.streak_count} Hari
+                    <span className="text-[#E60012] flex items-center gap-1">
+                      <Flame className="size-4 fill-[#E60012] text-[#E60012]" /> {rank1.streak_count} Hari
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="border border-dashed border-[#E4E1DA] rounded-xl p-8 text-center text-xs text-[#6B6862]">
+                <div className="border-2 border-black border-dashed bg-white p-8 text-center text-xs font-bold text-zinc-400">
                   Belum Ada Juara 1
                 </div>
               )}
@@ -228,38 +227,35 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
             {/* RANK 3 (PERUNGGU) */}
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: 0.15 }} className="order-3">
               {rank3 ? (
-                <div className="border-2 border-amber-700/30 rounded-xl bg-white p-5 text-center space-y-3 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-amber-800/10 text-amber-900 text-[10px] font-mono font-bold px-2 py-1 rounded-bl-lg">
-                    RANK 3
+                <div className="border-2 border-black bg-white p-5 text-center space-y-3 shadow-[6px_6px_0px_#111] relative">
+                  <div className="absolute top-0 right-0 bg-amber-800 text-white border-l-2 border-b-2 border-black text-[10px] font-mono font-black px-2.5 py-1">
+                    RANK 3 • 🥉
                   </div>
-                  <div className="relative inline-block">
-                    <div className="size-16 rounded-full overflow-hidden border-2 border-amber-700/30 mx-auto bg-amber-50 flex items-center justify-center">
+                  <div className="relative inline-block mt-2">
+                    <div className="size-20 border-2 border-black mx-auto bg-amber-50 flex items-center justify-center shadow-[3px_3px_0px_#111] overflow-hidden">
                       {rank3.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={rank3.avatar_url} alt={rank3.nama_lengkap} className="size-full object-cover" />
                       ) : (
-                        <User className="size-8 text-amber-800" />
+                        <User className="size-10 text-amber-900" />
                       )}
-                    </div>
-                    <div className="absolute -bottom-2 right-0 size-7 rounded-full bg-amber-700/20 border border-amber-700/40 flex items-center justify-center font-bold text-amber-900 text-xs shadow-xs">
-                      🥉
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-[#1C1B1A] truncate">{rank3.nama_lengkap}</h3>
-                    <p className="text-[10px] font-mono text-[#6B6862] mt-0.5">Angkatan {rank3.angkatan || "-"}</p>
+                    <h3 className="text-sm font-black uppercase text-black truncate">{rank3.nama_lengkap}</h3>
+                    <p className="text-[10px] font-mono font-bold text-zinc-500 mt-0.5">Angkatan {rank3.angkatan || "-"}</p>
                   </div>
-                  <div className="pt-2 border-t border-[#E4E1DA] flex justify-center gap-3 text-xs font-mono">
-                    <span className="font-bold text-[#2B3A55] flex items-center gap-1">
-                      <Star className="size-3.5 fill-amber-400 text-amber-400" /> {rank3.xp} XP
+                  <div className="pt-3 border-t-2 border-black flex justify-center gap-4 text-xs font-mono font-black">
+                    <span className="text-black flex items-center gap-1">
+                      <Star className="size-4 fill-[#FFC700] text-black" /> {rank3.xp} XP
                     </span>
-                    <span className="font-bold text-orange-600 flex items-center gap-1">
-                      <Flame className="size-3.5 fill-orange-500 text-orange-500" /> {rank3.streak_count}d
+                    <span className="text-[#E60012] flex items-center gap-1">
+                      <Flame className="size-4 fill-[#E60012] text-[#E60012]" /> {rank3.streak_count}d
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="border border-dashed border-[#E4E1DA] rounded-xl p-8 text-center text-xs text-[#6B6862]">
+                <div className="border-2 border-black border-dashed bg-white p-8 text-center text-xs font-bold text-zinc-400">
                   Belum Ada Juara 3
                 </div>
               )}
@@ -267,16 +263,20 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
           </div>
 
           {/* RANK 4+ TABLE LIST */}
-          <Card className="bg-[#FAF9F6] border-[#E4E1DA] shadow-none rounded-xl overflow-hidden mt-6">
-            <CardHeader className="border-b border-[#E4E1DA] bg-[#F5F3EE] py-3 px-4 flex flex-row items-center justify-between">
+          <Card className="border-2 border-black bg-white shadow-[6px_6px_0px_#111] rounded-none overflow-hidden mt-6">
+            <CardHeader className="border-b-2 border-black bg-[#FAF9F5] p-4 flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-xs font-bold text-[#1C1B1A]">Daftar Peringkat Anggota ({totalMembers} Siswa)</CardTitle>
-                <CardDescription className="text-[10px] text-[#6B6862]">Peringkat #4 ke atas berdasarkan total akumulasi XP.</CardDescription>
+                <CardTitle className="text-sm font-black uppercase tracking-tight text-black">
+                  Daftar Peringkat Siswa ({totalMembers} Member)
+                </CardTitle>
+                <CardDescription className="text-xs font-semibold text-zinc-600">
+                  Peringkat #4 ke atas berdasarkan total akumulasi XP.
+                </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="p-0 divide-y divide-[#E4E1DA]">
+            <CardContent className="p-0 divide-y-2 divide-black overflow-x-auto no-scrollbar">
               {rankings.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#6B6862] italic">
+                <div className="p-6 text-center text-xs font-bold text-zinc-500 italic">
                   Belum ada data anggota tambahan pada peringkat ini.
                 </div>
               ) : (
@@ -287,48 +287,50 @@ export function LeaderboardTab({ token }: LeaderboardTabProps) {
                   return (
                     <div
                       key={m.id}
-                      className={`flex items-center justify-between p-3.5 px-4 text-xs transition-colors ${
-                        isMe ? "bg-[#2B3A55]/10 font-semibold" : "hover:bg-[#F5F3EE]"
+                      className={`flex items-center justify-between p-4 text-xs transition-colors min-w-[500px] ${
+                        isMe ? "bg-amber-100/80 font-black" : "hover:bg-zinc-50"
                       }`}
                     >
-                      <div className="flex items-center gap-3.5 flex-1 min-w-0">
-                        <span className="w-6 font-mono font-bold text-[#6B6862] text-center">
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <span className="w-8 font-mono font-black text-black text-sm text-center">
                           #{m.rank}
                         </span>
-                        <div className="size-9 rounded-full overflow-hidden border border-[#E4E1DA] bg-stone-200 flex items-center justify-center shrink-0">
+                        <div className="size-10 border-2 border-black bg-white overflow-hidden flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#111]">
                           {m.avatar_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={m.avatar_url} alt={m.nama_lengkap} className="size-full object-cover" />
                           ) : (
-                            <User className="size-4 text-[#6B6862]" />
+                            <User className="size-5 text-black" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="font-bold text-[#1C1B1A] truncate flex items-center gap-2">
+                          <div className="font-black text-black text-sm truncate flex items-center gap-2">
                             {m.nama_lengkap}
                             {isMe && (
-                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#2B3A55] text-white">Anda</span>
+                              <span className="text-[9px] font-mono font-black px-1.5 py-0.5 bg-[#E60012] text-white border border-black -skew-x-6">
+                                Anda
+                              </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-[#6B6862] font-mono flex items-center gap-2 mt-0.5">
+                          <div className="text-[10px] text-zinc-600 font-mono font-bold flex items-center gap-2 mt-0.5">
                             <span>Angkatan {m.angkatan || "-"}</span>
                             <span>•</span>
-                            <span className={`px-1.5 py-0.2 rounded border text-[9px] ${level.badgeColor}`}>
+                            <span className={`px-2 py-0.5 border text-[9px] font-black -skew-x-6 ${level.badgeClass}`}>
                               {level.title}
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-6 font-mono text-xs">
+                      <div className="flex items-center gap-6 font-mono text-xs font-black">
                         <div className="text-right">
-                          <div className="font-bold text-[#2B3A55] flex items-center gap-1 justify-end">
-                            <Star className="size-3.5 fill-amber-400 text-amber-400" /> {m.xp} XP
+                          <div className="text-black flex items-center gap-1 justify-end text-sm">
+                            <Star className="size-4 fill-[#FFC700] text-black" /> {m.xp} XP
                           </div>
                         </div>
-                        <div className="w-16 text-right">
-                          <div className="font-bold text-orange-600 flex items-center gap-1 justify-end">
-                            <Flame className="size-3.5 fill-orange-500 text-orange-500" /> {m.streak_count}d
+                        <div className="w-20 text-right">
+                          <div className="text-[#E60012] flex items-center gap-1 justify-end text-sm">
+                            <Flame className="size-4 fill-[#E60012] text-[#E60012]" /> {m.streak_count}d
                           </div>
                         </div>
                       </div>

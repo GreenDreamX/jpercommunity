@@ -100,14 +100,10 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
 
       if (!mappedCategory) return
 
-      // Optimistic update client state
-      setQuests((prevQuests) =>
-        prevQuests.map((q) => {
-          let shouldIncrement = false
-          if (mappedCategory === "game" && (q.category === "game" || q.id === "quest_game")) shouldIncrement = true
-          if (mappedCategory === q.category) shouldIncrement = true
-
-          if (shouldIncrement && !q.isClaimed) {
+      // Optimistic state update
+      setQuests((prev) =>
+        prev.map((q) => {
+          if (q.category === mappedCategory && !q.isClaimed) {
             const nextProg = Math.min(q.target, q.progress + count)
             return {
               ...q,
@@ -116,128 +112,101 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
             }
           }
           return q
-        }),
+        })
       )
 
-      // Persist to Supabase if token exists
+      // Sync with Supabase API
       if (token) {
         try {
           await fetch("/api/lms/quests", {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({
-              action: "update_progress",
-              category: mappedCategory,
-              count,
-            }),
+            body: JSON.stringify({ category: mappedCategory, count }),
           })
-        } catch (err) {
-          console.error("Gagal memperbarui progres quest ke Supabase:", err)
+        } catch {
+          // Silent fallback
         }
       }
     }
 
-    window.addEventListener("jper-quest-action", handleQuestAction)
-    return () => window.removeEventListener("jper-quest-action", handleQuestAction)
+    window.addEventListener("jper_quest_progress", handleQuestAction)
+    return () => window.removeEventListener("jper_quest_progress", handleQuestAction)
   }, [token])
 
-  async function handleClaimLoginReward() {
-    if (loginClaimed) return
-    const rewardXpEstimate = Math.min(100, streakCount * 15 + 20)
+  // Claim Daily Login Reward
+  const handleClaimLoginReward = async () => {
+    if (loginClaimed || isLoading) return
+    const earnedXp = Math.min(100, streakCount * 15 + 20)
 
-    if (!token) {
+    try {
+      if (token) {
+        const res = await fetch("/api/lms/quests", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: "claim_login" }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (typeof data.newStreak === "number") setStreakCount(data.newStreak)
+        }
+      }
+
       setLoginClaimed(true)
-      setClaimToast(`🔥 Login Streak Harian! +${rewardXpEstimate} EXP berhasil diklaim!`)
-      setTimeout(() => setClaimToast(null), 4500)
-      if (onAddXp) onAddXp(rewardXpEstimate)
-      return
-    }
+      if (onAddXp) onAddXp(earnedXp)
 
-    try {
-      const res = await fetch("/api/lms/quests", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "claim_login" }),
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        setLoginClaimed(true)
-        if (data.quests) setQuests(data.quests)
-        if (data.newStreak) setStreakCount(data.newStreak)
-
-        setClaimToast(data.message || `🔥 Bonus Login +${data.addedXp} EXP tersimpan di Supabase!`)
-        setTimeout(() => setClaimToast(null), 4500)
-
-        if (onAddXp && data.addedXp) onAddXp(data.addedXp)
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("jper-profile-updated", { detail: { xp: data.newXp, streak_count: data.newStreak } }))
-        }
-      } else {
-        const errData = await res.json()
-        setClaimToast(errData.message || "Gagal mengklaim bonus login.")
-        setTimeout(() => setClaimToast(null), 4000)
-      }
-    } catch (err) {
-      console.error("Error claim daily login:", err)
+      setClaimToast(`+${earnedXp} EXP berhasil diklaim! 🔥 Streak Harian bertambah!`)
+      setTimeout(() => setClaimToast(null), 4000)
+    } catch {
+      // Fallback local claim
+      setLoginClaimed(true)
+      if (onAddXp) onAddXp(earnedXp)
     }
   }
 
-  async function handleClaimQuest(questId: string, rewardXp: number, title: string) {
-    if (!token) {
-      setQuests((prev) => prev.map((q) => (q.id === questId ? { ...q, isClaimed: true } : q)))
-      setClaimToast(`🎉 Misi "${title}" Selesai! +${rewardXp} EXP diklaim!`)
-      setTimeout(() => setClaimToast(null), 4500)
-      if (onAddXp) onAddXp(rewardXp)
-      return
-    }
+  // Claim Specific Quest Reward
+  const handleClaimQuest = async (questId: string, rewardXp: number, questTitle: string) => {
+    setQuests((prev) =>
+      prev.map((q) => (q.id === questId ? { ...q, isClaimed: true } : q))
+    )
 
-    try {
-      const res = await fetch("/api/lms/quests", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "claim_quest", questId }),
-      })
+    if (onAddXp) onAddXp(rewardXp)
 
-      if (res.ok) {
-        const data = await res.json()
-        if (data.quests) setQuests(data.quests)
-
-        setClaimToast(data.message || `🎉 Misi "${title}" Selesai! +${rewardXp} EXP tersimpan di Supabase!`)
-        setTimeout(() => setClaimToast(null), 4500)
-
-        if (onAddXp && data.addedXp) onAddXp(data.addedXp)
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("jper-profile-updated", { detail: { xp: data.newXp } }))
-        }
-      } else {
-        const errData = await res.json()
-        setClaimToast(errData.message || "Gagal mengklaim misi.")
-        setTimeout(() => setClaimToast(null), 4000)
+    if (token) {
+      try {
+        await fetch("/api/lms/quests", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: "claim_quest", questId }),
+        })
+      } catch {
+        // Silent fallback
       }
-    } catch (err) {
-      console.error("Error claim quest:", err)
     }
+
+    setClaimToast(`Selamat! Misi "${questTitle}" selesai (+${rewardXp} EXP)! ✨`)
+    setTimeout(() => setClaimToast(null), 4000)
   }
 
-  // Calculate Streak Milestone Badge
-  let streakBadge = { label: "1d Beginner", color: "bg-slate-100 text-slate-800 border-slate-300", bonus: "Standard EXP" }
-  if (streakCount >= 30) streakBadge = { label: "30d Shokunin Legend", color: "bg-amber-400 text-slate-900 border-amber-500 font-extrabold", bonus: "+50% Game EXP" }
-  else if (streakCount >= 14) streakBadge = { label: "14d Master Flame", color: "bg-purple-100 text-purple-900 border-purple-300 font-bold", bonus: "+35% Game EXP" }
-  else if (streakCount >= 7) streakBadge = { label: "7d Streak Master", color: "bg-orange-100 text-orange-900 border-orange-300 font-bold", bonus: "+25% Game EXP" }
-  else if (streakCount >= 3) streakBadge = { label: "3d Fire Learner", color: "bg-amber-100 text-amber-900 border-amber-300 font-semibold", bonus: "+10% Game EXP" }
+  const getStreakBadge = () => {
+    if (streakCount >= 14) return { label: "連勝王 • Streak God", bonus: "+50% EXP" }
+    if (streakCount >= 7) return { label: "達人 • Master Streak", bonus: "+30% EXP" }
+    if (streakCount >= 3) return { label: "継続 • On Fire", bonus: "+15% EXP" }
+    return { label: "初心者 • Rookie", bonus: "Standard EXP" }
+  }
+
+  const streakBadge = getStreakBadge()
 
   return (
-    <div className="space-y-4 mb-6 w-full">
+    <div className="space-y-4 mb-6 w-full text-black">
       {/* Toast Notification Banner */}
       <AnimatePresence>
         {claimToast && (
@@ -245,14 +214,14 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-xs text-emerald-900 font-bold flex items-center justify-between shadow-sm"
+            className="border-2 border-black bg-[#FFC700] p-4 text-xs font-black text-black flex items-center justify-between shadow-[4px_4px_0px_#111]"
           >
             <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-emerald-600 shrink-0 animate-bounce" />
+              <Sparkles className="size-4 text-[#E60012] shrink-0 animate-bounce" />
               <span>{claimToast}</span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-800 bg-emerald-200/60 px-2 py-0.5 rounded-md">
-              Berhasil
+            <span className="text-[10px] font-mono font-black uppercase bg-black text-white px-2 py-0.5 -skew-x-6 border border-black">
+              KLAIM BERHASIL
             </span>
           </motion.div>
         )}
@@ -260,39 +229,39 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* DAILY LOGIN STREAK WIDGET */}
-        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-sm rounded-2xl lg:col-span-1 flex flex-col justify-between overflow-hidden">
-          <CardHeader className="pb-2 pt-4 px-5 flex flex-row items-center justify-between border-b border-[#E4E1DA]/40">
+        <Card className="border-2 border-black bg-white shadow-[4px_4px_0px_#111] rounded-none lg:col-span-1 flex flex-col justify-between overflow-hidden">
+          <CardHeader className="pb-3 pt-4 px-5 flex flex-row items-center justify-between border-b-2 border-black bg-[#FAF9F5]">
             <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-                <Flame className="size-5 text-orange-600 animate-pulse" />
+              <div className="size-9 border-2 border-black bg-[#E60012] flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#111]">
+                <Flame className="size-5 text-white animate-pulse" />
               </div>
               <div>
-                <CardTitle className="text-sm font-bold text-[#1C1B1A]">Daily Login Streak</CardTitle>
-                <p className="text-[11px] text-[#6B6862]">Presensi Harian Beruntun</p>
+                <CardTitle className="text-sm font-black uppercase tracking-tight text-black">Daily Login Streak</CardTitle>
+                <p className="text-[10px] font-mono font-bold text-zinc-600">連続ログイン</p>
               </div>
             </div>
 
-            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${streakBadge.color}`}>
+            <span className="text-[10px] font-mono font-black uppercase px-2 py-0.5 bg-black text-[#FFC700] border border-black -skew-x-6">
               {streakBadge.label}
             </span>
           </CardHeader>
 
-          <CardContent className="px-5 pb-4 pt-3 space-y-3 flex-1 flex flex-col justify-between">
-            <div className="bg-white border border-[#E4E1DA] p-4 rounded-xl space-y-2 shadow-xs">
+          <CardContent className="px-5 pb-5 pt-4 space-y-4 flex-1 flex flex-col justify-between">
+            <div className="border-2 border-black bg-amber-50/50 p-4 space-y-2 shadow-[3px_3px_0px_#111]">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-3xl font-black text-[#1C1B1A] flex items-center gap-2">
-                    🔥 {streakCount} <span className="text-xs font-normal text-[#6B6862]">Hari Beruntun</span>
+                  <div className="text-3xl font-black text-black flex items-center gap-2 font-mono">
+                    🔥 {streakCount} <span className="text-xs font-bold text-zinc-600">HARI BERUNTUN</span>
                   </div>
-                  <p className="text-[11px] text-[#6B6862] mt-0.5">
-                    Bonus Klaim Hari Ini: <span className="font-bold text-amber-600">+{Math.min(100, streakCount * 15 + 20)} EXP</span>
+                  <p className="text-[11px] font-bold text-zinc-700 mt-1">
+                    Bonus Presensi: <span className="font-black text-[#E60012]">+{Math.min(100, streakCount * 15 + 20)} EXP</span>
                   </p>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-[#E4E1DA]/50 flex items-center justify-between text-[10px] text-[#6B6862]">
-                <span className="flex items-center gap-1 font-medium">
-                  <Gift className="size-3 text-orange-500" /> Milestone Bonus: {streakBadge.bonus}
+              <div className="pt-2 border-t-2 border-black/10 flex items-center justify-between text-[10px] font-mono font-bold text-zinc-700">
+                <span className="flex items-center gap-1">
+                  <Gift className="size-3.5 text-[#E60012]" /> Milestone: {streakBadge.bonus}
                 </span>
               </div>
             </div>
@@ -301,15 +270,15 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
               type="button"
               disabled={loginClaimed || isLoading}
               onClick={handleClaimLoginReward}
-              className={`w-full text-xs font-bold rounded-xl h-10 transition-all ${
+              className={`w-full text-xs font-black uppercase rounded-none h-11 transition-all border-2 border-black shadow-[3px_3px_0px_#111] ${
                 loginClaimed
-                  ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/30 cursor-default"
-                  : "bg-[#B23A2E] text-white hover:bg-[#B23A2E]/90 shadow-sm"
+                  ? "bg-emerald-400 text-black cursor-default"
+                  : "bg-[#E60012] text-white hover:bg-black hover:text-[#FFC700] hover:shadow-[4px_4px_0px_#E60012]"
               }`}
             >
               {loginClaimed ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <CheckCircle2 className="size-4" /> Presensi Hari Ini Terklaim
+                  <CheckCircle2 className="size-4 stroke-[3]" /> PRESENSI HARI INI TERKLAIM
                 </span>
               ) : (
                 `Klaim Bonus Login (+${Math.min(100, streakCount * 15 + 20)} EXP) ✨`
@@ -319,24 +288,24 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
         </Card>
 
         {/* AUTO-GENERATED DAILY QUESTS */}
-        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-sm rounded-2xl lg:col-span-2 flex flex-col justify-between overflow-hidden">
-          <CardHeader className="pb-2 pt-4 px-5 flex flex-row items-center justify-between border-b border-[#E4E1DA]/40">
+        <Card className="border-2 border-black bg-white shadow-[4px_4px_0px_#111] rounded-none lg:col-span-2 flex flex-col justify-between overflow-hidden">
+          <CardHeader className="pb-3 pt-4 px-5 flex flex-row items-center justify-between border-b-2 border-black bg-[#FAF9F5]">
             <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-xl bg-[#2B3A55]/10 border border-[#2B3A55]/20 flex items-center justify-center shrink-0">
-                <Zap className="size-5 text-[#2B3A55]" />
+              <div className="size-9 border-2 border-black bg-[#FFC700] flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#111]">
+                <Zap className="size-5 text-black" />
               </div>
               <div>
-                <CardTitle className="text-sm font-bold text-[#1C1B1A]">Misi Harian JPER (Daily Quests)</CardTitle>
-                <p className="text-[11px] text-[#6B6862]">Selesaikan aktivitas LMS harian untuk mengklaim bonus EXP</p>
+                <CardTitle className="text-sm font-black uppercase tracking-tight text-black">Misi Harian JPER (Daily Quests)</CardTitle>
+                <p className="text-[10px] font-mono font-bold text-zinc-600">デイリークエスト</p>
               </div>
             </div>
 
-            <div className="text-[10px] font-mono text-[#6B6862] bg-[#E4E1DA]/50 px-2.5 py-1 rounded-full flex items-center gap-1">
-              <Clock className="size-3 text-amber-600" /> Reset: {timeLeftStr}
+            <div className="text-[10px] font-mono font-black text-black bg-white border border-black px-2.5 py-1 -skew-x-6 flex items-center gap-1 shadow-[2px_2px_0px_#111]">
+              <Clock className="size-3 text-[#E60012]" /> Reset: {timeLeftStr}
             </div>
           </CardHeader>
 
-          <CardContent className="px-5 pb-4 pt-3 flex-1 flex flex-col justify-between">
+          <CardContent className="px-5 pb-5 pt-4 flex-1 flex flex-col justify-between">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {quests.map((q, idx) => (
                 <motion.div
@@ -344,37 +313,36 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  whileHover={{ y: -2 }}
-                  className="bg-white border border-[#E4E1DA] p-3.5 rounded-xl flex flex-col justify-between gap-3 shadow-xs transition-shadow"
+                  className="border-2 border-black bg-[#FAF9F5] p-3.5 flex flex-col justify-between gap-3 shadow-[3px_3px_0px_#111]"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-xs font-bold text-[#1C1B1A] line-clamp-1">{q.title}</span>
-                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded shrink-0">
+                      <span className="text-xs font-black text-black uppercase line-clamp-1">{q.title}</span>
+                      <span className="text-[10px] font-mono font-black text-black bg-[#FFC700] border border-black px-1.5 py-0.5 shrink-0 -skew-x-6">
                         +{q.rewardXp} EXP
                       </span>
                     </div>
-                    <p className="text-[10px] text-[#6B6862] mt-1 line-clamp-2 leading-tight">{q.description}</p>
+                    <p className="text-[10px] font-semibold text-zinc-600 mt-1 line-clamp-2 leading-tight">{q.description}</p>
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-[#E4E1DA]/40">
-                    <div className="w-full bg-[#E4E1DA]/50 h-2 rounded-full overflow-hidden">
+                  <div className="space-y-2 pt-2 border-t-2 border-black/10">
+                    <div className="w-full bg-white border border-black h-2.5 overflow-hidden">
                       <motion.div
-                        className="bg-[#2B3A55] h-full rounded-full"
+                        className="bg-[#E60012] h-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.min(100, (q.progress / q.target) * 100)}%` }}
                         transition={{ duration: 0.4 }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-[#6B6862] font-mono">
+                    <div className="flex items-center justify-between text-[10px] font-mono font-bold">
+                      <span className="text-zinc-700">
                         {q.progress} / {q.target}
                       </span>
 
                       {q.isClaimed ? (
-                        <span className="text-emerald-700 font-bold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                          <CheckCircle2 className="size-3" /> Terklaim
+                        <span className="text-black font-black uppercase flex items-center gap-1 bg-emerald-400 px-2 py-0.5 border border-black -skew-x-6">
+                          <CheckCircle2 className="size-3 stroke-[3]" /> Terklaim
                         </span>
                       ) : q.isCompleted ? (
                         <motion.button
@@ -382,12 +350,12 @@ export function DailyQuestWidget({ onAddXp, token, userProfile }: DailyQuestWidg
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => handleClaimQuest(q.id, q.rewardXp, q.title)}
-                          className="text-white bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold shadow-xs transition-colors animate-pulse cursor-pointer"
+                          className="text-white bg-[#E60012] border border-black hover:bg-black hover:text-[#FFC700] px-2.5 py-1 text-[10px] font-mono font-black uppercase shadow-[2px_2px_0px_#111] transition-colors cursor-pointer"
                         >
                           Klaim EXP!
                         </motion.button>
                       ) : (
-                        <span className="text-[10px] font-semibold text-[#6B6862] bg-[#E4E1DA]/40 px-2 py-0.5 rounded">
+                        <span className="text-[10px] font-mono font-bold text-zinc-500 bg-zinc-200 border border-black px-2 py-0.5">
                           Berlangsung
                         </span>
                       )}

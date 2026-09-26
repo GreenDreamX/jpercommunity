@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Taste by Uizze"
+  short_description: "Better UI taste for your coding agent"
+  default_prompt: "Use $ui-taste for design judgment. Retrieve evidence or materials only for one concrete unresolved need."

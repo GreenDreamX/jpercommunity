@@ -205,11 +205,21 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
   }, [isScanOpen, startCamera, stopCamera])
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6 text-black">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-2 border-black bg-white p-5 shadow-[4px_4px_0px_#111]">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A]">Kehadiran Kelas</h2>
-          <p className="text-xs text-[#6B6862]">Pindai QR code pertemuan untuk mencatat kehadiran Anda.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-block bg-[#E60012] text-white px-2 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider -skew-x-6 border border-black shadow-[2px_2px_0px_#FFC700]">
+              出席管理 • ATTENDANCE LOG
+            </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black">
+            Kehadiran Kelas & Absensi
+          </h2>
+          <p className="text-xs font-semibold text-zinc-600 mt-1">
+            Pindai QR code pertemuan untuk mencatat kehadiran Anda secara real-time.
+          </p>
         </div>
 
         <Dialog
@@ -224,41 +234,46 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
           }}
         >
           <DialogTrigger asChild>
-            <Button className="bg-[#2B3A55] text-[#FAF9F6] hover:bg-[#2B3A55]/95 rounded-lg flex items-center gap-2 text-xs font-semibold px-4 py-2 h-9 shadow-none border-none">
+            <Button className="border-2 border-black bg-[#E60012] text-white font-black uppercase text-xs px-5 py-2.5 h-11 rounded-none shadow-[4px_4px_0px_#111] hover:bg-black hover:text-[#FFC700] hover:shadow-[4px_4px_0px_#E60012] transition-all flex items-center gap-2 shrink-0">
               <QrCode className="size-4" />
-              Pindai QR Absensi
+              <span>Pindai QR Absensi</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md bg-[#FAF9F6] border border-[#E4E1DA] rounded-xl p-6">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-[#1C1B1A]">Pindai QR Absensi</DialogTitle>
-              <DialogDescription className="text-xs text-[#6B6862]">
-                Posisikan QR code yang ditampilkan admin di depan kamera Anda.
+          <DialogContent className="max-w-md bg-white border-2 border-black shadow-[8px_8px_0px_#111] rounded-none p-6 text-black">
+            <DialogHeader className="border-b-2 border-black pb-3">
+              <span className="inline-block w-fit bg-black text-[#FFC700] px-2 py-0.5 text-[10px] font-mono font-black uppercase -skew-x-6 border border-black">
+                QR SCANNER • カメラ
+              </span>
+              <DialogTitle className="text-xl font-black uppercase tracking-tight text-black mt-2">
+                Pindai QR Absensi
+              </DialogTitle>
+              <DialogDescription className="text-xs font-semibold text-zinc-600">
+                Arahkan kamera ke QR Code yang ditampilkan pembina/admin di depan kelas.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col gap-4 py-2">
+            <div className="flex flex-col gap-4 py-3">
               {/* Camera Scanner View */}
-              <div className="relative overflow-hidden rounded-xl border border-[#E4E1DA] bg-stone-900 min-h-[260px] flex items-center justify-center">
+              <div className="relative overflow-hidden border-2 border-black bg-black min-h-[260px] flex items-center justify-center shadow-[4px_4px_0px_#111]">
                 <div id="qr-camera-reader" className="w-full h-full min-h-[260px]" />
 
                 {/* Overlay loading state */}
                 {cameraStarting && !isCameraActive && (
-                  <div className="absolute inset-0 bg-stone-900/90 flex flex-col items-center justify-center gap-2 text-white p-4">
-                    <RefreshCw className="size-6 animate-spin text-[#B23A2E]" />
-                    <span className="text-xs font-mono">Mengaktifkan kamera...</span>
+                  <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center gap-2 text-white p-4">
+                    <RefreshCw className="size-6 animate-spin text-[#FFC700]" />
+                    <span className="text-xs font-mono font-bold tracking-wider">Mengaktifkan kamera...</span>
                   </div>
                 )}
 
                 {/* Error state */}
                 {cameraError && !cameraStarting && (
-                  <div className="absolute inset-0 bg-stone-900/95 flex flex-col items-center justify-center gap-3 p-6 text-center">
-                    <Camera className="size-8 text-[#B23A2E]" />
-                    <div className="text-xs text-stone-300 leading-relaxed max-w-xs">{cameraError}</div>
+                  <div className="absolute inset-0 bg-zinc-900/95 flex flex-col items-center justify-center gap-3 p-6 text-center text-white">
+                    <Camera className="size-8 text-[#E60012]" />
+                    <div className="text-xs font-medium text-zinc-300 leading-relaxed max-w-xs">{cameraError}</div>
                     <Button
                       size="sm"
                       onClick={() => void startCamera()}
-                      className="bg-[#2B3A55] text-white hover:bg-[#2B3A55]/90 text-xs font-semibold rounded-lg h-8 px-3 border-none shadow-none"
+                      className="border-2 border-black bg-[#FFC700] text-black font-black hover:bg-white text-xs rounded-none h-9 px-4 shadow-[2px_2px_0px_#111]"
                     >
                       <RefreshCw className="size-3.5 mr-1" />
                       Coba Buka Kamera Lagi
@@ -269,38 +284,38 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
 
               {/* Status messages */}
               {scanStatus === "loading" && (
-                <div className="text-center text-xs text-[#6B6862] animate-pulse font-mono">
-                  Memproses absensi...
+                <div className="text-center text-xs font-mono font-black text-black bg-[#FFC700] p-2 border-2 border-black animate-pulse">
+                  Memproses absensi Anda...
                 </div>
               )}
               {scanStatus === "success" && (
-                <div className="flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/20 p-3 text-xs text-green-700 font-medium">
-                  <Check className="size-4 stroke-[2.5]" />
+                <div className="flex items-center gap-2 border-2 border-black bg-emerald-400 p-3 text-xs font-black text-black shadow-[3px_3px_0px_#111]">
+                  <Check className="size-4 stroke-[3]" />
                   {scanMessage}
                 </div>
               )}
               {scanStatus === "error" && (
-                <div className="flex items-center gap-2 rounded-lg bg-[#B23A2E]/10 border border-[#B23A2E]/20 p-3 text-xs text-[#B23A2E] font-medium">
-                  <AlertCircle className="size-4" />
+                <div className="flex items-center gap-2 border-2 border-black bg-[#E60012] p-3 text-xs font-black text-white shadow-[3px_3px_0px_#111]">
+                  <AlertCircle className="size-4 shrink-0" />
                   {scanMessage}
                 </div>
               )}
 
               {/* Fallback Token Input */}
-              <div className="border-t border-[#E4E1DA] pt-4 mt-2">
-                <div className="text-xs font-semibold text-[#1C1B1A] mb-2">Punya token absensi?</div>
+              <div className="border-t-2 border-black pt-4 mt-2">
+                <div className="text-xs font-black uppercase text-black mb-2">Gunakan Token Manual</div>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Masukkan token absensi..."
+                    placeholder="Ketik token absensi..."
                     value={manualToken}
                     onChange={(e) => setManualToken(e.target.value)}
-                    className="border-[#E4E1DA] bg-[#FAF9F6] rounded-lg text-xs h-9"
+                    className="border-2 border-black bg-zinc-50 rounded-none text-xs h-10 font-bold text-black focus:bg-white focus:ring-0 focus:border-[#E60012]"
                     disabled={scanStatus === "loading" || scanStatus === "success"}
                   />
                   <Button 
                     onClick={() => handleScanSubmit(manualToken)}
                     disabled={!manualToken.trim() || scanStatus === "loading" || scanStatus === "success"}
-                    className="bg-[#2B3A55] text-[#FAF9F6] hover:bg-[#2B3A55]/95 text-xs font-semibold px-4 h-9 rounded-lg shadow-none border-none"
+                    className="border-2 border-black bg-black text-white font-black hover:bg-[#E60012] text-xs px-4 h-10 rounded-none shadow-[2px_2px_0px_#111]"
                   >
                     Kirim
                   </Button>
@@ -312,58 +327,61 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
       </div>
 
       {error && (
-        <Card className="border-[#B23A2E]/30 bg-[#B23A2E]/5 rounded-lg shadow-none">
-          <CardContent className="p-4 flex items-center gap-2 text-xs text-[#B23A2E]">
-            <AlertCircle className="size-4" />
+        <Card className="border-2 border-black bg-[#E60012] text-white rounded-none shadow-[4px_4px_0px_#111]">
+          <CardContent className="p-4 flex items-center gap-2 text-xs font-bold">
+            <AlertCircle className="size-4 shrink-0" />
             {error}
           </CardContent>
         </Card>
       )}
 
       {loading ? (
-        <div className="text-xs text-[#6B6862] py-4 font-mono">Memuat riwayat kehadiran...</div>
+        <div className="border-2 border-black bg-white p-8 text-center text-xs font-mono font-bold text-zinc-600 shadow-[4px_4px_0px_#111]">
+          Memuat riwayat kehadiran Anda...
+        </div>
       ) : records.length === 0 ? (
-        <Card className="border border-[#E4E1DA] bg-[#FAF9F6]/50 shadow-none rounded-lg">
-          <CardContent className="p-8 text-center text-xs text-[#6B6862]">
-            <ClipboardCheck className="size-8 mx-auto stroke-[1.2] mb-2 text-[#6B6862]/60" />
-            Belum ada riwayat kehadiran tercatat.
+        <Card className="border-2 border-black bg-white shadow-[4px_4px_0px_#111] rounded-none">
+          <CardContent className="p-10 text-center text-xs font-semibold text-zinc-600">
+            <ClipboardCheck className="size-10 mx-auto stroke-[1.5] mb-3 text-black" />
+            <p className="font-bold text-sm text-black uppercase">Belum Ada Riwayat Kehadiran</p>
+            <p className="text-xs text-zinc-500 mt-1">Gunakan tombol "Pindai QR Absensi" di atas saat sesi kelas dibuka.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="overflow-hidden border border-[#E4E1DA] rounded-lg">
-          <table className="w-full text-left text-xs border-collapse">
+        <div className="border-2 border-black bg-white shadow-[6px_6px_0px_#111] overflow-x-auto no-scrollbar">
+          <table className="w-full text-left text-xs border-collapse min-w-[600px]">
             <thead>
-              <tr className="border-b border-[#E4E1DA] bg-[#FAF9F6] text-[#6B6862] font-mono tracking-wider">
-                <th className="p-3.5 font-medium">PERTEMUAN</th>
-                <th className="p-3.5 font-medium">MATERI</th>
-                <th className="p-3.5 font-medium">WAKTU ABSEN</th>
-                <th className="p-3.5 font-medium text-right">STATUS</th>
+              <tr className="border-b-2 border-black bg-[#FAF9F5] text-black font-mono font-black uppercase tracking-wider text-[11px]">
+                <th className="p-4 border-r-2 border-black">PERTEMUAN</th>
+                <th className="p-4 border-r-2 border-black">MATERI DIAJARKAN</th>
+                <th className="p-4 border-r-2 border-black">WAKTU ABSEN</th>
+                <th className="p-4 text-right">STATUS & STAMP</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y-2 divide-black">
               {records.map((record, index) => {
                 const week = record.attendance_sessions?.course_weeks
                 const session = record.attendance_sessions
                 const status = record.status || "hadir"
 
                 let stampText = "出席" // hadir
-                let stampColor = "border-[#B23A2E] text-[#B23A2E]"
+                let stampColor = "border-[#E60012] text-[#E60012] bg-[#E60012]/10"
                 let label = "Hadir"
                 if (status === "izin") {
                   stampText = "公欠"
-                  stampColor = "border-[#0284c7] text-[#0284c7]"
+                  stampColor = "border-blue-600 text-blue-600 bg-blue-50"
                   label = "Izin"
                 } else if (status === "sakit") {
                   stampText = "病欠"
-                  stampColor = "border-[#d97706] text-[#d97706]"
+                  stampColor = "border-amber-600 text-amber-600 bg-amber-50"
                   label = "Sakit"
                 } else if (status === "alpa") {
                   stampText = "欠席"
-                  stampColor = "border-red-500 text-red-500"
+                  stampColor = "border-red-600 text-red-600 bg-red-50"
                   label = "Alpa"
                 } else if (status === "dispen") {
                   stampText = "公欠"
-                  stampColor = "border-purple-600 text-purple-600"
+                  stampColor = "border-purple-600 text-purple-600 bg-purple-50"
                   label = "Dispen"
                 }
 
@@ -373,35 +391,28 @@ export function AttendanceTab({ firebaseToken }: AttendanceTabProps) {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.15, delay: index * 0.03 }}
-                    className="border-b border-[#E4E1DA] bg-[#FAF9F6]/20 last:border-none hover:bg-[#FAF9F6]/80 transition-colors"
+                    className="hover:bg-amber-50/50 transition-colors"
                   >
-                    <td className="p-3.5 text-[#1C1B1A] font-semibold">
+                    <td className="p-4 border-r-2 border-black font-black text-black">
                       Pertemuan {week?.week_number ?? "-"}
                     </td>
-                    <td className="p-3.5 text-[#6B6862]">
+                    <td className="p-4 border-r-2 border-black font-bold text-zinc-800">
                       {session?.materi_diajarkan ?? week?.title ?? "-"}
                     </td>
-                    <td className="p-3.5 text-[#6B6862] font-mono">
+                    <td className="p-4 border-r-2 border-black font-mono font-bold text-zinc-700">
                       {new Date(record.scanned_at).toLocaleString("id-ID", {
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
                     </td>
-                    <td className="p-3.5 text-right flex justify-end items-center h-12">
-                      <div className="flex items-center gap-2">
-                        {/* Status Label (Indonesian) */}
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
-                          status === "hadir" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                          status === "izin" ? "bg-sky-50 text-sky-700 border-sky-200" :
-                          status === "sakit" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                          status === "alpa" ? "bg-red-50 text-red-700 border-red-200" :
-                          "bg-purple-50 text-purple-700 border-purple-200"
-                        }`}>
-                          {label.toUpperCase()}
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <span className="text-[10px] font-mono font-black uppercase px-2.5 py-1 bg-black text-[#FFC700] border border-black -skew-x-6">
+                          {label}
                         </span>
                         {/* Japanese Hanko stamp */}
-                        <div className="relative flex items-center justify-center w-11 h-11 border border-dashed border-stone-200 rounded-full">
-                          <div className={`absolute transform rotate-[-12deg] flex items-center justify-center w-9 h-9 border ${stampColor} rounded-full text-[9px] font-bold tracking-tight bg-white/40`}>
+                        <div className="relative flex items-center justify-center w-10 h-10 border-2 border-dashed border-black rounded-full shrink-0">
+                          <div className={`absolute transform -rotate-12 flex items-center justify-center w-8 h-8 border-2 ${stampColor} rounded-full text-[10px] font-black tracking-tighter shadow-[1px_1px_0px_#111]`}>
                             {stampText}
                           </div>
                         </div>

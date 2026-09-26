@@ -274,192 +274,193 @@ export function LoginForm({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="border border-[#E4E1DA] bg-[#FAF9F6] shadow-md rounded-2xl overflow-hidden">
-        {/* LOGO & BRANDING HEADER */}
-        <CardHeader className="text-center pb-2 pt-6 flex flex-col items-center gap-3">
-          <div className="size-16 rounded-2xl bg-white border border-[#E4E1DA] p-2 flex items-center justify-center shadow-sm">
+        <Card className="border-2 border-black bg-white shadow-[8px_8px_0px_#111] overflow-hidden rounded-none">
+          {/* LOGO & BRANDING HEADER */}
+          <CardHeader className="text-center pb-3 pt-6 flex flex-col items-center gap-3 border-b-2 border-black bg-[#FAF9F5]">
             <img
               src="/image/J-PER.png"
               alt="JPER Community Logo"
-              className="size-full object-contain"
+              className="h-16 w-auto object-contain transition-transform hover:scale-105"
             />
-          </div>
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold tracking-tight text-[#1C1B1A]">
-              JPER Community Login
-            </CardTitle>
-            <CardDescription className="text-xs text-[#6B6862]">
-              Masuk ke portal pembelajaran dan sistem manajemen ekskul
-            </CardDescription>
-          </div>
-
-          {/* DESTINATION PORTAL TAB SWITCHER */}
-          <div className="grid grid-cols-2 gap-1 w-full bg-[#E4E1DA]/40 p-1 rounded-xl mt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("lms")
-                setErrorMessage(null)
-              }}
-              className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                mode === "lms"
-                  ? "bg-[#FAF9F6] text-[#B23A2E] shadow-sm"
-                  : "text-[#6B6862] hover:text-[#1C1B1A]"
-              }`}
-            >
-              <User className="size-3.5" />
-              LMS (Member)
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("studio")
-                setErrorMessage(null)
-              }}
-              className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                mode === "studio"
-                  ? "bg-[#FAF9F6] text-[#2B3A55] shadow-sm"
-                  : "text-[#6B6862] hover:text-[#1C1B1A]"
-              }`}
-            >
-              <Shield className="size-3.5" />
-              Studio (Admin)
-            </button>
-          </div>
-        </CardHeader>
-
-        <CardContent className="pt-2">
-          {registered && (
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 flex items-start gap-2.5 text-emerald-800 mb-4">
-              <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
-              <div className="text-xs leading-relaxed font-medium">
-                Pendaftaran berhasil! Akun Anda langsung aktif. Silakan masuk di bawah.
-              </div>
+            <div className="space-y-1">
+              <span className="inline-block bg-black text-[#FFC700] px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-widest -skew-x-6 border border-black shadow-[2px_2px_0px_#E60012]">
+                ログイン PORTAL • SSO AUTH
+              </span>
+              <CardTitle className="font-heading text-2xl font-black uppercase tracking-tight text-black mt-1">
+                JPER Community Login
+              </CardTitle>
+              <CardDescription className="text-xs font-medium text-zinc-700">
+                Masuk ke portal pembelajaran &amp; manajemen ekskul
+              </CardDescription>
             </div>
-          )}
 
-          {successBanner && (
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 flex items-start gap-2.5 text-emerald-800 mb-4">
-              <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
-              <div className="text-xs leading-relaxed font-medium">
-                {successBanner}
-              </div>
+            {/* DESTINATION PORTAL TAB SWITCHER */}
+            <div className="grid grid-cols-2 gap-2 w-full border-2 border-black bg-white p-1.5 shadow-[3px_3px_0px_#111] mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("lms")
+                  setErrorMessage(null)
+                }}
+                className={`py-2 px-3 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 ${
+                  mode === "lms"
+                    ? "border-black bg-[#E60012] text-white shadow-[2px_2px_0px_#FFC700]"
+                    : "border-transparent text-zinc-600 hover:text-black hover:bg-zinc-100"
+                }`}
+              >
+                <User className="size-3.5" />
+                LMS (Member)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("studio")
+                  setErrorMessage(null)
+                }}
+                className={`py-2 px-3 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-2 ${
+                  mode === "studio"
+                    ? "border-black bg-black text-[#FFC700] shadow-[2px_2px_0px_#E60012]"
+                    : "border-transparent text-zinc-600 hover:text-black hover:bg-zinc-100"
+                }`}
+              >
+                <Shield className="size-3.5" />
+                Studio (Admin)
+              </button>
             </div>
-          )}
+          </CardHeader>
 
-          <form onSubmit={handleLogin} method="POST">
-            <FieldGroup className="space-y-4">
-              <Field>
-                <FieldLabel htmlFor="email" className="text-xs font-semibold text-[#1C1B1A]">
-                  Email SSO / Akun
-                </FieldLabel>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder={mode === "studio" ? "admin@jper.my.id" : "nama@shokunin.jper.my.id"}
-                  required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  disabled={isLoading}
-                  className="border-[#E4E1DA] bg-white text-xs h-10 rounded-lg text-[#1C1B1A]"
-                />
-              </Field>
-              
-              <Field>
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="password" className="text-xs font-semibold text-[#1C1B1A]">
-                    Password
+          <CardContent className="pt-6 pb-6 space-y-4">
+            {registered && (
+              <div className="border-2 border-black bg-[#FFC700] p-3.5 flex items-start gap-2.5 text-black shadow-[4px_4px_0px_#111]">
+                <CheckCircle2 className="size-4 text-black shrink-0 mt-0.5" />
+                <div className="text-xs leading-relaxed font-black uppercase tracking-tight">
+                  Pendaftaran berhasil! Akun Anda langsung aktif. Silakan masuk di bawah.
+                </div>
+              </div>
+            )}
+
+            {successBanner && (
+              <div className="border-2 border-black bg-[#FFC700] p-3.5 flex items-start gap-2.5 text-black shadow-[4px_4px_0px_#111]">
+                <CheckCircle2 className="size-4 text-black shrink-0 mt-0.5" />
+                <div className="text-xs leading-relaxed font-black uppercase tracking-tight">
+                  {successBanner}
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} method="POST">
+              <FieldGroup className="space-y-4">
+                <Field>
+                  <FieldLabel htmlFor="email" className="text-xs font-black uppercase tracking-wider text-black">
+                    Email SSO / Akun Member
                   </FieldLabel>
-                  <button
-                    type="button"
-                    onClick={handleOpenResetModal}
-                    className="text-xs text-[#B23A2E] font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
-                  >
-                    Lupa password?
-                  </button>
-                </div>
-                <div className="relative">
                   <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder={mode === "studio" ? "admin@jper.my.id" : "nama@shokunin.jper.my.id"}
                     required
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    disabled={isLoading || cooldown > 0}
-                    className="border-[#E4E1DA] bg-white text-xs h-10 rounded-lg text-[#1C1B1A] pr-10"
-                    placeholder="Masukkan password akun Anda"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    disabled={isLoading}
+                    className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6862] hover:text-[#1C1B1A] transition-colors p-1"
-                    title={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-                  >
-                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
-              </Field>
+                </Field>
+                
+                <Field>
+                  <div className="flex items-center justify-between">
+                    <FieldLabel htmlFor="password" className="text-xs font-black uppercase tracking-wider text-black">
+                      Password
+                    </FieldLabel>
+                    <button
+                      type="button"
+                      onClick={handleOpenResetModal}
+                      className="text-xs text-[#E60012] font-black uppercase hover:underline bg-transparent border-none p-0 cursor-pointer"
+                    >
+                      Lupa password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      disabled={isLoading || cooldown > 0}
+                      className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0 pr-10"
+                      placeholder="Masukkan password akun Anda"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-[#E60012] transition-colors p-1"
+                      title={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </Field>
 
-              {errorMessage && (
-                <FieldError className="text-xs text-[#B23A2E] bg-[#B23A2E]/5 border border-[#B23A2E]/20 p-2.5 rounded-lg">
-                  {errorMessage}
-                </FieldError>
-              )}
-
-              <Field className="pt-2 space-y-3">
-                <Button
-                  type="submit"
-                  disabled={isLoading || cooldown > 0}
-                  className={cn(
-                    "w-full h-10 text-xs font-bold rounded-lg text-white border-none shadow-sm transition-all",
-                    mode === "studio"
-                      ? "bg-[#2B3A55] hover:bg-[#2B3A55]/90"
-                      : "bg-[#B23A2E] hover:bg-[#B23A2E]/90"
-                  )}
-                >
-                  {isLoading
-                    ? "Memproses Login..."
-                    : cooldown > 0
-                    ? `Kunci Keamanan (${cooldown}s)`
-                    : mode === "studio"
-                    ? "Masuk ke Studio Admin"
-                    : "Masuk ke Dashboard LMS"}
-                </Button>
-
-                {mode === "lms" && (
-                  <FieldDescription className="text-center text-xs text-[#6B6862]">
-                    Belum punya akun member?{" "}
-                    <Link href="/register" className="font-bold text-[#B23A2E] hover:underline">
-                      Daftar Anggota Baru
-                    </Link>
-                  </FieldDescription>
+                {errorMessage && (
+                  <FieldError className="text-xs text-white bg-[#E60012] border-2 border-black p-3 shadow-[3px_3px_0px_#111] font-black uppercase tracking-tight">
+                    {errorMessage}
+                  </FieldError>
                 )}
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
+
+                <Field className="pt-2 space-y-4">
+                  <Button
+                    type="submit"
+                    disabled={isLoading || cooldown > 0}
+                    className={cn(
+                      "w-full h-11 text-xs font-black uppercase tracking-wider text-white border-2 border-black transition-all shadow-[4px_4px_0px_#111] active:translate-x-1 active:translate-y-1 active:shadow-none",
+                      mode === "studio"
+                        ? "bg-black text-[#FFC700] hover:bg-[#E60012] hover:text-white hover:shadow-[5px_5px_0px_#FFC700]"
+                        : "bg-[#E60012] hover:bg-[#FFC700] hover:text-black hover:shadow-[5px_5px_0px_#111]"
+                    )}
+                  >
+                    {isLoading
+                      ? "Memproses Login..."
+                      : cooldown > 0
+                      ? `Kunci Keamanan (${cooldown}s)`
+                      : mode === "studio"
+                      ? "Masuk ke Studio Admin →"
+                      : "Masuk ke Dashboard LMS →"}
+                  </Button>
+
+                  {mode === "lms" && (
+                    <FieldDescription className="text-center text-xs font-bold uppercase tracking-wider text-zinc-700">
+                      Belum punya akun member?{" "}
+                      <Link href="/register" className="font-black text-[#E60012] hover:underline">
+                        Daftar Anggota Baru
+                      </Link>
+                    </FieldDescription>
+                  )}
+                </Field>
+              </FieldGroup>
+            </form>
+          </CardContent>
+        </Card>
       </motion.div>
       
-      <FieldDescription className="px-6 text-center text-[11px] text-[#6B6862]">
-        JPER Community &copy; 2026 — Hak Cipta Dilindungi Undang-Undang.
+      <FieldDescription className="px-6 text-center text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-600">
+        JPER Community &copy; 2026 — Ekstrakurikuler Bahasa Jepang SMKN 1 Majalaya.
       </FieldDescription>
 
       {/* MODAL RESET PASSWORD AKUN PASIF / SSO */}
       <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
-        <DialogContent className="max-w-md bg-[#FAF9F6] border-[#E4E1DA] rounded-2xl p-6 shadow-xl no-scrollbar">
-          <DialogHeader className="flex flex-col gap-2 pb-2">
+        <DialogContent className="max-w-md bg-white border-2 border-black rounded-none p-6 shadow-[8px_8px_0px_#111] no-scrollbar">
+          <DialogHeader className="flex flex-col gap-2 pb-2 border-b-2 border-black">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-xl bg-[#B23A2E]/10 border border-[#B23A2E]/20 flex items-center justify-center shrink-0">
-                <KeyRound className="size-5 text-[#B23A2E]" />
+              <div className="size-10 bg-[#E60012] text-white border-2 border-black -skew-x-6 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#111]">
+                <KeyRound className="size-5 skew-x-6" />
               </div>
               <div>
-                <DialogTitle className="text-lg font-bold text-[#1C1B1A]">
+                <DialogTitle className="font-heading text-lg font-black uppercase text-black">
                   Reset Password Akun
                 </DialogTitle>
-                <DialogDescription className="text-xs text-[#6B6862]">
+                <DialogDescription className="text-xs font-bold uppercase tracking-wider text-zinc-600">
                   Verifikasi identitas terdaftar Anda
                 </DialogDescription>
               </div>
@@ -468,9 +469,9 @@ export function LoginForm({
 
           {resetSuccessMessage ? (
             <div className="space-y-4 py-2">
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 flex flex-col items-center text-center gap-2.5 text-emerald-800">
-                <CheckCircle2 className="size-8 text-emerald-600 shrink-0" />
-                <div className="text-xs leading-relaxed font-semibold">
+              <div className="border-2 border-black bg-[#FFC700] p-4 flex flex-col items-center text-center gap-2.5 text-black shadow-[4px_4px_0px_#111]">
+                <CheckCircle2 className="size-8 text-black shrink-0" />
+                <div className="text-xs leading-relaxed font-black uppercase tracking-tight">
                   {resetSuccessMessage}
                 </div>
               </div>
@@ -478,16 +479,16 @@ export function LoginForm({
               <Button
                 type="button"
                 onClick={() => setIsResetOpen(false)}
-                className="w-full h-10 bg-[#B23A2E] text-white hover:bg-[#B23A2E]/90 rounded-lg text-xs font-bold shadow-sm"
+                className="w-full h-10 border-2 border-black bg-[#E60012] text-white hover:bg-black hover:text-[#FFC700] text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#111]"
               >
                 Ke Halaman Login &amp; Masuk →
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleResetPassword} className="space-y-3.5 pt-1">
+            <form onSubmit={handleResetPassword} className="space-y-3.5 pt-2">
               <FieldGroup className="space-y-3">
                 <Field>
-                  <FieldLabel htmlFor="resetEmail" className="text-xs font-semibold text-[#1C1B1A]">
+                  <FieldLabel htmlFor="resetEmail" className="text-xs font-black uppercase tracking-wider text-black">
                     Email SSO / Akun Terdaftar
                   </FieldLabel>
                   <Input
@@ -498,13 +499,13 @@ export function LoginForm({
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     disabled={isResetLoading}
-                    className="border-[#E4E1DA] bg-white text-xs h-9 rounded-lg text-[#1C1B1A]"
+                    className="border-2 border-black bg-zinc-50 text-xs font-bold h-9 text-black shadow-[2px_2px_0px_#111]"
                   />
                 </Field>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <Field>
-                    <FieldLabel htmlFor="resetTanggalLahir" className="text-xs font-semibold text-[#1C1B1A]">
+                    <FieldLabel htmlFor="resetTanggalLahir" className="text-xs font-black uppercase tracking-wider text-black">
                       Tanggal Lahir
                     </FieldLabel>
                     <Input
@@ -514,12 +515,12 @@ export function LoginForm({
                       value={resetTanggalLahir}
                       onChange={(e) => setResetTanggalLahir(e.target.value)}
                       disabled={isResetLoading}
-                      className="border-[#E4E1DA] bg-white text-xs h-9 rounded-lg text-[#1C1B1A]"
+                      className="border-2 border-black bg-zinc-50 text-xs font-bold h-9 text-black shadow-[2px_2px_0px_#111]"
                     />
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="resetNomorTelepon" className="text-xs font-semibold text-[#1C1B1A]">
+                    <FieldLabel htmlFor="resetNomorTelepon" className="text-xs font-black uppercase tracking-wider text-black">
                       Nomor Telepon
                     </FieldLabel>
                     <Input
@@ -530,14 +531,14 @@ export function LoginForm({
                       value={resetNomorTelepon}
                       onChange={(e) => setResetNomorTelepon(e.target.value)}
                       disabled={isResetLoading}
-                      className="border-[#E4E1DA] bg-white text-xs h-9 rounded-lg text-[#1C1B1A]"
+                      className="border-2 border-black bg-zinc-50 text-xs font-bold h-9 text-black shadow-[2px_2px_0px_#111]"
                     />
                   </Field>
                 </div>
 
                 <Field>
-                  <FieldLabel htmlFor="resetNisn" className="text-xs font-semibold text-[#1C1B1A]">
-                    NISN <span className="text-[10px] text-[#6B6862] font-normal">(Opsional bagi alumni)</span>
+                  <FieldLabel htmlFor="resetNisn" className="text-xs font-black uppercase tracking-wider text-black">
+                    NISN <span className="text-[10px] text-zinc-500 font-normal">(Opsional bagi alumni)</span>
                   </FieldLabel>
                   <Input
                     id="resetNisn"
@@ -546,13 +547,13 @@ export function LoginForm({
                     value={resetNisn}
                     onChange={(e) => setResetNisn(e.target.value.replace(/\D/g, ""))}
                     disabled={isResetLoading}
-                    className="border-[#E4E1DA] bg-white text-xs h-9 rounded-lg text-[#1C1B1A]"
+                    className="border-2 border-black bg-zinc-50 text-xs font-bold h-9 text-black shadow-[2px_2px_0px_#111]"
                   />
                 </Field>
 
-                <div className="border-t border-[#E4E1DA]/60 pt-3 space-y-3">
+                <div className="border-t-2 border-black pt-3 space-y-3">
                   <Field>
-                    <FieldLabel htmlFor="resetNewPassword" className="text-xs font-semibold text-[#1C1B1A]">
+                    <FieldLabel htmlFor="resetNewPassword" className="text-xs font-black uppercase tracking-wider text-black">
                       Password Baru
                     </FieldLabel>
                     <div className="relative">
@@ -564,12 +565,12 @@ export function LoginForm({
                         value={resetNewPassword}
                         onChange={(e) => setResetNewPassword(e.target.value)}
                         disabled={isResetLoading}
-                        className="border-[#E4E1DA] bg-white text-xs h-9 rounded-lg text-[#1C1B1A] pr-9"
+                        className="border-2 border-black bg-zinc-50 text-xs font-bold h-9 text-black shadow-[2px_2px_0px_#111] pr-9"
                       />
                       <button
                         type="button"
                         onClick={() => setResetShowPassword((v) => !v)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B6862] hover:text-[#1C1B1A] transition-colors p-1"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black hover:text-[#E60012] transition-colors p-1"
                       >
                         {resetShowPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                       </button>
@@ -577,7 +578,7 @@ export function LoginForm({
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="resetConfirmPassword" className="text-xs font-semibold text-[#1C1B1A]">
+                    <FieldLabel htmlFor="resetConfirmPassword" className="text-xs font-black uppercase tracking-wider text-black">
                       Konfirmasi Password Baru
                     </FieldLabel>
                     <div className="relative">
@@ -589,12 +590,12 @@ export function LoginForm({
                         value={resetConfirmPassword}
                         onChange={(e) => setResetConfirmPassword(e.target.value)}
                         disabled={isResetLoading}
-                        className="border-[#E4E1DA] bg-white text-xs h-9 rounded-lg text-[#1C1B1A] pr-9"
+                        className="border-2 border-black bg-zinc-50 text-xs font-bold h-9 text-black shadow-[2px_2px_0px_#111] pr-9"
                       />
                       <button
                         type="button"
                         onClick={() => setResetShowPassword((v) => !v)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B6862] hover:text-[#1C1B1A] transition-colors p-1"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black hover:text-[#E60012] transition-colors p-1"
                       >
                         {resetShowPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                       </button>
@@ -603,7 +604,7 @@ export function LoginForm({
                 </div>
 
                 {resetErrorMessage && (
-                  <FieldError className="text-xs text-[#B23A2E] bg-[#B23A2E]/5 border border-[#B23A2E]/20 p-2.5 rounded-lg flex items-start gap-2">
+                  <FieldError className="text-xs text-white bg-[#E60012] border-2 border-black p-2.5 shadow-[3px_3px_0px_#111] font-black uppercase tracking-tight flex items-start gap-2">
                     <ShieldAlert className="size-4 shrink-0 mt-0.5" />
                     <span>{resetErrorMessage}</span>
                   </FieldError>
@@ -614,7 +615,7 @@ export function LoginForm({
                     type="submit"
                     disabled={isResetLoading}
                     className={cn(
-                      "w-full h-10 bg-[#B23A2E] text-white hover:bg-[#B23A2E]/90 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2",
+                      "w-full h-10 border-2 border-black bg-[#E60012] text-white hover:bg-black hover:text-[#FFC700] text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_#111] transition-all flex items-center justify-center gap-2",
                       isResetLoading && "opacity-70 cursor-not-allowed"
                     )}
                   >
@@ -624,7 +625,7 @@ export function LoginForm({
                         <span>Memverifikasi &amp; Mereset...</span>
                       </>
                     ) : (
-                      "Reset Password Sekarang"
+                      "Reset Password Sekarang →"
                     )}
                   </Button>
                 </Field>

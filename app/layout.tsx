@@ -1,19 +1,26 @@
 import { Geist, Geist_Mono, Inter } from "next/font/google"
+import dynamic from "next/dynamic"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 const display = Geist({
   subsets: ["latin"],
   variable: "--font-display",
+  display: "swap",
 })
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+})
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+  display: "swap",
 })
 
 export const metadata = {
@@ -52,9 +59,7 @@ export const metadata = {
   },
 }
 
-import { OfflineBanner } from "@/components/offline-banner"
-import { CookieBanner } from "@/components/cookie-banner"
-import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog"
+import { GlobalClientProviders } from "@/components/global-client-providers"
 
 export default function RootLayout({
   children,
@@ -75,10 +80,9 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
-          <OfflineBanner />
-          <CookieBanner />
-          <KeyboardShortcutsDialog />
-          {children}
+          <GlobalClientProviders>
+            {children}
+          </GlobalClientProviders>
         </ThemeProvider>
       </body>
     </html>

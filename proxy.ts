@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server"
  *   - docs.jper.my.id (Documentation Portal Paper & Ink)
  *   - forms.jper.my.id / form.jper.my.id (Dynamic Form Engine)
  *   - s.jper.my.id (URL Shortener Engine)
- * - Production Legacy Path Redirects
+ * - Production Subdomain Clean Redirects & Legacy Path Redirects
  * - Auth Guards for /lms & /studio
  */
 
@@ -19,7 +19,11 @@ const PUBLIC_STUDIO_LOGIN = /^\/studio\/login(\/|$)/
 
 export function proxy(request: NextRequest) {
   const url = request.nextUrl
-  const hostname = request.headers.get("host") || ""
+  const hostname =
+    request.headers.get("x-forwarded-host") ||
+    request.headers.get("host") ||
+    url.hostname ||
+    ""
   const path = url.pathname
 
   // Skip static assets, Next internal files, and API endpoints (except shortlink API resolution)
@@ -42,35 +46,51 @@ export function proxy(request: NextRequest) {
 
   const isLocalhost = hostname.includes("localhost") || hostname.includes("127.0.0.1")
 
-  // 2. CROSS-SUBDOMAIN PATH REDIRECTS (Handles cross-subdomain links & client router navigation)
+  // 2. CROSS-SUBDOMAIN & CLEAN PATH REDIRECTS
   if (!isLocalhost) {
-    // If requesting /lms on any subdomain other than lms.jper.my.id
+    // LMS Subdomain: strip redundant /lms path if already on lms.jper.my.id, or redirect to lms.jper.my.id if on another domain
+    if (subdomain === "lms" && (path === "/lms" || path.startsWith("/lms/"))) {
+      const cleanPath = path.replace(/^\/lms/, "") || "/"
+      return NextResponse.redirect(`https://lms.jper.my.id${cleanPath}`, 307)
+    }
     if (subdomain !== "lms" && (path === "/lms" || path.startsWith("/lms/"))) {
-      const targetPath = path.replace(/^\/lms/, "") || ""
-      return NextResponse.redirect(`https://lms.jper.my.id${targetPath}`, 307)
+      const cleanPath = path.replace(/^\/lms/, "") || "/"
+      return NextResponse.redirect(`https://lms.jper.my.id${cleanPath}`, 307)
     }
 
-    // If requesting /studio on any subdomain other than studio.jper.my.id
+    // Studio Subdomain: strip redundant /studio path if already on studio.jper.my.id (except /studio/login)
+    if (subdomain === "studio" && (path === "/studio" || path.startsWith("/studio/")) && path !== "/studio/login") {
+      const cleanPath = path.replace(/^\/studio/, "") || "/"
+      return NextResponse.redirect(`https://studio.jper.my.id${cleanPath}`, 307)
+    }
     if (subdomain !== "studio" && (path === "/studio" || path.startsWith("/studio/"))) {
-      const targetPath = path.replace(/^\/studio/, "") || ""
-      return NextResponse.redirect(`https://studio.jper.my.id${targetPath}`, 307)
+      const cleanPath = path.replace(/^\/studio/, "") || "/"
+      return NextResponse.redirect(`https://studio.jper.my.id${cleanPath}`, 307)
     }
 
-    // If requesting /login from subdomains (e.g. studio.jper.my.id/login)
+    // Login page redirect from subdomains (e.g. lms.jper.my.id/login)
     if (subdomain !== "" && subdomain !== "studio" && path === "/login") {
       return NextResponse.redirect(`https://jper.my.id/login`, 307)
     }
 
-    // If requesting /register or /forms on any subdomain other than forms.jper.my.id
+    // Forms Subdomain redirects
+    if (subdomain === "forms" && path.startsWith("/forms/")) {
+      const cleanPath = path.replace(/^\/forms/, "") || "/"
+      return NextResponse.redirect(`https://forms.jper.my.id${cleanPath}`, 307)
+    }
     if (subdomain !== "forms" && (path === "/register" || path.startsWith("/forms"))) {
-      const targetPath = path === "/register" ? "/register" : path.replace(/^\/forms/, "") || ""
-      return NextResponse.redirect(`https://forms.jper.my.id${targetPath}`, 307)
+      const cleanPath = path === "/register" ? "/register" : path.replace(/^\/forms/, "") || "/"
+      return NextResponse.redirect(`https://forms.jper.my.id${cleanPath}`, 307)
     }
 
-    // If requesting /docs, /privacy, or /terms on any subdomain other than docs.jper.my.id
+    // Docs Subdomain redirects
+    if (subdomain === "docs" && path.startsWith("/docs/")) {
+      const cleanPath = path.replace(/^\/docs/, "") || "/"
+      return NextResponse.redirect(`https://docs.jper.my.id${cleanPath}`, 307)
+    }
     if (subdomain !== "docs" && (path === "/privacy" || path === "/terms" || path.startsWith("/docs"))) {
-      const targetPath = path.startsWith("/docs") ? path.replace(/^\/docs/, "") : path
-      return NextResponse.redirect(`https://docs.jper.my.id${targetPath}`, 307)
+      const cleanPath = path.startsWith("/docs") ? path.replace(/^\/docs/, "") || "/" : path
+      return NextResponse.redirect(`https://docs.jper.my.id${cleanPath}`, 307)
     }
   }
 
@@ -149,29 +169,6 @@ export function proxy(request: NextRequest) {
       return NextResponse.rewrite(targetUrl)
     }
     return NextResponse.next()
-  }
-
-  // 5. PRODUCTION MAIN DOMAIN LEGACY PATH REDIRECTS (Only on production jper.my.id)
-  if (!subdomain && !isLocalhost) {
-    if (path.startsWith("/lms")) {
-      const targetPath = path.replace(/^\/lms/, "") || ""
-      return NextResponse.redirect(`https://lms.jper.my.id${targetPath}`, 307)
-    }
-
-    if (path.startsWith("/studio") && !isStudioLogin) {
-      const targetPath = path.replace(/^\/studio/, "") || ""
-      return NextResponse.redirect(`https://studio.jper.my.id${targetPath}`, 307)
-    }
-
-    if (path === "/register" || path.startsWith("/forms")) {
-      const targetPath = path === "/register" ? "/register" : path.replace(/^\/forms/, "")
-      return NextResponse.redirect(`https://forms.jper.my.id${targetPath}`, 307)
-    }
-
-    if (path === "/privacy" || path === "/terms" || path.startsWith("/docs")) {
-      const targetPath = path.startsWith("/docs") ? path.replace(/^\/docs/, "") : path
-      return NextResponse.redirect(`https://docs.jper.my.id${targetPath}`, 307)
-    }
   }
 
   return NextResponse.next()

@@ -307,41 +307,63 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-svh bg-background px-6 py-10 text-foreground md:px-8 lg:px-10">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
-        <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit rounded-lg")}>
-          <ArrowLeft />
-          Kembali ke landing
+    <main className="relative min-h-svh bg-white p5-subtle-grid px-6 py-10 text-black md:px-8 lg:px-10 overflow-hidden">
+      {/* Subtle Red & Gold Background Corner Accents */}
+      <div className="absolute top-0 right-0 h-96 w-96 bg-gradient-to-bl from-[#E60012]/08 via-transparent to-transparent pointer-events-none -rotate-12 transform origin-top-right" />
+      <div className="absolute bottom-0 left-0 h-96 w-96 bg-gradient-to-tr from-[#FFC700]/10 via-transparent to-transparent pointer-events-none rotate-12 transform origin-bottom-left" />
+
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-8">
+        <Link
+          href="/"
+          className="inline-flex w-fit items-center gap-2 border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-wider text-black shadow-[3px_3px_0px_#111] transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#E60012] hover:text-white hover:shadow-[4px_4px_0px_#FFC700]"
+        >
+          <ArrowLeft className="size-4" />
+          <span>Kembali ke Landing Page</span>
         </Link>
 
-        <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-          <Card className="bg-background">
-            <CardHeader>
-              <CardDescription className="flex items-center gap-2">
-                <UserPlus className="size-4 text-primary" />
-                Register member
+        <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <Card className="border-2 border-black bg-white shadow-[8px_8px_0px_#111] overflow-hidden rounded-none">
+            <CardHeader className="border-b-2 border-black bg-[#FAF9F5] p-6 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="inline-block bg-[#E60012] text-white px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-widest -skew-x-6 border border-black shadow-[2px_2px_0px_#FFC700]">
+                  新規登録 • REGISTER MEMBER
+                </span>
+                <span className="font-mono text-xs font-black bg-black text-[#FFC700] px-2.5 py-0.5 border border-black">
+                  STEP {step} / 2
+                </span>
+              </div>
+              <CardTitle className="font-heading text-2xl md:text-3xl font-black uppercase tracking-tight text-black">
+                Pendaftaran Anggota Baru.
+              </CardTitle>
+              <CardDescription className="text-xs font-medium text-zinc-700">
+                Isi formulir pendaftaran dinamis JPER Community sesuai angkatan Anda.
               </CardDescription>
-              <CardTitle className="text-3xl tracking-[-0.04em]">Pendaftaran anggota baru.</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <form onSubmit={handleSubmit} method="POST">
-                <FieldGroup>
+                <FieldGroup className="space-y-4">
                   {step === 1 ? (
                     <>
                       <Field>
-                        <FieldLabel htmlFor="namaLengkap">Nama lengkap</FieldLabel>
+                        <FieldLabel htmlFor="namaLengkap" className="text-xs font-black uppercase tracking-wider text-black">
+                          Nama Lengkap
+                        </FieldLabel>
                         <Input
                           id="namaLengkap"
                           value={form.namaLengkap}
                           onChange={(event) => setForm((prev) => ({ ...prev, namaLengkap: event.target.value }))}
                           required
                           disabled={isSubmitting}
+                          placeholder="Masukkan nama lengkap Anda"
+                          className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                         />
                       </Field>
 
                       <div className="grid gap-4 sm:grid-cols-2">
                         <Field>
-                          <FieldLabel htmlFor="tempatLahir">Tempat lahir</FieldLabel>
+                          <FieldLabel htmlFor="tempatLahir" className="text-xs font-black uppercase tracking-wider text-black">
+                            Tempat Lahir
+                          </FieldLabel>
                           <Input
                             id="tempatLahir"
                             value={form.tempatLahir}
@@ -349,11 +371,14 @@ export default function RegisterPage() {
                             required
                             disabled={isSubmitting}
                             placeholder="Contoh: Bandung"
+                            className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                           />
                         </Field>
 
                         <Field>
-                          <FieldLabel htmlFor="tanggalLahir">Tanggal lahir</FieldLabel>
+                          <FieldLabel htmlFor="tanggalLahir" className="text-xs font-black uppercase tracking-wider text-black">
+                            Tanggal Lahir
+                          </FieldLabel>
                           <Input
                             id="tanggalLahir"
                             type="date"
@@ -361,12 +386,15 @@ export default function RegisterPage() {
                             onChange={(event) => setForm((prev) => ({ ...prev, tanggalLahir: event.target.value }))}
                             required
                             disabled={isSubmitting}
+                            className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                           />
                         </Field>
                       </div>
 
                       <Field>
-                        <FieldLabel htmlFor="nomorTelepon">Nomor telepon</FieldLabel>
+                        <FieldLabel htmlFor="nomorTelepon" className="text-xs font-black uppercase tracking-wider text-black">
+                          Nomor Telepon (WhatsApp)
+                        </FieldLabel>
                         <Input
                           id="nomorTelepon"
                           value={form.nomorTelepon}
@@ -374,11 +402,14 @@ export default function RegisterPage() {
                           required
                           disabled={isSubmitting}
                           placeholder="Contoh: 081234567890"
+                          className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                         />
                       </Field>
 
                       <Field>
-                        <FieldLabel htmlFor="angkatan">Angkatan</FieldLabel>
+                        <FieldLabel htmlFor="angkatan" className="text-xs font-black uppercase tracking-wider text-black">
+                          Angkatan
+                        </FieldLabel>
                         <select
                           id="angkatan"
                           value={form.angkatan}
@@ -403,7 +434,7 @@ export default function RegisterPage() {
                               readinessConsent: false,
                             }))
                           }}
-                          className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
+                          className="w-full h-10 border-2 border-black bg-zinc-50 px-3.5 text-xs font-bold text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                           disabled={isSubmitting}
                         >
                           <option value="2028">2028 (Calon Siswa)</option>
@@ -423,7 +454,9 @@ export default function RegisterPage() {
                         <>
                           <div className="grid gap-4 sm:grid-cols-2">
                             <Field>
-                              <FieldLabel htmlFor="nis">NIS (Nomor Induk Siswa)</FieldLabel>
+                              <FieldLabel htmlFor="nis" className="text-xs font-black uppercase tracking-wider text-black">
+                                NIS (Nomor Induk Siswa)
+                              </FieldLabel>
                               <Input
                                 id="nis"
                                 value={form.nis}
@@ -431,11 +464,14 @@ export default function RegisterPage() {
                                 required
                                 disabled={isSubmitting}
                                 placeholder="9 digit angka"
+                                className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                               />
                             </Field>
 
                             <Field>
-                              <FieldLabel htmlFor="nisn">NISN</FieldLabel>
+                              <FieldLabel htmlFor="nisn" className="text-xs font-black uppercase tracking-wider text-black">
+                                NISN
+                              </FieldLabel>
                               <Input
                                 id="nisn"
                                 value={form.nisn}
@@ -443,13 +479,16 @@ export default function RegisterPage() {
                                 required
                                 disabled={isSubmitting}
                                 placeholder="10 digit angka"
+                                className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                               />
                             </Field>
                           </div>
 
                           <div className="grid gap-4 sm:grid-cols-2">
                             <Field>
-                              <FieldLabel htmlFor="jurusanSelect">Jurusan</FieldLabel>
+                              <FieldLabel htmlFor="jurusanSelect" className="text-xs font-black uppercase tracking-wider text-black">
+                                Jurusan
+                              </FieldLabel>
                               <select
                                 id="jurusanSelect"
                                 value={form.jurusanSelect}
@@ -463,7 +502,7 @@ export default function RegisterPage() {
                                     kelasSelect: nextClass,
                                   }))
                                 }}
-                                className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
+                                className="w-full h-10 border-2 border-black bg-zinc-50 px-3.5 text-xs font-bold text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                                 disabled={isSubmitting}
                               >
                                 <option value="TJKT">TJKT</option>
@@ -478,7 +517,9 @@ export default function RegisterPage() {
                             </Field>
 
                             <Field>
-                              <FieldLabel htmlFor="kelasSelect">Kelas</FieldLabel>
+                              <FieldLabel htmlFor="kelasSelect" className="text-xs font-black uppercase tracking-wider text-black">
+                                Kelas
+                              </FieldLabel>
                               {form.jurusanSelect === "Lainnya" ? (
                                 <Input
                                   id="kelasCustom"
@@ -487,13 +528,14 @@ export default function RegisterPage() {
                                   required
                                   disabled={isSubmitting}
                                   placeholder="Contoh: 10 TJKT 1"
+                                  className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                                 />
                               ) : (
                                 <select
                                   id="kelasSelect"
                                   value={form.kelasSelect}
                                   onChange={(event) => setForm((prev) => ({ ...prev, kelasSelect: event.target.value }))}
-                                  className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
+                                  className="w-full h-10 border-2 border-black bg-zinc-50 px-3.5 text-xs font-bold text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                                   disabled={isSubmitting}
                                 >
                                   {(() => {
@@ -515,7 +557,9 @@ export default function RegisterPage() {
 
                           {form.jurusanSelect === "Lainnya" && (
                             <Field>
-                              <FieldLabel htmlFor="jurusanCustom">Nama Jurusan Kustom</FieldLabel>
+                              <FieldLabel htmlFor="jurusanCustom" className="text-xs font-black uppercase tracking-wider text-black">
+                                Nama Jurusan Kustom
+                              </FieldLabel>
                               <Input
                                 id="jurusanCustom"
                                 value={form.jurusanCustom}
@@ -523,17 +567,20 @@ export default function RegisterPage() {
                                 required
                                 disabled={isSubmitting}
                                 placeholder="Ketik jurusan Anda"
+                                className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                               />
                             </Field>
                           )}
 
                           <Field>
-                            <FieldLabel htmlFor="asalSekolahSelect">Asal Sekolah</FieldLabel>
+                            <FieldLabel htmlFor="asalSekolahSelect" className="text-xs font-black uppercase tracking-wider text-black">
+                              Asal Sekolah
+                            </FieldLabel>
                             <select
                               id="asalSekolahSelect"
                               value={form.asalSekolahSelect}
                               onChange={(event) => setForm((prev) => ({ ...prev, asalSekolahSelect: event.target.value }))}
-                              className="h-9 rounded-lg border border-input bg-background px-3 text-sm w-full"
+                              className="w-full h-10 border-2 border-black bg-zinc-50 px-3.5 text-xs font-bold text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                               disabled={isSubmitting}
                             >
                               <option value="SMKN 1 Majalaya">SMKN 1 Majalaya</option>
@@ -546,7 +593,9 @@ export default function RegisterPage() {
 
                           {form.asalSekolahSelect === "Lainnya" && (
                             <Field>
-                              <FieldLabel htmlFor="asalSekolahCustom">Nama Sekolah Kustom</FieldLabel>
+                              <FieldLabel htmlFor="asalSekolahCustom" className="text-xs font-black uppercase tracking-wider text-black">
+                                Nama Sekolah Kustom
+                              </FieldLabel>
                               <Input
                                 id="asalSekolahCustom"
                                 value={form.asalSekolahCustom}
@@ -554,6 +603,7 @@ export default function RegisterPage() {
                                 required
                                 disabled={isSubmitting}
                                 placeholder="Ketik asal sekolah Anda"
+                                className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                               />
                             </Field>
                           )}
@@ -563,7 +613,9 @@ export default function RegisterPage() {
                       {["2027", "2028"].includes(form.angkatan) && (
                         <>
                           <Field>
-                            <FieldLabel htmlFor="asalSmp">Asal SMP</FieldLabel>
+                            <FieldLabel htmlFor="asalSmp" className="text-xs font-black uppercase tracking-wider text-black">
+                              Asal SMP
+                            </FieldLabel>
                             <Input
                               id="asalSmp"
                               value={form.asalSmp}
@@ -571,10 +623,11 @@ export default function RegisterPage() {
                               required
                               disabled={isSubmitting}
                               placeholder="Nama SMP asal Anda"
+                              className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                             />
                           </Field>
 
-                          <div className="flex items-start gap-2 py-2">
+                          <div className="flex items-start gap-2.5 py-2 border-2 border-black bg-zinc-50 p-3 shadow-[2px_2px_0px_#111]">
                             <input
                               id="readinessConsent"
                               type="checkbox"
@@ -582,14 +635,14 @@ export default function RegisterPage() {
                               onChange={(event) => setForm((prev) => ({ ...prev, readinessConsent: event.target.checked }))}
                               required
                               disabled={isSubmitting}
-                              className="size-4 rounded border-[#E4E1DA] bg-background text-[#B23A2E] focus:ring-[#B23A2E] mt-0.5"
+                              className="size-4 rounded-none border-2 border-black bg-white text-[#E60012] focus:ring-0 mt-0.5"
                             />
-                            <div className="grid gap-1.5 leading-none">
+                            <div className="grid gap-1 leading-none">
                               <label
                                 htmlFor="readinessConsent"
-                                className="text-xs font-medium text-[#6B6862] leading-relaxed cursor-pointer select-none"
+                                className="text-xs font-bold text-black leading-relaxed cursor-pointer select-none"
                               >
-                                Saya siap mengikuti JPER Community apabila diterima di SMKN 1 Majalaya
+                                Saya siap mengikuti kegiatan JPER Community apabila diterima di SMKN 1 Majalaya.
                               </label>
                             </div>
                           </div>
@@ -597,28 +650,35 @@ export default function RegisterPage() {
                       )}
 
                       <Field>
-                        <FieldLabel htmlFor="alasanIkut">Alasan mengikuti ekskul</FieldLabel>
+                        <FieldLabel htmlFor="alasanIkut" className="text-xs font-black uppercase tracking-wider text-black">
+                          Alasan Mengikuti Ekskul
+                        </FieldLabel>
                         <textarea
                           id="alasanIkut"
                           value={form.alasanIkut}
                           onChange={(event) => setForm((prev) => ({ ...prev, alasanIkut: event.target.value }))}
                           rows={4}
-                          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                          className="w-full border-2 border-black bg-zinc-50 p-3 text-xs font-bold text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                           required
                           disabled={isSubmitting}
+                          placeholder="Jelaskan motivasi dan alasan Anda mengikuti JPER Community (minimal 25 karakter)..."
                         />
-                        <FieldDescription>
-                          Minimal 25 karakter. Saat ini {form.alasanIkut.length} karakter.
+                        <FieldDescription className="text-[10px] font-bold uppercase text-zinc-500">
+                          Minimal 25 karakter. Saat ini: <span className="text-[#E60012] font-black">{form.alasanIkut.length}</span> karakter.
                         </FieldDescription>
                       </Field>
 
-                      {errorMessage && <FieldError>{errorMessage}</FieldError>}
+                      {errorMessage && (
+                        <FieldError className="text-xs text-white bg-[#E60012] border-2 border-black p-3 shadow-[3px_3px_0px_#111] font-black uppercase tracking-tight">
+                          {errorMessage}
+                        </FieldError>
+                      )}
 
-                      <Field>
+                      <Field className="pt-2">
                         <button
                           type="button"
                           onClick={handleNextStep}
-                          className={cn(buttonVariants({ size: "lg" }), "w-full rounded-lg mt-2")}
+                          className="w-full border-2 border-black bg-[#E60012] text-white py-3.5 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_#FFC700] hover:bg-[#FFC700] hover:text-black hover:shadow-[5px_5px_0px_#111] transition-all duration-150 active:translate-x-1 active:translate-y-1 active:shadow-none"
                         >
                           Lanjutkan ke Akun SSO (Step 2) →
                         </button>
@@ -626,25 +686,27 @@ export default function RegisterPage() {
                     </>
                   ) : (
                     <>
-                      <div className="border border-green-500/20 bg-green-500/5 rounded-xl p-4 space-y-3">
-                        <div className="flex items-center justify-between">
+                      <div className="border-2 border-black bg-[#FAF9F5] p-4 shadow-[4px_4px_0px_#111] space-y-3">
+                        <div className="flex items-center justify-between border-b-2 border-black pb-2">
                           <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-xs font-mono font-bold tracking-wider text-green-600 uppercase">AKUN SSO JPER DIHASILKAN</span>
+                            <div className="size-2.5 rounded-full bg-[#E60012] animate-ping" />
+                            <span className="text-xs font-mono font-black tracking-wider text-black uppercase">AKUN SSO JPER DIHASILKAN</span>
                           </div>
-                          <span className="text-[10px] bg-green-500/10 text-green-600 font-semibold px-2 py-0.5 rounded">Resmi</span>
+                          <span className="text-[10px] bg-[#FFC700] text-black font-black uppercase px-2 py-0.5 border border-black">
+                            RESMI
+                          </span>
                         </div>
-                        <p className="text-[11px] text-[#6B6862] leading-relaxed">
+                        <p className="text-xs font-medium text-zinc-800 leading-relaxed">
                           Berikut adalah alamat email SSO resmi Anda untuk JPER Community. Salin email ini dan buatlah password Anda sendiri di bawah.
                         </p>
                         
-                        <div className="bg-[#FAF9F6] border border-[#E4E1DA] rounded-lg p-2.5 space-y-1.5 font-mono text-xs">
+                        <div className="bg-white border-2 border-black p-3 space-y-2 font-mono text-xs shadow-[2px_2px_0px_#111]">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[10px] text-[#6B6862]">EMAIL SSO ANDA (Dapat Disesuaikan):</span>
+                            <span className="text-[10px] font-bold text-zinc-600">EMAIL SSO ANDA:</span>
                             <button
                               type="button"
                               onClick={() => copyToClipboard(form.email, "Email SSO")}
-                              className="text-[#B23A2E] hover:underline text-[10px] font-bold"
+                              className="border border-black bg-[#E60012] text-white px-2 py-0.5 text-[10px] font-black uppercase shadow-[1px_1px_0px_#111] hover:bg-[#FFC700] hover:text-black"
                             >
                               Copy
                             </button>
@@ -656,17 +718,16 @@ export default function RegisterPage() {
                             onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
                             required
                             disabled={isSubmitting}
-                            className="bg-white border-[#E4E1DA] font-mono text-xs font-bold text-[#1C1B1A]"
+                            className="bg-zinc-50 border-2 border-black font-mono text-xs font-black text-black h-9"
                             placeholder="nama@shokunin.jper.my.id"
                           />
-                          <p className="text-[10px] text-[#6B6862] font-sans">
-                            Jika nama depan Anda Muhammad atau memiliki konflik nama, Anda dapat mengubah alamat email di atas.
-                          </p>
                         </div>
                       </div>
 
                       <Field>
-                        <FieldLabel htmlFor="password">Buat Password Baru</FieldLabel>
+                        <FieldLabel htmlFor="password" className="text-xs font-black uppercase tracking-wider text-black">
+                          Buat Password Baru
+                        </FieldLabel>
                         <Input
                           id="password"
                           type="password"
@@ -674,12 +735,15 @@ export default function RegisterPage() {
                           onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
                           required
                           disabled={isSubmitting}
-                          placeholder="Masukkan password yang kuat"
+                          placeholder="Masukkan password yang kuat (minimal 8 karakter)"
+                          className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                         />
                       </Field>
 
                       <Field>
-                        <FieldLabel htmlFor="confirmPassword">Konfirmasi Password</FieldLabel>
+                        <FieldLabel htmlFor="confirmPassword" className="text-xs font-black uppercase tracking-wider text-black">
+                          Konfirmasi Password
+                        </FieldLabel>
                         <Input
                           id="confirmPassword"
                           type="password"
@@ -687,30 +751,38 @@ export default function RegisterPage() {
                           onChange={(event) => setForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
                           required
                           disabled={isSubmitting}
-                          placeholder="Ketik ulang password"
+                          placeholder="Ketik ulang password baru Anda"
+                          className="border-2 border-black bg-zinc-50 text-xs font-bold h-10 text-black shadow-[2px_2px_0px_#111] focus:bg-white focus:border-[#E60012] focus:ring-0"
                         />
                       </Field>
 
-                      {errorMessage && <FieldError>{errorMessage}</FieldError>}
-                      {successMessage && (
-                        <FieldDescription className="text-primary">{successMessage}</FieldDescription>
+                      {errorMessage && (
+                        <FieldError className="text-xs text-white bg-[#E60012] border-2 border-black p-3 shadow-[3px_3px_0px_#111] font-black uppercase tracking-tight">
+                          {errorMessage}
+                        </FieldError>
                       )}
 
-                      <div className="grid gap-2 sm:grid-cols-2 mt-2">
+                      {successMessage && (
+                        <div className="border-2 border-black bg-[#FFC700] p-3.5 text-xs font-black uppercase text-black shadow-[3px_3px_0px_#111]">
+                          {successMessage}
+                        </div>
+                      )}
+
+                      <div className="grid gap-3 sm:grid-cols-2 mt-2">
                         <button
                           type="button"
                           onClick={() => setStep(1)}
-                          className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full rounded-lg")}
+                          className="border-2 border-black bg-white text-black py-3.5 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#111] hover:bg-zinc-100 transition-all"
                           disabled={isSubmitting}
                         >
                           ← Kembali ke Data Diri
                         </button>
                         <button
                           type="submit"
-                          className={cn(buttonVariants({ size: "lg" }), "w-full rounded-lg")}
+                          className="border-2 border-black bg-[#E60012] text-white py-3.5 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0px_#FFC700] hover:bg-[#FFC700] hover:text-black hover:shadow-[5px_5px_0px_#111] transition-all duration-150 active:translate-x-1 active:translate-y-1 active:shadow-none"
                           disabled={isSubmitting}
                         >
-                          {isSubmitting ? "Memproses..." : "Selesaikan Pendaftaran"}
+                          {isSubmitting ? "Memproses..." : "Selesaikan Pendaftaran →"}
                         </button>
                       </div>
                     </>
@@ -720,25 +792,39 @@ export default function RegisterPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-destructive/20 bg-destructive/5">
-            <CardHeader>
-              <CardDescription className="flex items-center gap-2 text-destructive">
-                <BadgeCheck className="size-4" />
-                Status
-              </CardDescription>
-              <CardTitle className="text-2xl tracking-[-0.03em]">Aturan pendaftaran aktif.</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-foreground">
-              <div className="flex items-center gap-2">• 2027-2028 (Calon Siswa): Asal SMP, centang kesiapan</div>
-              <div className="flex items-center gap-2">• 2024-2026 (Siswa Aktif): NIS (9 digit), NISN (10 digit), Kelas, Jurusan, Asal Sekolah</div>
-              <div className="flex items-center gap-2">• 2019-2023 (Alumni): Tempat & Tanggal Lahir, tanpa data sekolah</div>
-            </CardContent>
+          {/* RIGHT SIDE: STATUS & ATURAN PENDAFTARAN */}
+          <Card className="border-2 border-black bg-[#FFC700] p-6 shadow-[6px_6px_0px_#111] space-y-4 rounded-none h-fit">
+            <div className="border-b-2 border-black pb-3 space-y-1">
+              <span className="bg-black text-[#FFC700] px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-widest -skew-x-6 border border-black shadow-[2px_2px_0px_#E60012]">
+                ATURAN DIKECUALIKAN PER ANGKATAN
+              </span>
+              <CardTitle className="font-heading text-xl font-black uppercase text-black mt-2">
+                Persyaratan Formulir Pendaftaran
+              </CardTitle>
+            </div>
+
+            <div className="space-y-3 text-xs font-bold uppercase tracking-tight text-black leading-relaxed">
+              <div className="border-2 border-black bg-white p-3 shadow-[3px_3px_0px_#111]">
+                <div className="font-black text-[#E60012] mb-0.5">★ 2027–2028 (Calon Siswa SMP):</div>
+                <div>Asal SMP &amp; Centang Pernyataan Kesiapan Wajib</div>
+              </div>
+
+              <div className="border-2 border-black bg-white p-3 shadow-[3px_3px_0px_#111]">
+                <div className="font-black text-black mb-0.5">★ 2024–2026 (Siswa Aktif SMKN 1):</div>
+                <div>NIS (9 Digit), NISN (10 Digit), Kelas, Jurusan &amp; Asal Sekolah</div>
+              </div>
+
+              <div className="border-2 border-black bg-white p-3 shadow-[3px_3px_0px_#111]">
+                <div className="font-black text-zinc-700 mb-0.5">★ 2019–2023 (Alumni):</div>
+                <div>Tempat &amp; Tanggal Lahir (Tanpa Data Sekolah Tambahan)</div>
+              </div>
+            </div>
           </Card>
         </section>
       </div>
 
       {copiedText && (
-        <div className="fixed bottom-5 right-5 z-50 bg-[#1C1B1A] text-[#FAF9F6] text-[11px] font-mono px-3.5 py-2 rounded-lg shadow-lg border border-white/10">
+        <div className="fixed bottom-5 right-5 z-50 border-2 border-black bg-[#FFC700] text-black text-xs font-mono font-black uppercase px-4 py-2.5 shadow-[4px_4px_0px_#111]">
           {copiedText}
         </div>
       )}

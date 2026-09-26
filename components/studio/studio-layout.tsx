@@ -7,6 +7,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants, Button } from "@/components/ui/button"
 import { useIdleTimeout } from "@/hooks/use-idle-timeout"
+import { clearSessionCookie } from "@/lib/session-cookie"
 
 interface SidebarItem {
   label: string
@@ -74,7 +75,7 @@ export function StudioLayout({ children, activeTab, setActiveTab, adminName, ava
     if (typeof window !== "undefined") {
       localStorage.removeItem("jper_mock_session")
     }
-    document.cookie = "jper_session=; path=/; max-age=0; SameSite=Lax"
+    clearSessionCookie()
     window.location.href = window.location.hostname.includes("studio.") ? "https://studio.jper.my.id/login" : "/studio/login"
   }
 

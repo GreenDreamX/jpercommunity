@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { firebaseAuth } from "@/lib/firebase/client"
 import { updatePassword, updateEmail, deleteUser, updateProfile } from "firebase/auth"
+import { clearSessionCookie } from "@/lib/session-cookie"
 
 const PRESET_AVATARS = [
   "https://api.dicebear.com/7.x/adventurer/svg?seed=Sakura",
@@ -578,7 +579,7 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
 
       // 3. Clear sessions
       localStorage.removeItem("jper_mock_session")
-      document.cookie = "jper_session=; path=/; max-age=0; SameSite=Lax"
+      clearSessionCookie()
       
       alert("Akun Anda telah berhasil dihapus secara permanen. Mengalihkan ke Landing Page...")
       window.location.href = "/"
@@ -640,34 +641,40 @@ export function ProfileTab({ firebaseToken }: ProfileTabProps) {
   }
 
   return (
-    <div className="space-y-6 text-[#1C1B1A]">
+    <div className="space-y-6 text-black">
       {/* Tab Header title */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-2 border-black bg-white p-5 shadow-[4px_4px_0px_#111]">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[#1C1B1A] flex items-center gap-2">
-            <User className="size-5 text-[#B23A2E]" />
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-block bg-black text-[#FFC700] px-2 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider -skew-x-6 border border-black shadow-[2px_2px_0px_#E60012]">
+              プロフィール • ACCOUNT & PROFILE
+            </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black flex items-center gap-2">
             Profil & Pengaturan Akun
           </h2>
-          <p className="text-xs text-[#6B6862]">Personalisasi kartu digital Anda dan kelola preferensi data diri secara aman.</p>
+          <p className="text-xs font-semibold text-zinc-600 mt-1">
+            Personalisasi kartu digital Anda dan kelola preferensi data diri secara aman.
+          </p>
         </div>
-        <Link href="/direktori" target="_blank">
-          <Button size="sm" variant="outline" className="h-8 border-[#E4E1DA] text-xs gap-1.5 font-bold rounded-lg">
+        <Link href="/direktori" target="_blank" className="shrink-0">
+          <Button size="sm" className="h-10 border-2 border-black bg-[#E60012] text-white hover:bg-black hover:text-[#FFC700] text-xs gap-1.5 font-black uppercase rounded-none shadow-[3px_3px_0px_#111]">
             Lihat Direktori Publik
-            <ArrowUpRight className="size-3.5" />
+            <ArrowUpRight className="size-4" />
           </Button>
         </Link>
       </div>
 
       {/* SUB TABS NAVIGATION */}
-      <div className="border-b border-[#E4E1DA] flex gap-1 overflow-x-auto pb-px scrollbar-none">
+      <div className="border-b-2 border-black flex gap-2 overflow-x-auto pb-2 no-scrollbar">
         {subTabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setActiveSubTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-wider transition-all -skew-x-6 border-2 border-black whitespace-nowrap ${
               activeSubTab === t.id
-                ? "border-[#B23A2E] text-[#B23A2E] bg-[#B23A2E]/5"
-                : "border-transparent text-[#6B6862] hover:text-[#1C1B1A] hover:bg-stone-100"
+                ? "bg-[#E60012] text-white shadow-[3px_3px_0px_#FFC700]"
+                : "bg-white text-black hover:bg-[#FFC700] shadow-[2px_2px_0px_#111]"
             }`}
           >
             {t.icon}

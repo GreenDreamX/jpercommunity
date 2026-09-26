@@ -1339,10 +1339,10 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
 
   if (authLoading || loading) {
     return (
-      <main className="min-h-svh bg-[#FAF9F6] px-6 py-12 text-[#1C1B1A]">
-        <div className="mx-auto w-full max-w-4xl text-center space-y-3 font-mono text-xs text-[#6B6862]">
-          <Loader2 className="size-6 animate-spin mx-auto text-[#2B3A55]" />
-          Memuat kelas dan silabus...
+      <main className="min-h-svh bg-white p5-subtle-grid px-6 py-12 text-black flex items-center justify-center">
+        <div className="border-2 border-black bg-white p-6 shadow-[6px_6px_0px_#111] text-center space-y-3 font-mono text-xs font-black uppercase tracking-wider text-black">
+          <Loader2 className="size-6 animate-spin mx-auto text-[#E60012]" />
+          <span>Memuat Kelas dan Silabus...</span>
         </div>
       </main>
     )
@@ -1350,12 +1350,12 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
 
   if (error || !course) {
     return (
-      <main className="min-h-svh bg-[#FAF9F6] px-6 py-12 text-[#1C1B1A]">
-        <div className="mx-auto w-full max-w-md text-center space-y-4 p-6 border border-[#E4E1DA] rounded-xl bg-[#FAF9F6]">
-          <AlertCircle className="size-8 text-[#B23A2E] mx-auto" />
-          <div className="text-sm font-semibold text-[#B23A2E]">{error ?? "Kelas tidak ditemukan."}</div>
-          <Link href="/lms" className={cn(buttonVariants({ variant: "outline" }), "rounded-lg border-[#E4E1DA] text-xs")}>
-            Kembali ke Dashboard LMS
+      <main className="min-h-svh bg-white p5-subtle-grid px-6 py-12 text-black flex items-center justify-center">
+        <div className="mx-auto w-full max-w-md text-center space-y-4 p-6 border-2 border-black bg-white shadow-[8px_8px_0px_#111]">
+          <AlertCircle className="size-8 text-[#E60012] mx-auto" />
+          <div className="text-sm font-black uppercase text-[#E60012]">{error ?? "Kelas tidak ditemukan."}</div>
+          <Link href="/lms" className="inline-block border-2 border-black bg-[#E60012] text-white px-4 py-2 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#FFC700] hover:bg-[#FFC700] hover:text-black">
+            ← Kembali ke Dashboard LMS
           </Link>
         </div>
       </main>
@@ -1363,23 +1363,26 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <main className="min-h-svh bg-[#FAF9F6] text-[#1C1B1A] pb-16">
+    <main className="min-h-svh bg-white p5-subtle-grid text-black pb-16">
       {/* Top Header Navigation */}
-      <div className="border-b border-[#E4E1DA] bg-[#FAF9F6] px-6 py-4 md:px-8 lg:px-10">
+      <div className="border-b-2 border-black bg-[#FAF9F5] px-6 py-4 md:px-8 lg:px-10 shadow-[0px_3px_0px_#111]">
         <div className="mx-auto flex w-full max-w-5xl items-center gap-4">
           <Link
             href="/lms"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "icon-sm" }),
-              "rounded-lg border-[#E4E1DA] text-[#6B6862] hover:text-[#1C1B1A]"
-            )}
+            className="flex items-center justify-center border-2 border-black bg-white p-2 text-black shadow-[2px_2px_0px_#111] hover:bg-[#E60012] hover:text-white transition-all"
+            title="Kembali ke Dashboard LMS"
           >
             <ArrowLeft className="size-4" />
           </Link>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#1C1B1A]">{course.title}</h1>
-            <p className="text-[11px] text-[#6B6862] flex items-center gap-1.5 mt-0.5">
-              <Layers className="size-3 text-[#2B3A55]" /> LMS JPER Community • {weeks.length} Pertemuan Silabus
+            <div className="flex items-center gap-2">
+              <span className="inline-block bg-[#E60012] text-white px-2 py-0.5 text-[9px] font-mono font-black uppercase tracking-widest -skew-x-6 border border-black shadow-[1px_1px_0px_#FFC700]">
+                COURSE DETAIL
+              </span>
+            </div>
+            <h1 className="font-heading text-xl md:text-2xl font-black uppercase tracking-tight text-black mt-0.5">{course.title}</h1>
+            <p className="text-[10px] font-mono font-bold uppercase text-zinc-600 flex items-center gap-1.5 mt-0.5">
+              <Layers className="size-3 text-[#E60012]" /> LMS JPER Community • {weeks.length} PERTEMUAN SILABUS
             </p>
           </div>
         </div>
@@ -1389,66 +1392,71 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
         {/* Banner Section */}
         {course.image_url && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={course.image_url} alt={course.title} className="w-full h-44 object-cover rounded-xl border border-[#E4E1DA]" />
+          <img src={course.image_url} alt={course.title} className="w-full h-48 md:h-56 object-cover border-2 border-black shadow-[6px_6px_0px_#111]" />
         )}
 
         {course.description && (
-          <div className="p-4 rounded-xl bg-white border border-[#E4E1DA] text-xs text-[#6B6862] leading-relaxed">
+          <div className="p-5 border-2 border-black bg-white shadow-[4px_4px_0px_#111] text-xs font-bold text-black leading-relaxed">
             {course.description}
           </div>
         )}
 
         {/* Weeks Accordion / List */}
-        <div className="space-y-4">
-          <h2 className="text-sm font-bold text-[#1C1B1A] flex items-center gap-2">
-            <Layers className="size-4 text-[#2B3A55]" /> Silabus Materi Per Pertemuan
-          </h2>
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center justify-between border-b-2 border-black pb-3">
+            <h2 className="font-heading text-lg font-black uppercase tracking-tight text-black flex items-center gap-2">
+              <Layers className="size-4 text-[#E60012]" /> Silabus Pertemuan &amp; Modul
+            </h2>
+            <span className="font-mono text-xs font-black bg-black text-[#FFC700] px-2.5 py-0.5 border border-black">
+              {weeks.length} SESI
+            </span>
+          </div>
 
           {weeks.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-[#E4E1DA] rounded-xl bg-white text-xs text-[#6B6862]">
+            <div className="border-2 border-black bg-white p-12 text-center text-xs font-black uppercase text-zinc-600 shadow-[4px_4px_0px_#111]">
               Belum ada pertemuan yang dipublikasikan untuk kelas ini.
             </div>
           ) : (
             weeks.map((w) => {
               const isOpen = openWeekId === w.id
               return (
-                <div key={w.id} className="border border-[#E4E1DA] rounded-xl overflow-hidden bg-white shadow-xs">
+                <div key={w.id} className="border-2 border-black bg-white shadow-[5px_5px_0px_#111] overflow-hidden mb-4">
                   {/* Week Accordion Bar */}
                   <div
                     onClick={() => setOpenWeekId(isOpen ? null : w.id)}
-                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#FAF9F6] transition-colors select-none"
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#FAF9F5] transition-colors select-none border-b-2 border-black"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#2B3A55] text-white font-mono text-xs font-bold shadow-xs">
-                        {w.week_number}
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex items-center justify-center w-9 h-9 border-2 border-black bg-[#E60012] text-white font-mono text-xs font-black -skew-x-6 shadow-[2px_2px_0px_#FFC700]">
+                        <span className="skew-x-6">{w.week_number}</span>
                       </div>
                       <div>
-                        <h3 className="text-xs font-bold text-[#1C1B1A]">{w.title}</h3>
-                        <p className="text-[10px] text-[#6B6862] font-mono mt-0.5">
-                          Pertemuan Ke-{w.week_number} • {w.modules?.length ?? 0} Modul Konten
+                        <h3 className="font-heading text-sm font-black uppercase text-black">{w.title}</h3>
+                        <p className="text-[10px] text-zinc-600 font-mono font-bold uppercase mt-0.5">
+                          PERTEMUAN KE-{w.week_number} • {w.modules?.length ?? 0} MODUL KONTEN
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       {w.is_locked && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 flex items-center gap-1 font-semibold">
-                          <Lock className="size-3" /> Terkunci
+                        <span className="text-[10px] font-mono font-black uppercase px-2.5 py-0.5 bg-red-100 text-[#E60012] border border-black flex items-center gap-1 -skew-x-6">
+                          <Lock className="size-3 text-[#E60012] skew-x-6" /> TERKUNCI
                         </span>
                       )}
-                      {isOpen ? <ChevronUp className="size-4 text-[#6B6862]" /> : <ChevronDown className="size-4 text-[#6B6862]" />}
+                      {isOpen ? <ChevronUp className="size-5 text-black" /> : <ChevronDown className="size-5 text-black" />}
                     </div>
                   </div>
 
                   {/* Week Content Drawer */}
                   {isOpen && (
-                    <div className="p-4 bg-[#FAF9F6] border-t border-[#E4E1DA] space-y-4">
+                    <div className="p-5 bg-[#FAF9F5] space-y-4">
                       {w.is_locked ? (
-                        <div className="p-4 rounded-xl bg-red-50/60 border border-red-200 text-xs text-red-800 space-y-1">
-                          <div className="font-bold flex items-center gap-1.5">
-                            <Lock className="size-4 text-red-600" /> Sesi Pertemuan Ini Dikunci
+                        <div className="p-4 border-2 border-black bg-red-50 text-xs font-bold text-red-900 space-y-1 shadow-[3px_3px_0px_#111]">
+                          <div className="font-black uppercase flex items-center gap-2 text-[#E60012]">
+                            <Lock className="size-4 text-[#E60012]" /> Sesi Pertemuan Ini Dikunci
                           </div>
-                          <p className="text-[11px] text-[#6B6862]">
+                          <p className="text-xs text-zinc-700">
                             Sesi ini dikunci oleh pembina. Silakan selesaikan pertemuan sebelumnya atau hubungi pengurus.
                           </p>
                         </div>
@@ -1465,7 +1473,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                               />
                             ))
                           ) : (
-                            <div className="text-center py-6 text-xs text-[#6B6862] italic font-mono">
+                            <div className="border-2 border-black bg-white p-6 text-center text-xs font-bold uppercase text-zinc-500 italic shadow-[2px_2px_0px_#111]">
                               Belum ada modul di pertemuan ini.
                             </div>
                           )}

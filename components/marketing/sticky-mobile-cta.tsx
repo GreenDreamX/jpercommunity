@@ -1,7 +1,6 @@
 "use client"
 
-import Link from "next/link"
-import { ArrowRight, UserPlus } from "lucide-react"
+import { ArrowRight, UserPlus, Star } from "lucide-react"
 import { motion } from "framer-motion"
 
 export function StickyMobileCta() {
@@ -10,24 +9,30 @@ export function StickyMobileCta() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 1, duration: 0.3 }}
-      className="fixed bottom-3 left-3 right-3 z-40 md:hidden bg-[#1C1B1A]/95 backdrop-blur-md border border-white/20 p-3 rounded-2xl shadow-2xl flex items-center justify-between gap-3 text-white"
+      className="fixed bottom-3 left-3 right-3 z-40 md:hidden bg-white border-2 border-black p-3 shadow-[5px_5px_0px_#111] flex items-center justify-between gap-3 text-black"
     >
       <div className="flex items-center gap-2.5 min-w-0">
-        <div className="size-9 rounded-xl bg-[#B23A2E] flex items-center justify-center shrink-0">
-          <UserPlus className="size-4 text-white" />
+        <div className="size-9 bg-[#E60012] border-2 border-black flex items-center justify-center shrink-0 text-white shadow-[2px_2px_0px_#FFC700] -skew-x-6">
+          <UserPlus className="size-4 skew-x-6" />
         </div>
         <div className="min-w-0">
-          <div className="text-xs font-bold truncate">Ekstrakurikuler JPER</div>
-          <div className="text-[10px] text-stone-300 truncate">SMKN 1 Majalaya</div>
+          <div className="text-xs font-black uppercase tracking-tight flex items-center gap-1">
+            <span>JPER COMMUNITY</span>
+            <span className="text-[#E60012]">★</span>
+          </div>
+          <div className="text-[10px] font-bold text-zinc-600 truncate">SMKN 1 Majalaya</div>
         </div>
       </div>
 
-      <Link
-        href="/register"
-        className="bg-[#B23A2E] text-white hover:bg-[#B23A2E]/90 text-xs font-bold px-4 py-2 rounded-xl shadow-xs shrink-0 flex items-center gap-1 border-none cursor-pointer"
+      <a
+        href="https://forms.jper.my.id/register"
+        target="_blank"
+        rel="noreferrer"
+        className="bg-[#E60012] text-white hover:bg-[#C0000F] text-xs font-black uppercase tracking-wider px-4 py-2 border-2 border-black shadow-[2px_2px_0px_#FFC700] shrink-0 flex items-center gap-1.5 cursor-pointer active:translate-y-0.5 active:shadow-none"
       >
-        Daftar <ArrowRight className="size-3.5" />
-      </Link>
+        Daftar <ArrowRight className="size-3.5 text-[#FFC700]" />
+      </a>
     </motion.div>
   )
 }
+

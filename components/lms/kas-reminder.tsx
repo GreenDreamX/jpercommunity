@@ -45,9 +45,9 @@ export function KasReminder({ token }: KasReminderProps) {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-[#E4E1DA] bg-[#FAF9F6] px-4 py-3 flex items-center gap-2 text-[11px] font-mono text-[#6B6862] animate-pulse">
-        <Coins className="size-4 shrink-0" />
-        <span>Mengecek status iuran kas...</span>
+      <div className="border-2 border-black bg-white px-4 py-3 flex items-center gap-2 text-xs font-mono font-bold text-zinc-600 shadow-[3px_3px_0px_#111] animate-pulse">
+        <Coins className="size-4 shrink-0 text-black" />
+        <span>Mengecek status iuran kas anggota...</span>
       </div>
     )
   }
@@ -58,16 +58,19 @@ export function KasReminder({ token }: KasReminderProps) {
   // Semua lunas
   if (status.unpaidWeeks.length === 0) {
     return (
-      <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <CheckCircle2 className="size-5 text-emerald-600 shrink-0" />
+      <div className="border-2 border-black bg-emerald-400 p-4 flex items-center justify-between gap-3 shadow-[4px_4px_0px_#111] text-black">
+        <div className="flex items-center gap-3">
+          <CheckCircle2 className="size-6 text-black shrink-0 stroke-[2.5]" />
           <div>
-            <div className="text-xs font-bold text-emerald-800">Iuran Kas Lunas 🎉</div>
-            <div className="text-[10px] text-emerald-700 font-mono">
-              Semua {status.paidWeeks.length} iuran mingguan sudah terbayar. Terima kasih!
+            <div className="text-sm font-black uppercase tracking-tight">Iuran Kas Lunas 🎉</div>
+            <div className="text-xs font-mono font-bold text-zinc-900 mt-0.5">
+              Semua {status.paidWeeks.length} iuran mingguan telah terbayar lunas. Terima kasih atas partisipasinya!
             </div>
           </div>
         </div>
+        <span className="hidden sm:inline-block bg-black text-[#FFC700] text-[10px] font-mono font-black uppercase px-2 py-0.5 border border-black -skew-x-6 shrink-0">
+          STATUS: LUNAS
+        </span>
       </div>
     )
   }
@@ -77,45 +80,45 @@ export function KasReminder({ token }: KasReminderProps) {
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount)
 
   return (
-    <div className="rounded-xl border border-amber-300 bg-amber-50 overflow-hidden">
+    <div className="border-2 border-black bg-[#FFC700] text-black shadow-[4px_4px_0px_#111] overflow-hidden">
       {/* Main row */}
       <button
         onClick={() => setExpanded((prev) => !prev)}
-        className="w-full px-4 py-3 flex items-center justify-between gap-2 hover:bg-amber-100/50 transition-colors"
+        className="w-full px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-[#FFC700]/90 transition-colors"
       >
-        <div className="flex items-center gap-2.5">
-          <AlertTriangle className="size-5 text-amber-600 shrink-0" />
+        <div className="flex items-center gap-3">
+          <div className="size-8 border-2 border-black bg-black text-[#FFC700] flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#fff]">
+            <AlertTriangle className="size-4 text-[#FFC700]" />
+          </div>
           <div className="text-left">
-            <div className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-              <Coins className="size-3.5" />
-              Iuran Kas Belum Lunas
-              <span className="bg-amber-600 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full ml-1">
-                {status.totalUnpaid} minggu
+            <div className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
+              <span>Tunggakan Iuran Kas Ekskul</span>
+              <span className="bg-[#E60012] text-white text-[10px] font-mono font-black px-2 py-0.5 border border-black -skew-x-6">
+                {status.totalUnpaid} MINGGU
               </span>
             </div>
-            <div className="text-[10px] text-amber-800 font-mono mt-0.5">
-              Total tunggakan:{" "}
-              <span className="font-bold">{formatCurrency(status.totalTunggakan)}</span>
-              {" "}· Rp {(status.kasPerWeek ?? 2000).toLocaleString("id-ID")} / minggu
+            <div className="text-xs font-mono font-bold text-zinc-900 mt-0.5">
+              Total Tunggakan: <span className="font-black text-[#E60012] underline">{formatCurrency(status.totalTunggakan)}</span>
+              {" "}• Rp {(status.kasPerWeek ?? 2000).toLocaleString("id-ID")} / minggu
             </div>
           </div>
         </div>
-        <div className="shrink-0 text-amber-600">
-          {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+        <div className="shrink-0 text-black border-2 border-black bg-white p-1 shadow-[1px_1px_0px_#111]">
+          {expanded ? <ChevronUp className="size-4 stroke-[3]" /> : <ChevronDown className="size-4 stroke-[3]" />}
         </div>
       </button>
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="border-t border-amber-200 bg-amber-50/70 px-4 py-3 space-y-2.5">
-          <div className="text-[10px] font-mono font-bold text-amber-800 uppercase tracking-wider">
+        <div className="border-t-2 border-black bg-white p-4 space-y-3">
+          <div className="text-[11px] font-mono font-black text-black uppercase tracking-wider">
             Minggu yang Belum Dibayar:
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {status.unpaidWeeks.map((w) => (
               <span
                 key={w}
-                className="bg-amber-600/15 border border-amber-400/40 text-amber-900 text-[11px] font-mono font-bold px-2 py-0.5 rounded"
+                className="bg-[#E60012] text-white text-xs font-mono font-black px-2.5 py-1 border border-black -skew-x-6 shadow-[2px_2px_0px_#111]"
               >
                 Minggu {w}
               </span>
@@ -124,31 +127,31 @@ export function KasReminder({ token }: KasReminderProps) {
 
           {status.paidWeeks.length > 0 && (
             <>
-              <div className="text-[10px] font-mono font-bold text-emerald-800 uppercase tracking-wider pt-1">
+              <div className="text-[11px] font-mono font-black text-black uppercase tracking-wider pt-2 border-t-2 border-black/10">
                 Minggu yang Sudah Dibayar:
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {status.paidWeeks.map((w) => (
                   <span
                     key={w}
-                    className="bg-emerald-500/10 border border-emerald-400/30 text-emerald-800 text-[11px] font-mono font-bold px-2 py-0.5 rounded flex items-center gap-1"
+                    className="bg-emerald-400 text-black text-xs font-mono font-black px-2.5 py-1 border border-black -skew-x-6 flex items-center gap-1 shadow-[2px_2px_0px_#111]"
                   >
-                    <CheckCircle2 className="size-3" /> Minggu {w}
+                    <CheckCircle2 className="size-3 stroke-[3]" /> Minggu {w}
                   </span>
                 ))}
               </div>
             </>
           )}
 
-          <div className="pt-1 text-[10px] text-amber-700 font-mono border-t border-amber-200">
-            💡 Hubungi bendahara atau ketua untuk melunasi iuran. Setiap pembayaran dicatat di sistem Studio.
+          <div className="pt-2 text-xs font-bold text-zinc-700 font-mono border-t-2 border-black/10">
+            💡 Pembayaran iuran kas dapat diserahkan ke Bendahara Ekskul. Setiap transaksi akan langsung di-update oleh pengurus di panel Studio.
           </div>
 
           <button
             onClick={fetchStatus}
-            className="flex items-center gap-1 text-[10px] font-mono text-amber-700 hover:text-amber-900 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-mono font-black text-black hover:text-[#E60012] transition-colors pt-1"
           >
-            <RefreshCw className="size-3" /> Refresh status
+            <RefreshCw className="size-3.5" /> Refresh Status Kas
           </button>
         </div>
       )}

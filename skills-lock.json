@@ -5,7 +5,20 @@
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
-      "computedHash": "4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336"
+      "computedHash": "106acf230014cbb43ca34e6410371321b56ca742f9ee0442e8ec05bf02eb0384"
+    },
+    "ios-design": {
+      "source": "uizze.sh",
+      "sourceUrl": "https://uizze.sh/",
+      "sourceType": "well-known",
+      "computedHash": "0a52024d5bfa0e85e3249e6818e9bf781c87ca5037299027dcf8ad043e190595",
+      "wellKnownDigest": "sha256:b1412b4991600f13ff2aec03ae187cc8ead48090d0105acfef3a6982b05ef92d"
+    },
+    "playwright-cli": {
+      "source": "microsoft/playwright-cli",
+      "sourceType": "github",
+      "skillPath": "skills/playwright-cli/SKILL.md",
+      "computedHash": "09eed98ea76073cf14ca967ed222db08c42407b4db02149a7b4be04b2736ae6f"
     },
     "supabase": {
       "source": "supabase/agent-skills",
@@ -24,6 +37,19 @@
       "sourceType": "github",
       "skillPath": "skills/supabase-server/SKILL.md",
       "computedHash": "b430ad2b08734bba89f2168c201bc7e090729d38a0206eebba338a7a5c1de3d6"
+    },
+    "ui-taste": {
+      "source": "uizze.sh",
+      "sourceUrl": "https://uizze.sh/",
+      "sourceType": "well-known",
+      "computedHash": "87972c875fb653a98e50308e873c90697dc2d481d82ac0ee6dc50980bdd9b559",
+      "wellKnownDigest": "sha256:398c2f01b44a792828962a3ea473ddc08a7152f15ad489b2617cad31c9a24baa"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
     }
   }
 }

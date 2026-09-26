@@ -8,6 +8,8 @@ import { buttonVariants, Button } from "@/components/ui/button"
 import { useIdleTimeout } from "@/hooks/use-idle-timeout"
 import { motion } from "framer-motion"
 
+import { clearSessionCookie } from "@/lib/session-cookie"
+
 interface SidebarItem {
   label: string
   value: string
@@ -60,39 +62,42 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
     if (typeof window !== "undefined") {
       localStorage.removeItem("jper_mock_session")
     }
-    document.cookie = "jper_session=; path=/; max-age=0; SameSite=Lax"
+    clearSessionCookie()
     window.location.href = "/login"
   }
 
   useIdleTimeout(confirmLogout, 10 * 60 * 1000)
 
   return (
-    <div className="min-h-svh bg-[#FAF9F6] text-[#1C1B1A] flex flex-col md:flex-row">
+    <div className="min-h-svh bg-white p5-subtle-grid text-black flex flex-col md:flex-row">
       {/* SIDEBAR NAVIGATION */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1DA] bg-[#FAF9F6] p-6 flex flex-col gap-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto no-scrollbar">
-        <div className="flex items-center justify-between md:justify-start gap-2">
-          <div className="flex items-center gap-2.5">
-            <img src="/image/J-PER.png" alt="JPER Community Logo" className="size-7 object-contain" />
-            <span className="font-mono text-sm font-bold tracking-wider">JPER LMS</span>
+      <aside className="w-full md:w-64 border-b-2 md:border-b-0 md:border-r-2 border-black bg-white p-6 flex flex-col gap-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto no-scrollbar shadow-[4px_0px_0px_#111]">
+        <div className="flex items-center justify-between md:justify-start gap-3 border-b-2 border-black pb-4">
+          <div className="flex items-center gap-3">
+            <img src="/image/J-PER.png" alt="JPER Community Logo" className="h-10 w-auto object-contain shrink-0 transition-transform hover:scale-105" />
+            <div>
+              <span className="font-heading text-base font-black tracking-tight uppercase text-black">JPER LMS</span>
+              <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[#E60012] leading-none">MEMBER PORTAL</div>
+            </div>
           </div>
           
           {/* Mobile logout or back to landing */}
           <Link 
             href="/" 
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "md:hidden rounded-lg border-[#E4E1DA] h-8 text-[10px]")}
+            className="md:hidden border-2 border-black bg-white px-3 py-1 text-[10px] font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_#111]"
           >
-            Landing
+            LANDING
           </Link>
         </div>
 
         {/* Sidebar Menu Sections */}
-        <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-4 pb-2 md:pb-0 no-scrollbar">
+        <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-5 pb-2 md:pb-0 no-scrollbar">
           {sections.map((sec) => (
-            <div key={sec.title} className="space-y-1 w-full shrink-0 md:shrink">
-              <div className="hidden md:block text-[9px] font-bold text-[#6B6862]/60 uppercase tracking-widest px-3 py-1 font-mono">
-                {sec.title}
+            <div key={sec.title} className="space-y-1.5 w-full shrink-0 md:shrink">
+              <div className="hidden md:block text-[9px] font-mono font-black text-zinc-500 uppercase tracking-widest px-1 py-0.5">
+                ★ {sec.title}
               </div>
-              <div className="flex flex-row md:flex-col gap-1">
+              <div className="flex flex-row md:flex-col gap-1.5">
                 {sec.items.map((item) => (
                   <motion.button
                     key={item.value}
@@ -100,10 +105,10 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setActiveTab?.(item.value)}
                     className={cn(
-                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap w-full text-left",
+                      "flex items-center gap-2.5 px-3 py-2 text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap w-full text-left border-2",
                       activeTab === item.value
-                        ? "bg-[#B23A2E]/10 text-[#B23A2E] font-semibold border-l-2 border-[#B23A2E] rounded-l-none"
-                        : "text-[#6B6862] hover:bg-[#E4E1DA]/20 hover:text-[#1C1B1A]"
+                        ? "border-black bg-[#E60012] text-white shadow-[3px_3px_0px_#FFC700]"
+                        : "border-transparent text-zinc-700 hover:border-black hover:bg-zinc-100"
                     )}
                   >
                     {item.icon}
@@ -116,54 +121,51 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
         </nav>
 
         {/* Sidebar Footer Controls */}
-        <div className="mt-auto hidden md:flex flex-col gap-2 pt-4 border-t border-[#E4E1DA]/50">
+        <div className="mt-auto hidden md:flex flex-col gap-3 pt-4 border-t-2 border-black">
           {/* Student info */}
           <button 
             onClick={() => setActiveTab?.("profile")}
-            className="w-full text-left py-2.5 px-2 -mx-2 rounded-lg hover:bg-[#E4E1DA]/20 border-b border-[#E4E1DA]/30 flex items-center gap-3 transition-colors group"
+            className="w-full text-left p-3 border-2 border-black bg-[#FAF9F5] shadow-[3px_3px_0px_#111] hover:shadow-[4px_4px_0px_#E60012] flex items-center gap-3 transition-all group cursor-pointer"
           >
-            <div className="size-9 rounded-full overflow-hidden bg-stone-200 text-[#6B6862] flex items-center justify-center shrink-0 border border-[#E4E1DA] group-hover:border-[#B23A2E]/50 transition-colors">
+            <div className="size-9 rounded-full overflow-hidden bg-white text-black flex items-center justify-center shrink-0 border-2 border-black group-hover:bg-[#FFC700] transition-colors">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={studentName} className="size-full object-cover" />
               ) : (
-                <User className="size-4" />
+                <User className="size-4 text-black" />
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[9px] text-[#6B6862] font-mono flex items-center justify-between leading-none">
-                <span className="group-hover:text-[#B23A2E] font-semibold transition-colors">SETTINGS / PROFILE</span>
+              <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[#E60012] flex items-center justify-between leading-none">
+                <span>PROFILE</span>
                 {studentEmail?.endsWith("@shokunin.jper.my.id") && (
-                  <span className="text-[8px] bg-green-500/10 text-green-600 px-1 rounded font-bold font-mono">SSO</span>
+                  <span className="text-[8px] bg-black text-[#FFC700] px-1 font-bold font-mono border border-black">SSO</span>
                 )}
               </div>
-              <div className="text-xs font-bold truncate text-[#1C1B1A] mt-1 group-hover:text-[#B23A2E] transition-colors">{studentName || "Siswa JPER"}</div>
-              <div className="text-[8px] text-[#B23A2E] font-mono font-semibold tracking-wider uppercase mt-0.5 leading-none">
+              <div className="text-xs font-black truncate text-black mt-0.5 group-hover:text-[#E60012] transition-colors">{studentName || "Siswa JPER"}</div>
+              <div className="text-[8px] text-zinc-600 font-mono font-bold tracking-wider uppercase mt-0.5 leading-none truncate">
                 {studentRole === "admin"
-                  ? (angkatan ? `PENGURUS / ADMIN — ANGKATAN ${angkatan}` : "PENGURUS / ADMIN")
+                  ? (angkatan ? `ADMIN • ANGKATAN ${angkatan}` : "ADMIN")
                   : (studentRole === "alumni" || (angkatan && parseInt(angkatan, 10) <= 2023))
-                  ? `ALUMNI — ANGKATAN ${angkatan || ""}`
+                  ? `ALUMNI • ANGKATAN ${angkatan || ""}`
                   : (angkatan && parseInt(angkatan, 10) >= 2027)
-                  ? `CALON SISWA BARU — ANGKATAN ${angkatan}`
-                  : `SISWA AKTIF — ANGKATAN ${angkatan || ""}`}
+                  ? `CALON SISWA • ANGKATAN ${angkatan}`
+                  : `SISWA AKTIF • ANGKATAN ${angkatan || ""}`}
               </div>
             </div>
           </button>
 
           <Link
             href="/"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "w-full rounded-lg border-[#E4E1DA] text-[#6B6862] hover:text-[#1C1B1A] text-xs font-semibold justify-start"
-            )}
+            className="w-full flex items-center justify-center border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_#111] hover:bg-zinc-100 transition-all"
           >
-            <ArrowLeft className="size-4 mr-2" />
+            <ArrowLeft className="size-4 mr-2 text-[#E60012]" />
             Ke Landing Page
           </Link>
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center px-3 py-2 rounded-lg text-xs font-semibold text-[#B23A2E] hover:bg-[#B23A2E]/5 transition-colors text-left"
+            className="w-full flex items-center justify-center px-3 py-2 border-2 border-black bg-white text-[#E60012] font-black uppercase text-xs tracking-wider shadow-[2px_2px_0px_#111] hover:bg-[#E60012] hover:text-white transition-all text-left cursor-pointer"
           >
-            <LogOut className="size-4 mr-2.5" />
+            <LogOut className="size-4 mr-2" />
             Keluar (Logout)
           </button>
         </div>
@@ -171,40 +173,44 @@ export function LmsLayout({ children, activeTab, setActiveTab, studentName, angk
 
       {/* MAIN CONTAINER */}
       <main className="flex-1 p-6 md:p-8 lg:p-10 overflow-y-auto no-scrollbar">
-        <div className="mx-auto max-w-6xl space-y-6">
+        <div className="mx-auto max-w-6xl space-y-8">
           {children}
         </div>
       </main>
 
       {/* LOGOUT CONFIRMATION DIALOG MODAL */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-150">
-          <div className="w-full max-w-sm rounded-xl border border-[#E4E1DA] bg-[#FAF9F6] p-6 shadow-xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#B23A2E]/10 rounded-full text-[#B23A2E]">
-                <AlertTriangle className="size-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-sm border-2 border-black bg-white p-6 shadow-[8px_8px_0px_#111] space-y-4 rounded-none">
+            <div className="flex items-center gap-3 border-b-2 border-black pb-3">
+              <div className="p-2 bg-[#E60012] text-white border-2 border-black -skew-x-6 shadow-[2px_2px_0px_#FFC700]">
+                <AlertTriangle className="size-5 skew-x-6" />
               </div>
-              <h3 className="text-base font-bold text-[#1C1B1A]">Konfirmasi Logout</h3>
+              <div>
+                <span className="bg-black text-[#FFC700] text-[9px] font-mono font-black uppercase tracking-widest px-2 py-0.5 -skew-x-6 border border-black">
+                  警告 • LOGOUT
+                </span>
+                <h3 className="font-heading text-lg font-black uppercase text-black">Konfirmasi Logout</h3>
+              </div>
             </div>
-            <p className="text-xs text-[#6B6862] leading-relaxed">
-              Apakah Anda yakin log out Akun? Sesi belajar Anda akan diakhiri.
+            <p className="text-xs font-bold text-zinc-800 leading-relaxed">
+              Apakah Anda yakin ingin keluar dari Akun? Sesi belajar LMS Anda akan diakhiri.
             </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
                 onClick={() => setShowLogoutModal(false)}
-                className="border-[#E4E1DA] text-xs h-9 rounded-lg font-semibold"
+                className="border-2 border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-wider text-black shadow-[2px_2px_0px_#111] hover:bg-zinc-100"
               >
                 Batal
-              </Button>
-              <Button
-                size="sm"
+              </button>
+              <button
+                type="button"
                 onClick={confirmLogout}
-                className="bg-[#B23A2E] hover:bg-[#B23A2E]/90 text-white text-xs h-9 rounded-lg font-semibold border-none"
+                className="border-2 border-black bg-[#E60012] text-white px-4 py-2 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#FFC700] hover:bg-[#FFC700] hover:text-black transition-all"
               >
-                Ya, Logout
-              </Button>
+                Ya, Logout →
+              </button>
             </div>
           </div>
         </div>

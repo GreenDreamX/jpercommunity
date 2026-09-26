@@ -18,10 +18,18 @@ const MAX_AGE_SECONDS = 60 * 60 * 24 * 7 // 7 hari
 export function setSessionCookie() {
   if (typeof document === "undefined") return
   const secure = window.location.protocol === "https:" ? "; Secure" : ""
-  document.cookie = `${SESSION_COOKIE}=1; path=/; max-age=${MAX_AGE_SECONDS}; SameSite=Lax${secure}`
+  const isJperDomain = window.location.hostname.endsWith("jper.my.id")
+  const domainAttr = isJperDomain ? "; domain=.jper.my.id" : ""
+  document.cookie = `${SESSION_COOKIE}=1; path=/${domainAttr}; max-age=${MAX_AGE_SECONDS}; SameSite=Lax${secure}`
 }
 
 export function clearSessionCookie() {
   if (typeof document === "undefined") return
+  const isJperDomain = window.location.hostname.endsWith("jper.my.id")
+  // Clear host-only cookie
   document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Lax`
+  // Clear domain-wide cookie if on jper.my.id
+  if (isJperDomain) {
+    document.cookie = `${SESSION_COOKIE}=; path=/; domain=.jper.my.id; max-age=0; SameSite=Lax`
+  }
 }

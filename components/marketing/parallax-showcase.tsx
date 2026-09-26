@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { ArrowRight, BadgeCheck, BookOpenText, CalendarDays, ShieldCheck, Users } from "lucide-react"
+import { ArrowRight, BadgeCheck, BookOpenText, CalendarDays, ShieldCheck, Users, Star } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -17,18 +17,18 @@ type ShowcaseItem = {
 
 const showcaseItems: ShowcaseItem[] = [
   {
-    title: "Kelola course",
-    body: "Materi, silabus, dan tampilan minggu.",
+    title: "Kelola course & Silabus",
+    body: "Materi mingguan, file PDF, dan video terstruktur.",
     icon: BookOpenText,
   },
   {
-    title: "Buka sesi absensi",
-    body: "QR token dibuat untuk pertemuan aktif.",
+    title: "Buka sesi absensi Realtime",
+    body: "Generate QR token unik per pertemuan aktif.",
     icon: CalendarDays,
   },
   {
-    title: "Masukkan nilai",
-    body: "Data per minggu ditulis dengan format yang presisi.",
+    title: "Input & Rekap Nilai",
+    body: "Format data presisi per siswa & per angkatan.",
     icon: BadgeCheck,
   },
 ]
@@ -40,14 +40,10 @@ export function ParallaxShowcase() {
 
   useEffect(() => {
     const section = sectionRef.current
-    if (!section) {
-      return
-    }
+    if (!section) return
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (prefersReducedMotion) {
-      return
-    }
+    if (prefersReducedMotion) return
 
     let frame = 0
 
@@ -60,10 +56,7 @@ export function ParallaxShowcase() {
     }
 
     const onScroll = () => {
-      if (frame) {
-        return
-      }
-
+      if (frame) return
       frame = window.requestAnimationFrame(update)
     }
 
@@ -74,9 +67,7 @@ export function ParallaxShowcase() {
     return () => {
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onScroll)
-      if (frame) {
-        window.cancelAnimationFrame(frame)
-      }
+      if (frame) window.cancelAnimationFrame(frame)
     }
   }, [])
 
@@ -89,14 +80,23 @@ export function ParallaxShowcase() {
   }, [])
 
   return (
-    <section ref={sectionRef} className="relative min-h-[780px]">
-      <div className="sticky top-8 rounded-3xl border border-border bg-background/90 p-5 md:p-6">
+    <section ref={sectionRef} className="relative min-h-[720px]">
+      <div className="sticky top-8 border-2 border-black bg-white p-5 md:p-6 shadow-[8px_8px_0px_#111]">
         <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6">
-          <Card className="overflow-hidden border-border bg-muted/20 transition-all duration-300 hover:-translate-y-1 hover:border-primary/35" style={{ transform: `translate3d(0, ${progress * -22}px, 0)` }}>
-            <CardHeader className="border-b border-border/70 pb-4">
-              <CardDescription>Studio admin</CardDescription>
-              <CardTitle className="text-2xl tracking-[-0.03em]">
-                Panel yang terasa seperti ruang kerja, bukan dashboard generik.
+          {/* Main Card */}
+          <Card
+            className="overflow-hidden border-2 border-black bg-white shadow-[4px_4px_0px_#E60012] transition-transform duration-300"
+            style={{ transform: `translate3d(0, ${progress * -16}px, 0)` }}
+          >
+            <CardHeader className="border-b-2 border-black bg-zinc-900 text-white pb-4">
+              <div className="flex items-center justify-between">
+                <span className="bg-[#E60012] text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 -skew-x-6">
+                  STUDIO ADMIN
+                </span>
+                <span className="font-mono text-xs font-bold text-[#FFC700]">★ CORE PANEL</span>
+              </div>
+              <CardTitle className="text-xl font-black uppercase tracking-tight text-white mt-2">
+                Ruang Kerja Pengurus & Pembina.
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 p-5">
@@ -104,114 +104,73 @@ export function ParallaxShowcase() {
                 <div
                   key={title}
                   onMouseEnter={() => setHoverIndex(index)}
-                  className="group flex items-start justify-between gap-4 border-t border-border/70 pt-4 transition-all duration-200 first:border-0 first:pt-0 hover:-translate-y-0.5"
+                  className={`group flex items-start justify-between gap-4 border-l-4 p-3 transition-all duration-200 cursor-pointer ${
+                    hoverIndex === index
+                      ? "border-[#E60012] bg-[#E60012]/5 translate-x-1"
+                      : "border-black/20 hover:border-[#E60012] hover:bg-zinc-50"
+                  }`}
                 >
-                  <div>
-                    <div className="flex items-center gap-2 font-medium text-foreground transition-colors group-hover:text-primary">
-                      <Icon className="size-4 text-destructive transition-transform duration-200 group-hover:scale-110" />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 font-black uppercase text-sm text-black">
+                      <Icon className="size-4 text-[#E60012]" />
                       {title}
                     </div>
-                    <div className="text-sm leading-6 text-stone">{body}</div>
+                    <div className="text-xs text-zinc-600 font-medium">{body}</div>
                   </div>
-                  <ArrowRight className="mt-0.5 size-4 text-primary transition-transform duration-200 group-hover:translate-x-0.5" />
+                  <ArrowRight className="mt-0.5 size-4 text-black transition-transform group-hover:translate-x-1 group-hover:text-[#E60012]" />
                 </div>
               ))}
             </CardContent>
           </Card>
 
+          {/* Secondary Stack */}
           <div className="grid gap-5">
             <Card
-              className="border-border bg-background"
-              style={{ transform: `translate3d(0, ${progress * 18}px, 0)` }}
+              className="border-2 border-black bg-white shadow-[4px_4px_0px_#FFC700]"
+              style={{ transform: `translate3d(0, ${progress * 14}px, 0)` }}
             >
-              <CardHeader className="border-b border-border/70 pb-4">
-                <CardDescription>Member experience</CardDescription>
-                <CardTitle className="text-xl tracking-[-0.03em]">
-                  Alur belajar yang sederhana untuk anggota.
+              <CardHeader className="border-b-2 border-black bg-white pb-3">
+                <div className="flex items-center justify-between">
+                  <span className="bg-black text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 -skew-x-6">
+                    LMS MEMBER
+                  </span>
+                  <span className="text-[10px] font-bold text-[#E60012] uppercase tracking-widest">★ SWIFT PORTAL</span>
+                </div>
+                <CardTitle className="text-lg font-black uppercase tracking-tight text-black mt-1">
+                  Pengalaman Belajar Anggota.
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 p-5">
-                <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30">
+              <CardContent className="space-y-2.5 p-4">
+                <div className="flex items-center justify-between border-2 border-black bg-zinc-50 px-3.5 py-2.5 shadow-[2px_2px_0px_#111]">
                   <div>
-                    <div className="text-sm font-medium text-foreground">Course mingguan</div>
-                    <div className="text-sm text-stone">PDF, video, dan catatan dalam satu tempat.</div>
+                    <div className="text-xs font-black uppercase text-black">Course & Materi Mingguan</div>
+                    <div className="text-[11px] text-zinc-600 font-medium">PDF, Video Embed, Catatan Markdown</div>
                   </div>
-                  <ShieldCheck className="size-4 text-primary" />
+                  <ShieldCheck className="size-4 text-[#E60012] shrink-0" />
                 </div>
-                <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30">
+                <div className="flex items-center justify-between border-2 border-black bg-zinc-50 px-3.5 py-2.5 shadow-[2px_2px_0px_#111]">
                   <div>
-                    <div className="text-sm font-medium text-foreground">Tugas dan quiz</div>
-                    <div className="text-sm text-stone">Masuk ke alur mingguan tanpa bertele-tele.</div>
+                    <div className="text-xs font-black uppercase text-black">Tugas & Quiz Interaktif</div>
+                    <div className="text-[11px] text-zinc-600 font-medium">Penilaian Otomatis & Sertifikat</div>
                   </div>
-                  <BadgeCheck className="size-4 text-primary" />
+                  <BadgeCheck className="size-4 text-[#FFC700] shrink-0" />
                 </div>
-                <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-foreground transition-all duration-200 hover:-translate-y-0.5">
-                  <span className="font-medium text-destructive">Sistem Presensi Realtime:</span> Riwayat absensi & sertifikat tercatat otomatis.
+                <div className="border-2 border-black bg-[#E60012] text-white p-3 font-bold text-xs shadow-[2px_2px_0px_#FFC700]">
+                  <span className="text-[#FFC700] uppercase font-black mr-1.5">★ PRESENSI QR REALTIME:</span>
+                  Token absensi unik per sesi untuk mencegah manipulasi data.
                 </div>
               </CardContent>
             </Card>
 
-            <Card
-              className="border-border bg-background"
-              style={{ transform: `translate3d(0, ${progress * -14}px, 0)` }}
-            >
-              <CardHeader className="border-b border-border/70 pb-4">
-                <CardDescription>Portal Pembelajaran</CardDescription>
-                <CardTitle className="text-xl tracking-[-0.03em]">
-                  Manajemen Belajar Terpadu untuk Siswa & Pengurus.
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 p-5">
-                {[
-                  ["Absensi Digital", "QR Code Sesi"],
-                  ["Modul & Materi", "PDF + Audio TTS"],
-                  ["Arcade & Mini Games", "EXP & Leveling"],
-                ].map(([label, value], index) => (
-                  <button
-                    type="button"
-                    key={label}
-                    onMouseEnter={() => setHoverIndex(index)}
-                    className="flex w-full items-center justify-between text-sm text-stone transition-colors duration-200 hover:text-foreground"
-                  >
-                    <span>{label}</span>
-                    <span className="font-mono text-xs font-semibold text-primary">{value}</span>
-                  </button>
-                ))}
-                <div className="pt-2 text-sm leading-6 text-stone">
-                  Seluruh riwayat kehadiran, progres tugas, dan kuis tersimpan rapi untuk setiap anggota ekstrakurikuler.
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="border-border bg-muted/10"
-              style={{ transform: `translate3d(0, ${progress * 26}px, 0)` }}
-            >
-              <CardContent className="flex items-center justify-between p-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full border border-border bg-background">
-                    <Users className="size-4 text-primary" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-foreground">Terbuka Untuk Semua Angkatan</div>
-                    <div className="text-sm text-stone">Siswa aktif SMKN 1 Majalaya & Alumni.</div>
-                  </div>
-                </div>
-                <div className="rounded-full border border-destructive/20 bg-destructive/5 px-3 py-1 font-mono text-xs text-destructive transition-all duration-200 hover:-translate-y-0.5">
-                  2026 / 2025 / Alumni
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="rounded-3xl border border-border bg-background p-4 text-sm text-stone">
-              <div className="flex items-center justify-between">
-                <span>Layer aktif</span>
-                <span className="font-mono text-primary">0{hoverIndex + 1}</span>
+            <div className="border-2 border-black bg-zinc-900 text-white p-4 shadow-[4px_4px_0px_#111] space-y-2">
+              <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider">
+                <span className="text-[#FFC700]">AKTIF STATUS LAYER</span>
+                <span className="font-mono bg-[#E60012] px-2 py-0.5 text-white -skew-x-6">0{hoverIndex + 1} / 03</span>
               </div>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-2 w-full border border-white bg-black p-0.5">
                 <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${35 + hoverIndex * 20}%` }}
+                  className="h-full bg-[#E60012] transition-all duration-300"
+                  style={{ width: `${(hoverIndex + 1) * 33.3}%` }}
                 />
               </div>
             </div>
@@ -220,4 +179,4 @@ export function ParallaxShowcase() {
       </div>
     </section>
   )
-}
+}

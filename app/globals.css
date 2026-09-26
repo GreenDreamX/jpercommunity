@@ -6,126 +6,187 @@
 
 @theme inline {
   --font-heading: var(--font-display);
-    --font-sans: var(--font-sans);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  --font-sans: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
-  --background: #faf9f6;
-  --foreground: #1c1b1a;
-  --card: #fcfbf8;
-  --card-foreground: #1c1b1a;
-  --popover: #fcfbf8;
-  --popover-foreground: #1c1b1a;
-  --primary: #2b3a55;
-  --primary-foreground: #faf9f6;
-  --secondary: #ece8de;
-  --secondary-foreground: #1c1b1a;
-  --muted: #f1eee6;
-  --muted-foreground: #6b6862;
-  --accent: #ece8de;
-  --accent-foreground: #1c1b1a;
-  --destructive: #b23a2e;
-  --border: #e4e1da;
-  --input: #e4e1da;
-  --ring: #2b3a55;
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: #fcfbf8;
-    --sidebar-foreground: #1c1b1a;
-    --sidebar-primary: #2b3a55;
-    --sidebar-primary-foreground: #faf9f6;
-    --sidebar-accent: #ece8de;
-    --sidebar-accent-foreground: #1c1b1a;
-    --sidebar-border: #e4e1da;
-    --sidebar-ring: #2b3a55;
+  --background: #ffffff;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #e60012;
+  --primary-foreground: #ffffff;
+  --secondary: #ffc700;
+  --secondary-foreground: #111111;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #ffc700;
+  --accent-foreground: #111111;
+  --destructive: #e60012;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #e60012;
+  --chart-1: #e60012;
+  --chart-2: #ffc700;
+  --chart-3: #111111;
+  --chart-4: #52525b;
+  --chart-5: #a1a1aa;
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #e60012;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffc700;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #e60012;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #141416;
+  --card-foreground: #fafafa;
+  --popover: #141416;
+  --popover-foreground: #fafafa;
+  --primary: #ff1a2a;
+  --primary-foreground: #ffffff;
+  --secondary: #ffd700;
+  --secondary-foreground: #09090b;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #ffd700;
+  --accent-foreground: #09090b;
+  --destructive: #ff1a2a;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #ff1a2a;
+  --sidebar: #141416;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #ff1a2a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffd700;
+  --sidebar-accent-foreground: #09090b;
+  --sidebar-border: #27272a;
+  --sidebar-ring: #ff1a2a;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
-    @apply font-sans;
-    }
+    @apply font-sans scroll-smooth;
+  }
+}
+
+/* Persona 5 Royal + Japanese Styling Utilities */
+.p5-shadow-black {
+  box-shadow: 4px 4px 0px #111111;
+}
+
+.p5-shadow-red {
+  box-shadow: 4px 4px 0px #e60012;
+}
+
+.p5-shadow-yellow {
+  box-shadow: 4px 4px 0px #ffc700;
+}
+
+.p5-skew {
+  transform: skewX(-6deg);
+}
+
+.p5-skew-reverse {
+  transform: skewX(6deg);
+}
+
+.p5-unskew {
+  transform: skewX(6deg);
+}
+
+/* Pattern Overlays & P5 Styles */
+.p5-dot-grid {
+  background-image: radial-gradient(#111111 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.p5-subtle-grid {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.p5-stripe-pattern {
+  background-image: repeating-linear-gradient(45deg, #1111110a 0, #1111110a 2px, transparent 0, transparent 14px);
+}
+
+.p5-grid-pattern {
+  background-image: linear-gradient(to right, #11111112 1px, transparent 1px), linear-gradient(to bottom, #11111112 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.p5-kanazawa-dots {
+  background-image: radial-gradient(#e60012 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* 3D Flashcard Flip Utilities */
@@ -176,4 +237,6 @@
     box-shadow: none !important;
     border-color: #ccc !important;
   }
-}
+}
+
+
